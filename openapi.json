@@ -180,6 +180,60 @@
                     }
                 }
             }
+        },
+        "/logout": {
+            "post": {
+                "tags": ["Auth"],
+                "operationId": "postLogout",
+                "security": [{ "userToken": [] }],
+                "description": "Endpoint for ending an existing OAuth2 session.",
+                "responses": {
+                    "200": {
+                        "description": "A successful logout response."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    },
+                    "501": {
+                        "$ref": "#/components/responses/SecondaryRequestError501"
+                    }
+                }
+            }
+        },
+        "/users/@me": {
+            "get": {
+                "tags": ["User"],
+                "operationId": "getMe",
+                "security": [{ "userToken": [] }],
+                "description": "Endpoint for getting information about the currently logged-in user.\n\nNote that the `/login` endpoint returns a superset of this information, so you do not need to call this after logging in.",
+                "responses": {
+                    "200": {
+                        "description": "User information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -351,7 +405,7 @@
             "GeneralPermissions": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 3,
+                "maximum": 7,
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/GeneralPermissions.ts",
                     "description": "types/Permissions/GeneralPermissions.ts"
@@ -540,6 +594,10 @@
         {
             "name": "Auth",
             "description": "Logging in, logging out, and refreshing."
+        },
+        {
+            "name": "User",
+            "description": "User-related functionality."
         }
     ]
 }

@@ -29,7 +29,8 @@ export class InvalidTokenError extends UnauthorizedError {
 	public constructor() {
 		super({
 			title: "Invalid Token",
-			description: "The provided authorization token was invalid.",
+			description:
+				"The provided authorization token was invalid, it may have expired or been deleted.",
 		});
 	}
 }

@@ -1,4 +1,4 @@
-import { InvalidTokenError } from "@/errors/UnauthorizedError";
+import { ExpiredTokenError, InvalidTokenError } from "@/errors/UnauthorizedError";
 import { pg } from "@/global/pg";
 import type { UserToken } from "@/shared/Common";
 import type { User } from "@/shared/User";
@@ -18,6 +18,10 @@ export async function getSessionAndUser(token: UserToken): Promise<SessionAndUse
 
 	if (result.length === 0) {
 		throw new InvalidTokenError();
+	}
+
+	if (result[0].expires_at.getTime() < Date.now()) {
+		throw new ExpiredTokenError();
 	}
 
 	return { session: result[0], user: convertToUser(result[0]) };

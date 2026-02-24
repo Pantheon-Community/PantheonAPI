@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { getSession } from "@/databases/sessionModel/getSession";
 import { getSessionAndUser } from "@/databases/sessionModel/getSessionAndUser";
+import { updateUserLastSeenAt } from "@/databases/userModel/updateUserLastSeenAt";
 import { MissingTokenError } from "@/errors/UnauthorizedError";
 import { app } from "@/global/app";
 import type { UserToken } from "@/shared/Common";
@@ -40,7 +41,11 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 					throw new MissingTokenError();
 				}
 
-				await provider.handleRequest({ req, res, session: await getSession(token) });
+				const session = await getSession(token);
+
+				updateUserLastSeenAt(session.user_id);
+
+				await provider.handleRequest({ req, res, session });
 			};
 			break;
 
@@ -51,7 +56,11 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 				if (token === null) {
 					await provider.handleRequest({ req, res, session: null, user: null });
 				} else {
-					await provider.handleRequest({ req, res, ...(await getSessionAndUser(token)) });
+					const sessionAndUser = await getSessionAndUser(token);
+
+					updateUserLastSeenAt(sessionAndUser.user.id);
+
+					await provider.handleRequest({ req, res, ...sessionAndUser });
 				}
 			};
 			break;
@@ -64,7 +73,11 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 					throw new MissingTokenError();
 				}
 
-				await provider.handleRequest({ req, res, ...(await getSessionAndUser(token)) });
+				const sessionAndUser = await getSessionAndUser(token);
+
+				updateUserLastSeenAt(sessionAndUser.user.id);
+
+				await provider.handleRequest({ req, res, ...sessionAndUser });
 			};
 			break;
 

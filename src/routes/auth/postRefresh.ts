@@ -4,7 +4,6 @@ import { fetchMe } from "@/discord/fetchMe";
 import { fetchMySteamConnections } from "@/discord/fetchMeSteamConnections";
 import { refreshAccessToken } from "@/discord/refreshAccessToken";
 import type { AuthResponse } from "@/shared/AuthResponse";
-import type { UserToken } from "@/shared/Common";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 
@@ -15,7 +14,7 @@ export const postRefresh: EndpointProvider<void, AuthResponse> = {
 	async handleRequest({ req, res, session }) {
 		const authData = await refreshAccessToken(session.refresh_token);
 
-		const token = authData.access_token as UserToken;
+		const token = authData.access_token;
 
 		const [discordData, steamConnections] = await Promise.all([
 			fetchMe(token),

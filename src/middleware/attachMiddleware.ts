@@ -1,8 +1,9 @@
 import { json } from "express";
 import { app } from "@/global/app";
+import { config } from "@/global/config";
 import { corsMiddleware } from "./corsMiddleware";
 import { rateLimitingMiddleware } from "./rateLimitingMiddleware";
-import { siteErrorHandler } from "./siteErrorHandler";
+import { devSiteErrorHandler, siteErrorHandler } from "./siteErrorHandler";
 import { validationMiddleware } from "./validationMiddleware";
 import { validatorErrorHandler } from "./validatorErrorHandler";
 
@@ -17,5 +18,9 @@ export function attachPreRouteMiddleware(): void {
 
 /** Attaches post-route middleware to the API, such as error catching. */
 export function attachPostRouteMiddleware(): void {
+	if (config.environment === "development") {
+		app.use(devSiteErrorHandler());
+	}
+
 	app.use(siteErrorHandler());
 }

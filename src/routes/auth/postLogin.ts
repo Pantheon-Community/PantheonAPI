@@ -4,7 +4,6 @@ import { fetchMe } from "@/discord/fetchMe";
 import { fetchMySteamConnections } from "@/discord/fetchMeSteamConnections";
 import { requestAccessToken } from "@/discord/requestAccessToken";
 import type { AuthResponse } from "@/shared/AuthResponse";
-import type { UserToken } from "@/shared/Common";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 
@@ -23,7 +22,7 @@ export const postLogin: EndpointProvider<LoginRequest, AuthResponse> = {
 
 		const authData = await requestAccessToken(code, redirectUri);
 
-		const token = authData.access_token as UserToken;
+		const token = authData.access_token;
 
 		const [discordData, steamConnections] = await Promise.all([
 			fetchMe(token),
