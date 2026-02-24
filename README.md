@@ -2,6 +2,10 @@
 
 Centralised API for the PantheonCommunity server network.
 
+[![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/codeql-analysis.yml)
+[![Deploy](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml)
+
 [![Bun](https://img.shields.io/badge/Bun-000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.com/)
 [![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=fff&style=for-the-badge)](https://expressjs.com/)
