@@ -3,7 +3,6 @@
 Centralised API for the PantheonCommunity server network.
 
 [![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/codeql-analysis.yml)
 [![Deploy](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml)
 [![codecov](https://codecov.io/gh/Pantheon-Community/PantheonAPI/graph/badge.svg?token=46UQNVJ8S3)](https://codecov.io/gh/Pantheon-Community/PantheonAPI)
 
