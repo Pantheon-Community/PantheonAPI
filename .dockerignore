@@ -5,6 +5,7 @@
 !.git
 !generator
 !src
+!static
 
 !bun.lock
 !openapi.json

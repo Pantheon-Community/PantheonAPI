@@ -2,36 +2,50 @@
 name: pantheon
 
 services:
-    db:
+    pantheon-db:
         container_name: pantheon-db
-        image: postgres
+        image: postgres:18
 
         ports:
             - ${DB_PORT}
-
-        volumes:
-            - data:/data/db
 
         environment:
             - POSTGRES_PASSWORD=${DB_PASSWORD}
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_DB=${DB_NAME}
 
-    app:
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+            interval: 10s
+            retries: 5
+            start_period: 30s
+            timeout: 10s
+
+        volumes:
+            - pgdata:/var/lib/postgresql
+
+    pantheon-api:
         container_name: pantheon-api
         build: .
         env_file: .env
-        ports:
-            - ${API_PORT}
         restart: ${RESTART_POLICY}
         mem_limit: ${HARD_MEMORY_LIMIT}
         mem_reservation: ${SOFT_MEMORY_LIMIT}
+
+        ports:
+            - ${API_PORT}
+
         depends_on:
-            - db
+            pantheon-db:
+                condition: service_healthy
+                restart: true
+
         environment:
             # localhost (or whatever PostgresSQL's address actually is) cannot
             # be addressed directly from inside a container, instead we address
             # its container.
             - DB_HOST=pantheon-db
+
 volumes:
-    data: {}
+    pgdata:
+        name: pantheon-database
