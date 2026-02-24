@@ -1,6 +1,8 @@
 import process from "node:process";
 import { SQL } from "bun";
+import { schedule } from "node-cron";
 import { createSessionTable } from "@/databases/sessionModel/base/createSessionTable";
+import { deleteExpiredSessions } from "@/databases/sessionModel/deleteExpiredSessions";
 import { createUserTable } from "@/databases/userModel/base/createUserTable";
 import { config } from "@/global/config";
 import { setPg } from "@/global/pg";
@@ -73,7 +75,28 @@ async function setupTables(): Promise<void> {
 	logWithTimeTaken("Setup Database Tables", startedAt);
 }
 
+function scheduleTasks(): void {
+	let isDeletingExpiredSessions = false;
+
+	schedule("* * * * *", async () => {
+		if (isDeletingExpiredSessions) return;
+
+		isDeletingExpiredSessions = true;
+
+		try {
+			await deleteExpiredSessions();
+		} catch (error) {
+			log(colorize("Error deleting expired sessions", Color.FgRed));
+			console.error(error);
+		} finally {
+			isDeletingExpiredSessions = false;
+		}
+	});
+}
+
 export async function startPostgres(): Promise<void> {
 	await connectToPostgres();
 	await setupTables();
+
+	scheduleTasks();
 }
