@@ -1,0 +1,545 @@
+{
+    "$schema": ".github/openapi.schema.json",
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Pantheon API",
+        "description": "Official web API for the Pantheon community server network.",
+        "contact": {
+            "name": "NachoToast",
+            "url": "https://github.com/NachoToast",
+            "email": "nachotoast@pantheoncommunity.org"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.pantheoncommunity.org",
+            "description": "Production Server"
+        },
+        {
+            "url": "http://localhost:{port}",
+            "description": "Local Development Server",
+            "variables": {
+                "port": {
+                    "description": "`API_PORT` environment variable.",
+                    "default": "5000"
+                }
+            }
+        }
+    ],
+    "paths": {
+        "/": {
+            "get": {
+                "tags": ["Miscellaneous"],
+                "operationId": "getRoot",
+                "responses": {
+                    "200": {
+                        "description": "Basic hello message.",
+                        "content": {
+                            "text/html": {}
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/ip": {
+            "get": {
+                "tags": ["Miscellaneous"],
+                "operationId": "getIp",
+                "description": "IP address information endpoint, useful for debugging proxies.",
+                "responses": {
+                    "200": {
+                        "description": "IP address of request, may be `::` if viewing from the same network.",
+                        "content": {
+                            "text/html": {
+                                "example": "123.123.123.123"
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/spec": {
+            "get": {
+                "tags": ["Miscellaneous"],
+                "responses": {
+                    "200": {
+                        "description": "OpenAPI specification for the FoundationX API.",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/api-docs": {
+            "get": {
+                "tags": ["Miscellaneous"],
+                "responses": {
+                    "200": {
+                        "description": "This document.",
+                        "content": {
+                            "text/html": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": ["Auth"],
+                "operationId": "postLogin",
+                "description": "Endpoint for completing the Discord OAuth2 login flow.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "redirectUri": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["code", "redirectUri"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "A successful login/signup response, contains user data and a token for making elevated requests to the API.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    },
+                    "501": {
+                        "$ref": "#/components/responses/SecondaryRequestError501"
+                    }
+                }
+            }
+        },
+        "/refresh": {
+            "post": {
+                "tags": ["Auth"],
+                "operationId": "postRefresh",
+                "security": [{ "userToken": [] }],
+                "description": "Endpoint for refreshing an existing OAuth2 session.",
+                "responses": {
+                    "200": {
+                        "description": "A successful login/signup response, contains user data and a token for making elevated requests to the API.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    },
+                    "501": {
+                        "$ref": "#/components/responses/SecondaryRequestError501"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "responses": {
+            "BadRequestError400": {
+                "description": "Error thrown when an invalid request is made, such as missing required body fields or passing in a string where a number was expected.\n\nNote this does not include errors around the validity of the authorization header.\n\n[MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/400)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/SiteErrorObject"
+                                }
+                            ],
+                            "properties": {
+                                "extra": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "path": {
+                                                "type": "string"
+                                            },
+                                            "message": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["path", "message"]
+                                    }
+                                }
+                            }
+                        },
+                        "example": {
+                            "title": "Invalid Origin",
+                            "description": "The origin header of your request (\"https://example.com\") isn't in the approvied client URLs list."
+                        }
+                    }
+                }
+            },
+            "ForbiddenError403": {
+                "description": "Error thrown when a request is made with insufficient permissions, or to do something that is not allowed no matter the permissions.\n\n[MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/SiteErrorObject"
+                                }
+                            ],
+                            "properties": {
+                                "missingPermissions": {
+                                    "$ref": "#/components/schemas/PermissionsObject"
+                                }
+                            }
+                        },
+                        "example": {
+                            "title": "Missing Permissions",
+                            "description": "You do not have the required permissions to do this action.",
+                            "missingPermissions": {
+                                "generalPermissions": 3
+                            }
+                        }
+                    }
+                }
+            },
+            "NotFoundError404": {
+                "description": "Error thrown when a resource does not exist in the database.\n\n[MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/SiteErrorObject"
+                        }
+                    }
+                }
+            },
+            "SecondaryRequestError501": {
+                "description": "Error thrown when an API call made by the server to another server fails.\n\nAlthough this **should** have a status code of 502 (Bad Gateway), Cloudflare likes to overwrite 502 errors with it's own error page, so 501 is used instead.\n\n[MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/502)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/SiteErrorObject"
+                        }
+                    }
+                }
+            },
+            "UnauthorizedError401": {
+                "description": "Error thrown when a request is made with missing or malformed credentials, such as having an invalid site token.\n\nHas status code 401 (Unauthorized), since the user has failed authentication.\n\n[MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/SiteErrorObject"
+                        },
+                        "example": {
+                            "title": "Missing Token",
+                            "description": "A token was not provided in the \"Authorization\" header."
+                        }
+                    }
+                },
+                "headers": {
+                    "WWW-Authenticate": {
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "RateLimited429": {
+                "description": "Too many requests, rate limited.\n\n[IETF Draft 8](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-ratelimit-headers-08)",
+                "headers": {
+                    "RateLimit": {
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "\"30-in-1min\"; r=27; t=54"
+
+                        },
+                        "description": "- 'r' (remaining) = number of requests you can currently make before getting rate limited.\n- 't' = number of seconds until the next rate limit reset."
+                    },
+                    "RateLimit-Policy": {
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "\"30-in-1min\"; q=30; w=60;"
+                        },
+                        "description": "- 'q' (quota) = number of requests that can ever be made before getting rate limited.\n- 'w' = number of seconds between rate limit resets."
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "userToken": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        },
+        "schemas": {
+            "SiteErrorObject": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "The error described in a few words.",
+                        "example": "User Not Found"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A sentence that explains how the error occurred.",
+                        "example": "A user with this ID does not exist in the database."
+                    }
+                },
+                "required": ["title", "description"],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SiteErrorObject.ts",
+                    "description": "types/SiteErrorObject.ts"
+                }
+            },
+            "EconomyPermissions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3,
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/EconomyPermissions.ts",
+                    "description": "types/Permissions/EconomyPermissions.ts"
+                }
+            },
+            "GeneralPermissions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3,
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/GeneralPermissions.ts",
+                    "description": "types/Permissions/GeneralPermissions.ts"
+                }
+            },
+            "PermissionsObject": {
+                "type" :"object",
+                "additionalProperties": false,
+                "properties": {
+                    "generalPermissions": {
+                        "$ref": "#/components/schemas/GeneralPermissions"
+                    },
+                    "economyPermissions": {
+                        "$ref": "#/components/schemas/EconomyPermissions"
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/PermissionsObject.ts",
+                    "description": "types/Permissions/PermissionsObject.ts"
+                }
+            },
+            "AuthResponse": {
+                "type": "object",
+                "required": ["user", "steamConnections", "expiresIn", "token"],
+                "additionalProperties": false,
+                "properties": {
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "steamConnections": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SteamConnection"
+                        }
+                    },
+                    "expiresIn": {
+                        "type": "integer",
+                        "description": "Seconds until session expires."
+                    },
+                    "token": {
+                        "$ref": "#/components/schemas/UserToken"
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/AuthResponse.ts",
+                    "description": "types/AuthResponse.ts"
+                }
+            },
+            "HexColorString": {
+                "type": "string"
+            },
+            "IsoString": {
+                "type": "string",
+                "description": "A string in ISO format, used to store dates.\n\nhttps://en.wikipedia.org/wiki/ISO_8601",
+                "example": "2022-11-08T02:20:08.190Z",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "DiscordId": {
+                "type": "string",
+                "description": "A Discord ID snowflake.\n\nhttps://discord.com/developers/docs/reference#snowflakes",
+                "example": "909645967081476147",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "SteamId64": {
+                "type": "string",
+                "description": "A SteamID64 account identifier.\n\nhttps://steamid.io/",
+                "example": "76561198200316171",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "UserToken": {
+                "type": "string",
+                "description": "An authorization token used by our users.\n\nAlso serves as a Discord OAuth2 access token.\n\nhttps://docs.discord.com/developers/topics/oauth2",
+                "example": "6qrZcUqja7812RVdnEKjpzOL4CvHBFG",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "PluginToken": {
+                "type": "string",
+                "description": "An authorization token used by our SCP:SL plugins.",
+                "example": "dd61ae073412c7738e687847c658e94a",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "SteamConnection": {
+                "type": "object",
+                "required": ["id", "username"],
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/SteamId64"
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamConnection.ts",
+                    "description": "types/SteamConnection.ts"
+                }
+            },
+            "UserMeta": {
+                "type": "object",
+                "properties": {
+                    "firstSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "lastSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    }
+                },
+                "required": ["firstSeenAt", "lastSeenAt"],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
+                    "description": "types/User.ts"
+                }
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "latestIp": {
+                        "type": "string"
+                    },
+                    "sessionCount": {
+                        "type": "integer",
+                        "description": "Number of times a session has been created or refreshed for this user."
+                    },
+                    "steam": {
+                        "type": "object",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SteamConnection"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/UserMeta"
+                    },
+                    "steamMeta": {
+                        "type": "object",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/UserMeta"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "permissions": {
+                        "$ref": "#/components/schemas/PermissionsObject"
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
+                    "description": "types/User.ts"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Miscellaneous",
+            "description": "Miscellaneous functionality."
+        },
+        {
+            "name": "Auth",
+            "description": "Logging in, logging out, and refreshing."
+        }
+    ]
+}

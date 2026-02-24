@@ -1,0 +1,12 @@
+# https://docs.docker.com/go/build-context-dockerignore/
+
+*
+
+!.git
+!generator
+!src
+
+!bun.lock
+!openapi.json
+!package.json
+!tsconfig.json

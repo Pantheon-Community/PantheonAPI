@@ -1,0 +1,5 @@
+# https://bun.com/docs/runtime/bunfig
+
+[test]
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = "tests/**"

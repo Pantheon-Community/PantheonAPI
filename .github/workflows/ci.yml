@@ -1,0 +1,37 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+    build:
+        name: Bun
+        runs-on: ubuntu-latest
+        timeout-minutes: 2
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v6
+
+            - name: Install Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Install Dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Typecheck
+              run: bun run typecheck
+
+            - name: Lint
+              run: bunx biome ci
+
+            - name: Test
+              run: bun run test --coverage --coverage-reporter=lcov
+
+            - name: Check Spec
+              run: bun run check-spec
+
+            - name: Upload Coverage to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  file: ./coverage/lcov.info
+                  token: ${{ secrets.CODECOV_TOKEN }}

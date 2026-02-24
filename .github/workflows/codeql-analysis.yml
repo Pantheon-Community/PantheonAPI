@@ -1,0 +1,30 @@
+# https://codeql.github.com/docs/codeql-overview/about-codeql/
+name: "CodeQL"
+
+on: [push, pull_request]
+
+permissions:
+    security-events: write
+
+jobs:
+    analyze:
+        name: Analyze
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                # https://git.io/codeql-language-support
+                language: ["javascript"]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v4
+              with:
+                  languages: javascript-typescript
+
+            - name: Perform CodeQL Analysis
+              uses: github/codeql-action/analyze@v4
