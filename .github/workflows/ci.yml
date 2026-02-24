@@ -11,6 +11,9 @@ jobs:
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v6
+              with:
+                submodules: recursive
+                token: ${{ secrets.PANTHEON_API_PAT }}
 
             - name: Install Bun
               uses: oven-sh/setup-bun@v2
