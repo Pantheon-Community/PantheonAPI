@@ -14,9 +14,9 @@ export function devSiteErrorHandler(): ErrorRequestHandler {
 			if (err.cause) {
 				console.error(err.cause);
 			}
-		} else {
-			next(err);
 		}
+
+		next(err);
 	};
 }
 
