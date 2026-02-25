@@ -1,5 +1,5 @@
 import type { ValidationErrorItem } from "express-openapi-validator/dist/framework/types";
-import type { SiteErrorObject } from "@/shared/SiteErrorObject";
+import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 import { SiteError } from "./SiteError";
 
 export interface InvalidRequestErrorObject extends SiteErrorObject {

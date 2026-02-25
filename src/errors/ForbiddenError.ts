@@ -1,5 +1,5 @@
-import type { PermissionsObject } from "@/shared/Permissions/PermissionsObject";
-import type { SiteErrorObject } from "@/shared/SiteErrorObject";
+import type { PermissionsObject } from "@/shared/types/Permissions/PermissionsObject";
+import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 import { SiteError } from "./SiteError";
 
 interface ForbiddenErrorObject extends SiteErrorObject {

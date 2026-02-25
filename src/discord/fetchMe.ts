@@ -2,7 +2,7 @@
 
 import { RouteBases } from "discord-api-types/v10";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
-import type { UserToken } from "@/shared/Common";
+import type { UserToken } from "@/shared/types/Common";
 import type { DiscordUser } from "@/types/Discord";
 
 export async function fetchMe(token: UserToken): Promise<DiscordUser> {

@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/style/useNamingConvention: SQL Column Syntax */
 
-import type { DiscordId, UserToken } from "@/shared/Common";
+import type { DiscordId, UserToken } from "@/shared/types/Common";
 
 export interface SessionModel {
 	readonly access_token: UserToken;

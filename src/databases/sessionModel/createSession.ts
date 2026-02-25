@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import type { DiscordId } from "@/shared/Common";
+import type { DiscordId } from "@/shared/types/Common";
 import type { DiscordAuth } from "@/types/Discord";
 
 export async function createSession(authData: DiscordAuth, id: DiscordId): Promise<void> {

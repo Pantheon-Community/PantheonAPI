@@ -4,7 +4,7 @@ import { getSessionAndUser } from "@/databases/sessionModel/getSessionAndUser";
 import { updateUserLastSeenAt } from "@/databases/userModel/updateUserLastSeenAt";
 import { MissingTokenError } from "@/errors/UnauthorizedError";
 import { app } from "@/global/app";
-import type { UserToken } from "@/shared/Common";
+import type { UserToken } from "@/shared/types/Common";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 

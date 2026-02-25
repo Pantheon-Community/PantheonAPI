@@ -3,7 +3,7 @@ import { upsertUser } from "@/databases/userModel/upsertUser";
 import { fetchMe } from "@/discord/fetchMe";
 import { fetchMySteamConnections } from "@/discord/fetchMeSteamConnections";
 import { refreshAccessToken } from "@/discord/refreshAccessToken";
-import type { AuthResponse } from "@/shared/AuthResponse";
+import type { AuthResponse } from "@/shared/types/AuthResponse";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 

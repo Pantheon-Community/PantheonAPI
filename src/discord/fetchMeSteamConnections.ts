@@ -2,8 +2,8 @@
 
 import { type APIConnection, ConnectionService, RouteBases } from "discord-api-types/v10";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
-import type { SteamId64, UserToken } from "@/shared/Common";
-import type { SteamConnection } from "@/shared/SteamConnection";
+import type { SteamId64, UserToken } from "@/shared/types/Common";
+import type { SteamConnection } from "@/shared/types/SteamConnection";
 
 export async function fetchMySteamConnections(token: UserToken): Promise<SteamConnection[]> {
 	try {

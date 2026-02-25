@@ -1,10 +1,10 @@
 /** biome-ignore-all lint/style/useNamingConvention: SQL Column Syntax */
 
-import type { DiscordId, SteamId64 } from "@/shared/Common";
-import type { EconomyPermissions } from "@/shared/Permissions/EconomyPermissions";
-import type { GeneralPermissions } from "@/shared/Permissions/GeneralPermissions";
-import type { SteamConnection } from "@/shared/SteamConnection";
-import type { User, UserMeta } from "@/shared/User";
+import type { DiscordId, SteamId64 } from "@/shared/types/Common";
+import type { EconomyPermissions } from "@/shared/types/Permissions/EconomyPermissions";
+import type { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
+import type { SteamConnection } from "@/shared/types/SteamConnection";
+import type { User, UserMeta } from "@/shared/types/User";
 
 export interface UserModel {
 	readonly id: DiscordId;

@@ -1,4 +1,4 @@
-import type { SiteErrorObject } from "@/shared/SiteErrorObject.js";
+import type { SiteErrorObject } from "@/shared/types/SiteErrorObject.js";
 import { SiteError } from "./SiteError.js";
 
 /**

@@ -1,4 +1,4 @@
-import type { User } from "@/shared/User";
+import type { User } from "@/shared/types/User";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 

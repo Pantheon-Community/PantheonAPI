@@ -1,7 +1,7 @@
 import { ExpiredTokenError, InvalidTokenError } from "@/errors/UnauthorizedError";
 import { pg } from "@/global/pg";
-import type { UserToken } from "@/shared/Common";
-import type { User } from "@/shared/User";
+import type { UserToken } from "@/shared/types/Common";
+import type { User } from "@/shared/types/User";
 import { convertToUser, type UserModel } from "../userModel/base/UserModel";
 import type { SessionModel } from "./base/SessionModel";
 

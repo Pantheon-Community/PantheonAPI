@@ -1,7 +1,7 @@
 import type { ErrorRequestHandler, Response } from "express";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import { SiteError } from "@/errors/SiteError";
-import type { SiteErrorObject } from "@/shared/SiteErrorObject";
+import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
 import { log } from "@/utils/logging";

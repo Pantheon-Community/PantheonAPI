@@ -1,6 +1,6 @@
 import { test } from "bun:test";
-import { EconomyPermissions } from "@/shared/Permissions/EconomyPermissions";
-import { GeneralPermissions } from "@/shared/Permissions/GeneralPermissions";
+import { EconomyPermissions } from "@/shared/types/Permissions/EconomyPermissions";
+import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
 
 function checkBitfield(obj: object, name: string): void {
 	const entries = Object.entries(obj).filter(

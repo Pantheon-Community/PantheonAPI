@@ -1,6 +1,6 @@
 import { pg } from "@/global/pg";
-import type { SteamConnection } from "@/shared/SteamConnection";
-import type { User } from "@/shared/User";
+import type { SteamConnection } from "@/shared/types/SteamConnection";
+import type { User } from "@/shared/types/User";
 import type { DiscordUser } from "@/types/Discord";
 import { convertToUser, type UserModel } from "./base/UserModel";
 

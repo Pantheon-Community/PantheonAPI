@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { SiteErrorObject } from "@/shared/SiteErrorObject";
+import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 
 /** Generic error class that can be caught by middleware. */
 export abstract class SiteError<T extends SiteErrorObject = SiteErrorObject> extends Error {

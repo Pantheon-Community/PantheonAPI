@@ -15,7 +15,7 @@
         "moduleResolution": "bundler",
         "paths": {
             "@/*": ["./src/*"],
-            "@/shared/*": ["./shared/types/*"]
+            "@/shared/*": ["./shared/*"]
         },
 
         // Emit

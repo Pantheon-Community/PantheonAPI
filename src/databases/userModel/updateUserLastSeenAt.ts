@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import type { DiscordId } from "@/shared/Common";
+import type { DiscordId } from "@/shared/types/Common";
 
 export function updateUserLastSeenAt(id: DiscordId): void {
 	// Not really an important operation to log errors for.

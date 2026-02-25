@@ -1,7 +1,7 @@
 import { NotFoundError } from "@/errors/NotFoundError";
 import { pg } from "@/global/pg";
-import type { DiscordId } from "@/shared/Common";
-import type { User } from "@/shared/User";
+import type { DiscordId } from "@/shared/types/Common";
+import type { User } from "@/shared/types/User";
 import { convertToUser, type UserModel } from "./base/UserModel";
 
 export async function getUser(id: DiscordId): Promise<User> {

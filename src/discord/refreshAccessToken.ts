@@ -1,6 +1,6 @@
 import { OAuth2Routes } from "discord-api-types/v10";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
-import type { UserToken } from "@/shared/Common";
+import type { UserToken } from "@/shared/types/Common";
 import type { DiscordAuth } from "@/types/Discord";
 import { makeRequestBody } from "./makeRequestBody";
 

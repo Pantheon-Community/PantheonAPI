@@ -1,6 +1,6 @@
 import { ExpiredTokenError, InvalidTokenError } from "@/errors/UnauthorizedError";
 import { pg } from "@/global/pg";
-import type { UserToken } from "@/shared/Common";
+import type { UserToken } from "@/shared/types/Common";
 import type { SessionModel } from "./base/SessionModel";
 
 export async function getSession(token: UserToken): Promise<SessionModel> {

@@ -3,15 +3,10 @@ import { upsertUser } from "@/databases/userModel/upsertUser";
 import { fetchMe } from "@/discord/fetchMe";
 import { fetchMySteamConnections } from "@/discord/fetchMeSteamConnections";
 import { requestAccessToken } from "@/discord/requestAccessToken";
-import type { AuthResponse } from "@/shared/AuthResponse";
+import type { AuthResponse } from "@/shared/types/AuthResponse";
+import type { LoginRequest } from "@/shared/types/LoginRequest";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
-
-interface LoginRequest {
-	code: string;
-
-	redirectUri: string;
-}
 
 export const postLogin: EndpointProvider<LoginRequest, AuthResponse> = {
 	method: "post",
