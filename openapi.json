@@ -250,6 +250,9 @@
                                 }
                             ],
                             "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
                                 "extra": {
                                     "type": "array",
                                     "items": {
@@ -317,7 +320,28 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/SiteErrorObject"
+                            "type": "object",
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/SiteErrorObject"
+                                }
+                            ],
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "description": "Upstream error, if applicable."
+                                },
+                                "errorDescription": {
+                                    "type": "string",
+                                    "description": "Upstream error description, if applicable."
+                                }
+                            }
+                        },
+                        "example": {
+                            "title": "Token Request Failure",
+                            "description": "Failed to obtain a Discord access token, the supplied code or redirect URI may be invalid.",
+                            "error": "invalid_grant",
+                            "errorDescription": "Invalid \"redirect_uri\" in request."
                         }
                     }
                 }

@@ -1,8 +1,13 @@
-import type { ValidationErrorItem } from "express-openapi-validator/dist/framework/types";
+import type {
+	HttpError,
+	ValidationErrorItem,
+} from "express-openapi-validator/dist/framework/types";
 import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 import { SiteError } from "./SiteError";
 
 export interface InvalidRequestErrorObject extends SiteErrorObject {
+	message?: string;
+
 	extra?: ValidationErrorItem[];
 }
 
@@ -28,11 +33,12 @@ export class InvalidOriginError extends BadRequestError {
 }
 
 export class InvalidRequestError extends BadRequestError {
-	public constructor(message: string, extra: ValidationErrorItem[]) {
+	public constructor(error: HttpError) {
 		super({
 			title: "Invalid Request",
-			description: `Your client made an invalid request to the API: ${message}`,
-			extra,
+			description: "Your client made an invalid request to the API.",
+			message: error.message,
+			extra: error.errors,
 		});
 	}
 }

@@ -21,7 +21,7 @@ export function validatorErrorHandler(): ErrorRequestHandler {
 				next(new MissingTokenError());
 				break;
 			default:
-				next(new InvalidRequestError(err.message, err.errors));
+				next(new InvalidRequestError(err));
 		}
 	};
 }

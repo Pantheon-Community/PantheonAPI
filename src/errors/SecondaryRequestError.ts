@@ -1,6 +1,12 @@
 import type { SiteErrorObject } from "@/shared/types/SiteErrorObject.js";
 import { SiteError } from "./SiteError.js";
 
+interface SecondaryRequestErrorObject extends SiteErrorObject {
+	error?: string;
+
+	errorDescription?: string;
+}
+
 /**
  * Error thrown when an API call made by the server to another server fails.
  *
@@ -9,10 +15,22 @@ import { SiteError } from "./SiteError.js";
  *
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/502 MDN Reference}
  */
-export class SecondaryRequestError extends SiteError {
+export class SecondaryRequestError extends SiteError<SecondaryRequestErrorObject> {
 	protected override statusCode = 501; // Bad Gateway (see JSDoc comment above)
 
-	public constructor(payload: SiteErrorObject, cause: unknown) {
+	public constructor(baseError: SiteErrorObject, cause: unknown) {
+		const payload: SecondaryRequestErrorObject = { ...baseError };
+
+		if (typeof cause === "object" && cause !== null) {
+			if ("error" in cause && typeof cause.error === "string") {
+				payload.error = cause.error;
+			}
+
+			if ("error_description" in cause && typeof cause.error_description === "string") {
+				payload.errorDescription = cause.error_description;
+			}
+		}
+
 		super(payload, { cause });
 	}
 }
