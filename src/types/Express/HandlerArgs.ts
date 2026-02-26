@@ -2,11 +2,14 @@ import type { Request, Response } from "express";
 import type { SessionModel } from "@/databases/sessionModel/base/SessionModel";
 import type { PluginToken } from "@/shared/types/Common";
 import type { User } from "@/shared/types/User";
+import type { ServerTimer } from "@/utils/serverTimer";
 
 export interface NoAuthHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams> {
 	req: Request<PathParams, ResponseBody, RequestBody, QueryParams, Record<never, never>>;
 
 	res: Response<ResponseBody, Record<never, never>>;
+
+	timer: ServerTimer;
 }
 
 export interface TokenOnlyHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>

@@ -7,46 +7,40 @@ import type { AuthResponse } from "@/shared/types/AuthResponse";
 import type { LoginRequest } from "@/shared/types/LoginRequest";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
-import { TimerBuilder } from "@/utils/timers";
-
-const timers = {
-	reqAccessToken: "Discord OAuth",
-	fetchUser: "Fetch /users/@me",
-	upsertUser: "Upsert user",
-	createSession: "Create session",
-} as const;
-
-const loginTimers: TimerBuilder<keyof typeof timers> = new TimerBuilder(timers);
+import { getIp } from "@/utils/getIp";
+import { getUserAgent } from "@/utils/getUserAgent";
 
 export const postLogin: EndpointProvider<LoginRequest, AuthResponse> = {
 	method: "post",
 	path: "/login",
 	auth: AuthScope.None,
-	async handleRequest({ req, res }) {
+	async handleRequest({ req, res, timer }) {
 		const { code, redirectUri } = req.body;
-
-		const timer = loginTimers.makeInstance().start("reqAccessToken");
 
 		const authData = await requestAccessToken(code, redirectUri);
 
-		timer.stop("reqAccessToken").start("fetchUser");
+		timer.finished(requestAccessToken);
 
 		const token = authData.access_token;
+
+		const ip = getIp(req);
 
 		const [discordData, steamConnections] = await Promise.all([
 			fetchMe(token),
 			fetchMySteamConnections(token),
 		]);
 
-		timer.stop("fetchUser").start("upsertUser");
+		timer.finished(fetchMe, fetchMySteamConnections);
 
-		const user = await upsertUser(discordData, steamConnections.at(0), req.ip);
+		const user = await upsertUser(discordData, steamConnections.at(0), ip);
 
-		timer.stop("upsertUser").start("createSession");
+		timer.finished(upsertUser);
 
-		await createSession(authData, discordData.id);
+		await createSession(authData, discordData.id, ip, getUserAgent(req));
 
-		timer.stop("createSession").addTo(res);
+		timer.finished(createSession);
+
+		timer.addTo(res);
 
 		res.status(200).json({ user, steamConnections, expiresIn: authData.expires_in, token });
 	},

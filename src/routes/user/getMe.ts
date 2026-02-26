@@ -6,7 +6,9 @@ export const getMe: EndpointProvider<void, User> = {
 	method: "get",
 	path: "/users/@me",
 	auth: AuthScope.User,
-	handleRequest({ res, user }) {
+	handleRequest({ res, timer, user }) {
+		timer.addTo(res);
+
 		res.status(200).json(user);
 	},
 };

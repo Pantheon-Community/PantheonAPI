@@ -6,6 +6,8 @@ import { deleteSession } from "./deleteSession";
 export async function updateSession(
 	oldSession: SessionModel,
 	newSession: DiscordAuth,
+	ip: string,
+	userAgent: string,
 ): Promise<void> {
 	const expiresAt = new Date(Date.now() + newSession.expires_in * 1000).toISOString();
 
@@ -18,14 +20,18 @@ export async function updateSession(
                 started_at,
                 expires_at,
                 times_refreshed,
-                user_id
+                user_id,
+                ip,
+                user_agent
             ) VALUES (
                 ${newSession.access_token},
                 ${newSession.refresh_token},
                 ${oldSession.started_at},
                 ${expiresAt},
                 ${oldSession.times_refreshed + 1},
-                ${oldSession.user_id}
+                ${oldSession.user_id},
+                ${ip},
+                ${userAgent}
             )
         `,
 	]);

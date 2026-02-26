@@ -14,4 +14,8 @@ export interface SessionModel {
 	readonly times_refreshed: number;
 
 	readonly user_id: DiscordId;
+
+	readonly ip: string;
+
+	readonly user_agent: string;
 }

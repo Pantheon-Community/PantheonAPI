@@ -8,7 +8,13 @@ export async function createSessionTable(): Promise<void> {
             started_at TIMESTAMP NOT NULL DEFAULT NOW(),
             expires_at TIMESTAMP NOT NULL,
             times_refreshed INT NOT NULL DEFAULT 0,
-            user_id VARCHAR(32) NOT NULL REFERENCES users(id) ON DELETE CASCADE
+            user_id VARCHAR(32) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            ip VARCHAR(32) NOT NULL,
+            user_agent VARCHAR(255) NOT NULL
         )
     `;
+
+	await pg`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS ip VARCHAR(32) NOT NULL DEFAULT 'unknown'`;
+
+	await pg`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS user_agent VARCHAR(255) NOT NULL DEFAULT 'unknown'`;
 }

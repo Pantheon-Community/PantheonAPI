@@ -7,11 +7,9 @@ import { convertToUser, type UserModel } from "./base/UserModel";
 export async function upsertUser(
 	discordData: DiscordUser,
 	steamData: SteamConnection | undefined,
-	ip: string | undefined,
+	ip: string,
 ): Promise<User> {
-	const { id, username, avatar } = discordData;
-
-	ip ||= "unknown";
+	const { id, username, global_name, avatar } = discordData;
 
 	const [result] = await pg<[UserModel]>`
         INSERT INTO users (
@@ -23,13 +21,13 @@ export async function upsertUser(
             steam_username
         ) VALUES (
             ${id},
-            ${username},
+            ${global_name ?? username},
             ${avatar},
             ${ip},
             ${steamData?.id ?? null},
             ${steamData?.username ?? null}
         ) ON CONFLICT (id) DO UPDATE SET
-            username = ${username},
+            username = ${global_name ?? username},
             avatar = ${avatar},
             latest_ip = ${ip},
             last_seen_at = NOW()

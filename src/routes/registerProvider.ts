@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 import { getSession } from "@/databases/sessionModel/getSession";
 import { getSessionAndUser } from "@/databases/sessionModel/getSessionAndUser";
 import { updateUserLastSeenAt } from "@/databases/userModel/updateUserLastSeenAt";
@@ -7,6 +7,8 @@ import { app } from "@/global/app";
 import type { UserToken } from "@/shared/types/Common";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
+import { getIp } from "@/utils/getIp";
+import { ServerTimer } from "@/utils/serverTimer";
 
 function getToken(req: Request): UserToken | null {
 	let value = req.get("Authorization");
@@ -26,15 +28,15 @@ function getToken(req: Request): UserToken | null {
 
 // biome-ignore lint/suspicious/noExplicitAny: unknown just doesn't work as a default here
 export function registerProvider(provider: EndpointProvider<any, any, any, any>): void {
-	let handler: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+	let handler: (req: Request, res: Response, timer: ServerTimer) => Promise<void>;
 
 	switch (provider.auth) {
 		case AuthScope.None:
-			handler = async (req, res) => await provider.handleRequest({ req, res });
+			handler = async (req, res, timer) => await provider.handleRequest({ req, res, timer });
 			break;
 
 		case AuthScope.TokenOnly:
-			handler = async (req, res) => {
+			handler = async (req, res, timer) => {
 				const token = getToken(req);
 
 				if (token === null) {
@@ -43,30 +45,34 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 
 				const session = await getSession(token);
 
-				updateUserLastSeenAt(session.user_id);
+				timer.finished(getSession);
 
-				await provider.handleRequest({ req, res, session });
+				updateUserLastSeenAt(session.user_id, getIp(req));
+
+				await provider.handleRequest({ req, res, timer, session });
 			};
 			break;
 
 		case AuthScope.OptionalUser:
-			handler = async (req, res) => {
+			handler = async (req, res, timer) => {
 				const token = getToken(req);
 
 				if (token === null) {
-					await provider.handleRequest({ req, res, session: null, user: null });
+					await provider.handleRequest({ req, res, timer, session: null, user: null });
 				} else {
 					const sessionAndUser = await getSessionAndUser(token);
 
-					updateUserLastSeenAt(sessionAndUser.user.id);
+					timer.finished(getSessionAndUser);
 
-					await provider.handleRequest({ req, res, ...sessionAndUser });
+					updateUserLastSeenAt(sessionAndUser.user.id, getIp(req));
+
+					await provider.handleRequest({ req, res, timer, ...sessionAndUser });
 				}
 			};
 			break;
 
 		case AuthScope.User:
-			handler = async (req, res) => {
+			handler = async (req, res, timer) => {
 				const token = getToken(req);
 
 				if (token === null) {
@@ -75,9 +81,11 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 
 				const sessionAndUser = await getSessionAndUser(token);
 
-				updateUserLastSeenAt(sessionAndUser.user.id);
+				timer.finished(getSessionAndUser);
 
-				await provider.handleRequest({ req, res, ...sessionAndUser });
+				updateUserLastSeenAt(sessionAndUser.user.id, getIp(req));
+
+				await provider.handleRequest({ req, res, timer, ...sessionAndUser });
 			};
 			break;
 
@@ -86,6 +94,6 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 	}
 
 	app[provider.method](provider.path, (req, res, next) => {
-		handler(req, res, next).catch((error: unknown) => next(error));
+		handler(req, res, new ServerTimer()).catch((error: unknown) => next(error));
 	});
 }
