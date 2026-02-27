@@ -14,7 +14,6 @@ export async function createSessionTable(): Promise<void> {
         )
     `;
 
-	await pg`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS ip VARCHAR(32) NOT NULL DEFAULT 'unknown'`;
-
-	await pg`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS user_agent VARCHAR(255) NOT NULL DEFAULT 'unknown'`;
+	await pg`ALTER TABLE sessions ALTER COLUMN ip DROP DEFAULT`;
+	await pg`ALTER TABLE sessions ALTER COLUMN user_agent DROP DEFAULT`;
 }
