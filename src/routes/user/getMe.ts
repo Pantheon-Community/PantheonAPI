@@ -12,7 +12,7 @@ import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 export const getMe: EndpointProvider<void, GetMeResponse> = {
 	method: "get",
 	path: "/users/@me",
-	auth: AuthScope.User,
+	auth: AuthScope.TokenOnly,
 	async handleRequest({ res, timer, session }) {
 		let discordUser: DiscordUser;
 		let steamUsers: SteamUser[];
