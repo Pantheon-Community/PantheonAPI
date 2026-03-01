@@ -4,13 +4,10 @@ import { static as serveStatic } from "express";
 import { serve, setup } from "swagger-ui-express";
 import { app } from "@/global/app";
 import { config } from "@/global/config";
-import { postLogin } from "./auth/postLogin";
-import { postLogout } from "./auth/postLogout";
-import { postRefresh } from "./auth/postRefresh";
-import { getIp } from "./miscellaneous/getIp";
-import { getRoot } from "./miscellaneous/getRoot";
+import { authRoutes } from "./auth/authRoutes";
+import { miscRoutes } from "./miscellaneous/miscRoutes";
 import { registerProvider } from "./registerProvider";
-import { getMe } from "./user/getMe";
+import { userRoutes } from "./user/userRoutes";
 
 /** Adds the `/api-spec` and `/spec` routes to the app. */
 function addApiSpecRoutes(): void {
@@ -51,7 +48,7 @@ export function addStaticRoutes(): void {
 
 /** Adds normal routes to the app. */
 export function addRoutes(): void {
-	for (const provider of [getIp, getRoot, postLogin, postRefresh, postLogout, getMe]) {
+	for (const provider of [...authRoutes, ...miscRoutes, ...userRoutes]) {
 		registerProvider(provider);
 	}
 }
