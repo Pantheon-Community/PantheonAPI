@@ -45,14 +45,16 @@ export class ServerTimer {
 }
 
 if (config.dev.logTimers) {
-	const original = ServerTimer.prototype.create;
+	const originalCreate = ServerTimer.prototype.create;
+
+	const originalAddTo = ServerTimer.prototype.addTo;
 
 	ServerTimer.prototype.create = function (...args) {
 		const startedAt = Date.now();
 
 		const name = colorize(args.map((x) => x.name).join("+"), Color.FgCyan);
 
-		const result = original.apply(this, args);
+		const result = originalCreate.apply(this, args);
 
 		log(`${name} Started`);
 
@@ -62,5 +64,13 @@ if (config.dev.logTimers) {
 				logWithTimeTaken(`${name} Finished`, startedAt);
 			},
 		};
+	};
+
+	ServerTimer.prototype.addTo = function (res) {
+		originalAddTo.apply(this, [res]);
+
+		log(`${colorize(`${res.req.method} ${res.req.url}`, Color.FgMagenta)} Finished`);
+
+		return res;
 	};
 }
