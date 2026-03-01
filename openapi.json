@@ -291,6 +291,47 @@
                     }
                 }
             }
+        },
+        "/users/@me/steam-users": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "getMeSteamUsers",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Endpoint for getting specifically the Discord Steam connections for the currently logged-in user.",
+                "responses": {
+                    "200": {
+                        "description": "User Steam connections.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SteamUser"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    },
+                    "501": {
+                        "$ref": "#/components/responses/SecondaryRequestError501"
+                    }
+                }
+            }
         }
     },
     "components": {
