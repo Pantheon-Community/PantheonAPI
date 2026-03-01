@@ -1,5 +1,5 @@
-import { deleteSession } from "@/databases/sessionModel/deleteSession";
-import { revokeAccessToken } from "@/discord/revokeAccessToken";
+import { deleteUserSession } from "@/databases/userSessions/deleteUserSession";
+import { revokeAccessToken } from "@/discord/auth/revokeAccessToken";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 
@@ -7,16 +7,24 @@ export const postLogout: EndpointProvider = {
 	method: "post",
 	path: "/logout",
 	auth: AuthScope.TokenOnly,
+	noUpdateSessions: true,
 	async handleRequest({ res, timer, session }) {
-		await Promise.all([
-			revokeAccessToken(session.access_token),
-			deleteSession(session.access_token),
-		]);
+		// while there's nothing strictly stoppping these functions being executed in parallel via
+		// Promise.all(...), if something were to go wrong with access token revocation it would be
+		// best not to delete it from the database
 
-		timer.finished(revokeAccessToken, deleteSession);
+		{
+			using _ = timer.create(revokeAccessToken);
 
-		timer.addTo(res);
+			await revokeAccessToken(session.access_token);
+		}
 
-		res.sendStatus(200);
+		{
+			using _ = timer.create(deleteUserSession);
+
+			await deleteUserSession(session.access_token);
+		}
+
+		timer.addTo(res).sendStatus(200);
 	},
 };

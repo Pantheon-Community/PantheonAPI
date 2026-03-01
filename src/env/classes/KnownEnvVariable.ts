@@ -6,7 +6,7 @@ import { BaseEnvVariable } from "./BaseEnvVariable";
  * These are made after validating an **InitialEnvVariable**.
  */
 export class KnownEnvVariable<T> extends BaseEnvVariable {
-	public value: T;
+	public readonly value: T;
 
 	public constructor(key: string, value: T) {
 		super(key);

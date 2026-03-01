@@ -16,7 +16,7 @@ interface SecondaryRequestErrorObject extends SiteErrorObject {
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/502 MDN Reference}
  */
 export class SecondaryRequestError extends SiteError<SecondaryRequestErrorObject> {
-	protected override statusCode = 501; // Bad Gateway (see JSDoc comment above)
+	protected override statusCode = 501; // bad gateway (see JSDoc comment above)
 
 	public constructor(baseError: SiteErrorObject, cause: unknown) {
 		const payload: SecondaryRequestErrorObject = { ...baseError };

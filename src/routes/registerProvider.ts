@@ -1,13 +1,18 @@
 import type { Request, Response } from "express";
-import { getSession } from "@/databases/sessionModel/getSession";
-import { getSessionAndUser } from "@/databases/sessionModel/getSessionAndUser";
-import { updateUserLastSeenAt } from "@/databases/userModel/updateUserLastSeenAt";
+import { updateUserAnalytics } from "@/databases/userAnalytics/updateUserAnalytics";
+import { getUserSession } from "@/databases/userSessions/getUserSession";
+import { getUserSessionAndUser } from "@/databases/userSessions/getUserSessionAndUser";
+import type { UserSessionModel } from "@/databases/userSessions/model/userSessionsModel";
+import { updateUserSession } from "@/databases/userSessions/updateUserSession";
+import type { UserModel } from "@/databases/users/model/userModel";
+import { doInBackground } from "@/databases/utils/doInBackground";
 import { MissingTokenError } from "@/errors/UnauthorizedError";
 import { app } from "@/global/app";
-import type { UserToken } from "@/shared/types/Common";
+import type { DiscordId, UserToken } from "@/shared/types/Common";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 import { getIp } from "@/utils/getIp";
+import { getUserAgent } from "@/utils/getUserAgent";
 import { ServerTimer } from "@/utils/serverTimer";
 
 function getToken(req: Request): UserToken | null {
@@ -26,9 +31,23 @@ function getToken(req: Request): UserToken | null {
 	return value.trim() as UserToken;
 }
 
+function updateUserAnalyticsInBackground(id: DiscordId, req: Request): void {
+	doInBackground(updateUserAnalytics, id, getIp(req), getUserAgent(req));
+}
+
+function realUserSessionBackgroundUpdater(token: UserToken, req: Request): void {
+	doInBackground(updateUserSession, token, getIp(req), getUserAgent(req));
+}
+
+function fakeUserSessionBackgroundUpdater(): void {}
+
 // biome-ignore lint/suspicious/noExplicitAny: unknown just doesn't work as a default here
 export function registerProvider(provider: EndpointProvider<any, any, any, any>): void {
 	let handler: (req: Request, res: Response, timer: ServerTimer) => Promise<void>;
+
+	const updateUserSessionInBackground = provider.noUpdateSessions
+		? fakeUserSessionBackgroundUpdater
+		: realUserSessionBackgroundUpdater;
 
 	switch (provider.auth) {
 		case AuthScope.None:
@@ -43,11 +62,16 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 					throw new MissingTokenError();
 				}
 
-				const session = await getSession(token);
+				let session: UserSessionModel;
 
-				timer.finished(getSession);
+				{
+					using _ = timer.create(getUserSession);
 
-				updateUserLastSeenAt(session.user_id, getIp(req));
+					session = await getUserSession(token);
+				}
+
+				updateUserAnalyticsInBackground(session.user_id, req);
+				updateUserSessionInBackground(token, req);
 
 				await provider.handleRequest({ req, res, timer, session });
 			};
@@ -59,15 +83,25 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 
 				if (token === null) {
 					await provider.handleRequest({ req, res, timer, session: null, user: null });
-				} else {
-					const sessionAndUser = await getSessionAndUser(token);
-
-					timer.finished(getSessionAndUser);
-
-					updateUserLastSeenAt(sessionAndUser.user.id, getIp(req));
-
-					await provider.handleRequest({ req, res, timer, ...sessionAndUser });
+					return;
 				}
+
+				let session: UserSessionModel;
+				let user: UserModel;
+
+				{
+					using _ = timer.create(getUserSessionAndUser);
+
+					const result = await getUserSessionAndUser(token);
+
+					session = result.session;
+					user = result.user;
+				}
+
+				updateUserAnalyticsInBackground(user.id, req);
+				updateUserSessionInBackground(token, req);
+
+				await provider.handleRequest({ req, res, timer, session, user });
 			};
 			break;
 
@@ -79,13 +113,22 @@ export function registerProvider(provider: EndpointProvider<any, any, any, any>)
 					throw new MissingTokenError();
 				}
 
-				const sessionAndUser = await getSessionAndUser(token);
+				let session: UserSessionModel;
+				let user: UserModel;
 
-				timer.finished(getSessionAndUser);
+				{
+					using _ = timer.create(getUserSessionAndUser);
 
-				updateUserLastSeenAt(sessionAndUser.user.id, getIp(req));
+					const result = await getUserSessionAndUser(token);
 
-				await provider.handleRequest({ req, res, timer, ...sessionAndUser });
+					session = result.session;
+					user = result.user;
+				}
+
+				updateUserAnalyticsInBackground(user.id, req);
+				updateUserSessionInBackground(token, req);
+
+				await provider.handleRequest({ req, res, timer, session, user });
 			};
 			break;
 

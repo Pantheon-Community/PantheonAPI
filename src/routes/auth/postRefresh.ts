@@ -1,9 +1,13 @@
-import { updateSession } from "@/databases/sessionModel/updateSession";
-import { upsertUser } from "@/databases/userModel/upsertUser";
-import { fetchMe } from "@/discord/fetchMe";
-import { fetchMySteamConnections } from "@/discord/fetchMeSteamConnections";
-import { refreshAccessToken } from "@/discord/refreshAccessToken";
+import { replaceUserSession } from "@/databases/userSessions/replaceUserSession";
+import { convertToUser } from "@/databases/users/model/convertToUser";
+import { upsertUser } from "@/databases/users/upsertUser";
+import { refreshAccessToken } from "@/discord/auth/refreshAccessToken";
+import { fetchMe } from "@/discord/main/fetchMe";
+import { steamConnectionUsersService } from "@/services/steamConnectionUsersService";
 import type { AuthResponse } from "@/shared/types/AuthResponse";
+import type { SteamUser } from "@/shared/types/SteamUser";
+import type { User } from "@/shared/types/User";
+import type { DiscordAuthData, DiscordUser } from "@/types/Discord";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { EndpointProvider } from "@/types/Express/EndpointProvider";
 import { getIp } from "@/utils/getIp";
@@ -13,31 +17,61 @@ export const postRefresh: EndpointProvider<void, AuthResponse> = {
 	method: "post",
 	path: "/refresh",
 	auth: AuthScope.TokenOnly,
+	noUpdateSessions: true,
 	async handleRequest({ req, res, timer, session }) {
-		const authData = await refreshAccessToken(session.refresh_token);
+		// 1. refresh Discord login
 
-		timer.finished(refreshAccessToken);
+		let authData: DiscordAuthData;
 
-		const token = authData.access_token;
+		{
+			using _ = timer.create(refreshAccessToken);
 
-		const ip = getIp(req);
+			authData = await refreshAccessToken(session.refresh_token);
+		}
 
-		const [discordData, steamConnections] = await Promise.all([
-			fetchMe(token),
-			fetchMySteamConnections(token),
-		]);
+		// 2. refetch Discord data
 
-		timer.finished(fetchMe, fetchMySteamConnections);
+		let discordUser: DiscordUser;
+		let steamUsers: SteamUser[];
 
-		const [user] = await Promise.all([
-			upsertUser(discordData, steamConnections.at(0), ip),
-			updateSession(session, authData, ip, getUserAgent(req)),
-		]);
+		{
+			using _ = timer.create(fetch, steamConnectionUsersService);
 
-		timer.finished(upsertUser, updateSession);
+			const result = await Promise.all([
+				fetchMe(authData.accessToken),
+				steamConnectionUsersService(authData.accessToken),
+			]);
 
-		timer.addTo(res);
+			discordUser = result[0];
+			steamUsers = result[1];
+		}
 
-		res.status(200).json({ user, steamConnections, expiresIn: authData.expires_in, token });
+		// 3. upsert user and replace existing session
+
+		let user: User;
+
+		{
+			using _ = timer.create(upsertUser, replaceUserSession);
+
+			const ip = getIp(req);
+
+			const userAgent = getUserAgent(req);
+
+			const [rawUser] = await Promise.all([
+				upsertUser(discordUser, steamUsers.at(0)?.id ?? null),
+				replaceUserSession(session, authData, ip, userAgent),
+			]);
+
+			user = convertToUser(rawUser, steamUsers.at(0) ?? null);
+		}
+
+		// done!
+
+		timer.addTo(res).status(200).json({
+			user,
+			steamUsers,
+			expiresAt: authData.expiresAt.toISOString(),
+			token: authData.accessToken,
+		});
 	},
 };

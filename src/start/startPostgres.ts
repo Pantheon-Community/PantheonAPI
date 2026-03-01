@@ -1,11 +1,13 @@
 import process from "node:process";
 import { SQL } from "bun";
 import { schedule } from "node-cron";
-import { createSessionTable } from "@/databases/sessionModel/base/createSessionTable";
-import { deleteExpiredSessions } from "@/databases/sessionModel/deleteExpiredSessions";
-import { createUserTable } from "@/databases/userModel/base/createUserTable";
+import { createSteamUsersTable } from "@/databases/steamUsers/model/createSteamUsersTable";
+import { createUserAnalyticsTable } from "@/databases/userAnalytics/model/createUserAnalyticsTable";
+import { createUserSessionsTable } from "@/databases/userSessions/model/createUserSessionsTable";
+import { createUsersTable } from "@/databases/users/model/createUsersTable";
 import { config } from "@/global/config";
 import { setPg } from "@/global/pg";
+import { userSessionExpirationTask } from "@/tasks/userSessionExpirationTask";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
 import { log, logWithTimeTaken } from "@/utils/logging";
@@ -68,30 +70,21 @@ async function connectToPostgres(): Promise<void> {
 async function setupTables(): Promise<void> {
 	const startedAt = Date.now();
 
-	await createUserTable();
+	await createSteamUsersTable();
 
-	await createSessionTable();
+	await createUsersTable();
+
+	await Promise.all([createUserSessionsTable(), createUserAnalyticsTable()]);
 
 	logWithTimeTaken("Setup Database Tables", startedAt);
 }
 
 function scheduleTasks(): void {
-	let isDeletingExpiredSessions = false;
+	schedule("0 0 * * *", userSessionExpirationTask);
 
-	schedule("* * * * *", async () => {
-		if (isDeletingExpiredSessions) return;
-
-		isDeletingExpiredSessions = true;
-
-		try {
-			await deleteExpiredSessions();
-		} catch (error) {
-			log(colorize("Error deleting expired sessions", Color.FgRed));
-			console.error(error);
-		} finally {
-			isDeletingExpiredSessions = false;
-		}
-	});
+	if (config.dev.immediateSchedules) {
+		userSessionExpirationTask().catch(console.error);
+	}
 }
 
 export async function startPostgres(): Promise<void> {

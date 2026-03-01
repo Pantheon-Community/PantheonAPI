@@ -59,24 +59,26 @@ export class StringEnvVariable extends KnownEnvVariable<string> {
 	 * @example "3000:5000"
 	 */
 	public isPort(): NumericEnvVariable {
-		// Ignore host port if in a container.
-		if (this.value.includes(":")) {
-			this.value = this.value.split(":").at(-1) ?? this.value;
+		let value = this.value;
+
+		// ignore host port if in a container.
+		if (value.includes(":")) {
+			value = value.split(":").at(-1) ?? this.value;
 		}
 
 		// TCP/UDP ports are 16-bit unsigned integers, so:
-		// Min value = 0 (dynamically assigned port)
-		// Max value = 2 ^ 16 - 1 = 65,535
-		return this.isInteger().minValue(0).maxValue(65_535);
+		// min value = 0 (signifies a dynamically assigned port)
+		// max value = 2 ^ 16 - 1 = 65535
+		return new StringEnvVariable(this.key, value).isInteger().minValue(0).maxValue(65_535);
 	}
 
 	/** Ensures this string can be parsed into a comma-separated list of strings. */
 	public isCommaSeparatedList(): ListEnvVariable<StringEnvVariable> {
 		const values = this.value
 			.split(",")
-			.map((item) => item.trim())
-			.filter((x) => x.length > 0)
-			.map((item, index) => new StringEnvVariable(`${this.key}[${index}]`, item));
+			.map((value) => value.trim())
+			.filter((value) => value.length > 0)
+			.map((value, index) => new StringEnvVariable(`${this.key}[${index}]`, value));
 
 		return new ListEnvVariable(this.key, values);
 	}
@@ -99,5 +101,17 @@ export class StringEnvVariable extends KnownEnvVariable<string> {
 		}
 
 		return this;
+	}
+
+	/** Ensures this string can be parsed to a valid boolean value. */
+	public isBoolean(): KnownEnvVariable<boolean> {
+		switch (this.value.toLowerCase()) {
+			case "true":
+				return new KnownEnvVariable(this.key, true);
+			case "false":
+				return new KnownEnvVariable(this.key, false);
+			default:
+				throw new Error(`${this.named()} must be either "true" or "false"`);
+		}
 	}
 }

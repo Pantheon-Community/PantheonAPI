@@ -1,10 +1,10 @@
 import { KnownEnvVariable } from "./KnownEnvVariable";
 
 export class NumericEnvVariable extends KnownEnvVariable<number> {
-	/** Converts this number to {@link Number.POSITIVE_INFINITY} if it is equal to 0. */
-	public zeroMeansInfinity(): this {
+	/** Converts this number to {@link Number.POSITIVE_INFINITY infinity} if it is equal to 0. */
+	public zeroMeansInfinity(): NumericEnvVariable {
 		if (this.value === 0) {
-			this.value = Number.POSITIVE_INFINITY;
+			return new NumericEnvVariable(this.key, Number.POSITIVE_INFINITY);
 		}
 
 		return this;

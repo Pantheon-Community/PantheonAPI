@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import type { SessionModel } from "@/databases/sessionModel/base/SessionModel";
+import type { UserSessionModel } from "@/databases/userSessions/model/userSessionsModel";
+import type { UserModel } from "@/databases/users/model/userModel";
 import type { PluginToken } from "@/shared/types/Common";
-import type { User } from "@/shared/types/User";
 import type { ServerTimer } from "@/utils/serverTimer";
 
 export interface NoAuthHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams> {
@@ -14,12 +14,12 @@ export interface NoAuthHandlerArgs<RequestBody, ResponseBody, PathParams, QueryP
 
 export interface TokenOnlyHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>
 	extends NoAuthHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams> {
-	session: SessionModel;
+	session: UserSessionModel;
 }
 
 export interface UserHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>
 	extends TokenOnlyHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams> {
-	user: User;
+	user: UserModel;
 }
 
 interface NoUserHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>

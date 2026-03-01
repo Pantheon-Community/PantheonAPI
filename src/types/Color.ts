@@ -8,7 +8,7 @@ export enum Color {
 	Reverse = "\x1b[7m",
 	Hidden = "\x1b[8m",
 
-	// Foreground (Text)
+	// foreground (text)
 
 	FgBlack = "\x1b[30m",
 	FgRed = "\x1b[31m",
@@ -19,7 +19,7 @@ export enum Color {
 	FgCyan = "\x1b[36m",
 	FgWhite = "\x1b[37m",
 
-	// Background
+	// background
 
 	BgBlack = "\x1b[40m",
 	BgRed = "\x1b[41m",

@@ -10,7 +10,7 @@ export function validatorErrorHandler(): ErrorRequestHandler {
 			return;
 		}
 
-		// I love non-conformant validation libraries, so cool!
+		// I love non-spec-conformant validation libraries, so cool!
 		switch (err.message) {
 			case "not found":
 				res.status(404).send(

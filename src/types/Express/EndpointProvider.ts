@@ -21,6 +21,18 @@ interface EndpointProviderBase<
 
 	auth: Auth;
 
+	/**
+	 * If `true`, background updates to the relevant user session will not be triggered when this
+	 * endpoint is called.
+	 *
+	 * Only relevant for the {@link AuthScope.TokenOnly TokenOnly},
+	 * {@link AuthScope.OptionalUser OptionalUser}, and {@link AuthScope.User User} auth scopes.
+	 *
+	 * This is needed if the endpoint modifies or deletes the user session (such as refreshing or
+	 * logging out), which could conflict with background updates to it.
+	 */
+	noUpdateSessions?: true;
+
 	/** Entry point for handling requests. */
 	handleRequest({ req, res }: HandlerArgs): Promise<void> | void;
 }

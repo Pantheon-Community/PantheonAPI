@@ -14,7 +14,7 @@ interface ForbiddenErrorObject extends SiteErrorObject {
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403 MDN Reference}
  */
 abstract class ForbiddenError extends SiteError<ForbiddenErrorObject> {
-	protected override statusCode = 403; // Forbidden
+	protected override statusCode = 403; // forbidden
 }
 
 export class MissingPermissionError extends ForbiddenError {

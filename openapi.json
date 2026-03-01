@@ -34,7 +34,9 @@
     "paths": {
         "/": {
             "get": {
-                "tags": ["Miscellaneous"],
+                "tags": [
+                    "Miscellaneous"
+                ],
                 "operationId": "getRoot",
                 "responses": {
                     "200": {
@@ -54,7 +56,9 @@
         },
         "/ip": {
             "get": {
-                "tags": ["Miscellaneous"],
+                "tags": [
+                    "Miscellaneous"
+                ],
                 "operationId": "getIp",
                 "description": "IP address information endpoint, useful for debugging proxies.",
                 "responses": {
@@ -62,7 +66,9 @@
                         "description": "IP address of request, may be `::` if viewing from the same network.",
                         "content": {
                             "text/html": {
-                                "example": "123.123.123.123"
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ip"
+                                }
                             }
                         }
                     },
@@ -77,7 +83,9 @@
         },
         "/spec": {
             "get": {
-                "tags": ["Miscellaneous"],
+                "tags": [
+                    "Miscellaneous"
+                ],
                 "responses": {
                     "200": {
                         "description": "OpenAPI specification for the FoundationX API.",
@@ -90,7 +98,9 @@
         },
         "/api-docs": {
             "get": {
-                "tags": ["Miscellaneous"],
+                "tags": [
+                    "Miscellaneous"
+                ],
                 "responses": {
                     "200": {
                         "description": "This document.",
@@ -103,7 +113,9 @@
         },
         "/login": {
             "post": {
-                "tags": ["Auth"],
+                "tags": [
+                    "Auth"
+                ],
                 "operationId": "postLogin",
                 "description": "Endpoint for completing the Discord OAuth2 login flow.",
                 "requestBody": {
@@ -121,14 +133,17 @@
                                     }
                                 },
                                 "additionalProperties": false,
-                                "required": ["code", "redirectUri"]
+                                "required": [
+                                    "code",
+                                    "redirectUri"
+                                ]
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "A successful login/signup response, contains user data and a token for making elevated requests to the API.",
+                        "description": "User data and a token for making elevated requests to the API.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -151,13 +166,19 @@
         },
         "/refresh": {
             "post": {
-                "tags": ["Auth"],
+                "tags": [
+                    "Auth"
+                ],
                 "operationId": "postRefresh",
-                "security": [{ "userToken": [] }],
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
                 "description": "Endpoint for refreshing an existing OAuth2 session.",
                 "responses": {
                     "200": {
-                        "description": "A successful login/signup response, contains user data and a token for making elevated requests to the API.",
+                        "description": "User data and a token for making elevated requests to the API.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -183,13 +204,19 @@
         },
         "/logout": {
             "post": {
-                "tags": ["Auth"],
+                "tags": [
+                    "Auth"
+                ],
                 "operationId": "postLogout",
-                "security": [{ "userToken": [] }],
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
                 "description": "Endpoint for ending an existing OAuth2 session.",
                 "responses": {
                     "200": {
-                        "description": "A successful logout response."
+                        "description": "No data."
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequestError400"
@@ -208,9 +235,15 @@
         },
         "/users/@me": {
             "get": {
-                "tags": ["User"],
+                "tags": [
+                    "User"
+                ],
                 "operationId": "getMe",
-                "security": [{ "userToken": [] }],
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
                 "description": "Endpoint for getting information about the currently logged-in user.\n\nNote that the `/login` endpoint returns a superset of this information, so you do not need to call this after logging in.",
                 "responses": {
                     "200": {
@@ -218,7 +251,28 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/User"
+                                    "type": "object",
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "steamUsers": {
+                                            "type": "array",
+                                            "description": "All the Steam connections for this user, including their main one.",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SteamUser"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "user",
+                                        "steamUsers"
+                                    ],
+                                    "externalDocs": {
+                                        "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/GetMeResponse.ts",
+                                        "description": "types/GetMeResponse.ts"
+                                    }
                                 }
                             }
                         }
@@ -231,6 +285,9 @@
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
+                    },
+                    "501": {
+                        "$ref": "#/components/responses/SecondaryRequestError501"
                     }
                 }
             }
@@ -257,7 +314,6 @@
                                     "type": "array",
                                     "items": {
                                         "type": "object",
-                                        "additionalProperties": false,
                                         "properties": {
                                             "path": {
                                                 "type": "string"
@@ -266,14 +322,19 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["path", "message"]
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "path",
+                                            "message"
+                                        ]
                                     }
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "example": {
                             "title": "Invalid Origin",
-                            "description": "The origin header of your request (\"https://example.com\") isn't in the approvied client URLs list."
+                            "description": "The origin header of your request (\"https://example.com\") isn't in the approved client URLs list."
                         }
                     }
                 }
@@ -293,7 +354,8 @@
                                 "missingPermissions": {
                                     "$ref": "#/components/schemas/PermissionsObject"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "example": {
                             "title": "Missing Permissions",
@@ -335,7 +397,8 @@
                                     "type": "string",
                                     "description": "Upstream error description, if applicable."
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "example": {
                             "title": "Token Request Failure",
@@ -362,7 +425,8 @@
                 "headers": {
                     "WWW-Authenticate": {
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "example": "Bearer"
                         }
                     }
                 }
@@ -375,7 +439,6 @@
                         "schema": {
                             "type": "string",
                             "example": "\"30-in-1min\"; r=27; t=54"
-
                         },
                         "description": "- 'r' (remaining) = number of requests you can currently make before getting rate limited.\n- 't' = number of seconds until the next rate limit reset."
                     },
@@ -397,26 +460,6 @@
             }
         },
         "schemas": {
-            "SiteErrorObject": {
-                "type": "object",
-                "properties": {
-                    "title": {
-                        "type": "string",
-                        "description": "The error described in a few words.",
-                        "example": "User Not Found"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "A sentence that explains how the error occurred.",
-                        "example": "A user with this ID does not exist in the database."
-                    }
-                },
-                "required": ["title", "description"],
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SiteErrorObject.ts",
-                    "description": "types/SiteErrorObject.ts"
-                }
-            },
             "EconomyPermissions": {
                 "type": "integer",
                 "minimum": 0,
@@ -436,8 +479,7 @@
                 }
             },
             "PermissionsObject": {
-                "type" :"object",
-                "additionalProperties": false,
+                "type": "object",
                 "properties": {
                     "generalPermissions": {
                         "$ref": "#/components/schemas/GeneralPermissions"
@@ -446,6 +488,7 @@
                         "$ref": "#/components/schemas/EconomyPermissions"
                     }
                 },
+                "additionalProperties": false,
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/PermissionsObject.ts",
                     "description": "types/Permissions/PermissionsObject.ts"
@@ -453,26 +496,31 @@
             },
             "AuthResponse": {
                 "type": "object",
-                "required": ["user", "steamConnections", "expiresIn", "token"],
-                "additionalProperties": false,
                 "properties": {
                     "user": {
                         "$ref": "#/components/schemas/User"
                     },
-                    "steamConnections": {
+                    "steamUsers": {
                         "type": "array",
+                        "description": "All the Steam connections for this user, including their main one.",
                         "items": {
-                            "$ref": "#/components/schemas/SteamConnection"
+                            "$ref": "#/components/schemas/SteamUser"
                         }
                     },
-                    "expiresIn": {
-                        "type": "integer",
-                        "description": "Seconds until session expires."
+                    "expiresAt": {
+                        "$ref": "#/components/schemas/IsoString"
                     },
                     "token": {
                         "$ref": "#/components/schemas/UserToken"
                     }
                 },
+                "additionalProperties": false,
+                "required": [
+                    "user",
+                    "steamUsers",
+                    "expiresAt",
+                    "token"
+                ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/AuthResponse.ts",
                     "description": "types/AuthResponse.ts"
@@ -526,36 +574,97 @@
                     "description": "types/Common.ts"
                 }
             },
-            "SteamConnection": {
+            "Ip": {
+                "type": "string",
+                "description": "An IP address, not uniformly structured!",
+                "example": "152.143.112.125",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "UserAgent": {
+                "type": "string",
+                "description": "Browser and other software information.\n\n[MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent)",
+                "example": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "SiteErrorObject": {
                 "type": "object",
-                "required": ["id", "username"],
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "The error described in a few words.",
+                        "example": "User Not Found"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A sentence that explains how the error occurred.",
+                        "example": "A user with this ID does not exist in the database."
+                    }
+                },
+                "required": [
+                    "title",
+                    "description"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SiteErrorObject.ts",
+                    "description": "types/SiteErrorObject.ts"
+                }
+            },
+            "SteamUser": {
+                "type": "object",
+                "description": "Steam user information, sourced from either in-game player info or Discord user connections.\n\nNote that tracking fields (**firstSeenAt**, **lastSeenAt**, and **timesSeen**) are only updated from in-game player info - never from Discord user conections. This is because in-game activity is much more useful to us than website activity.",
                 "properties": {
                     "id": {
                         "$ref": "#/components/schemas/SteamId64"
                     },
                     "username": {
                         "type": "string"
-                    }
-                },
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamConnection.ts",
-                    "description": "types/SteamConnection.ts"
-                }
-            },
-            "UserMeta": {
-                "type": "object",
-                "properties": {
+                    },
                     "firstSeenAt": {
-                        "$ref": "#/components/schemas/IsoString"
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/IsoString"
+                            },
+                            {
+                                "type": "string",
+                                "nullable": true
+                            }
+                        ],
+                        "description": "When this Steam ID was first seen in-game."
                     },
                     "lastSeenAt": {
-                        "$ref": "#/components/schemas/IsoString"
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/IsoString"
+                            },
+                            {
+                                "type": "string",
+                                "nullable": true
+                            }
+                        ],
+                        "description": "When this Steam ID was last seen in-game."
+                    },
+                    "timesSeen": {
+                        "type": "integer",
+                        "description": "Number of times this Steam ID has been seen in-game."
                     }
                 },
-                "required": ["firstSeenAt", "lastSeenAt"],
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "username",
+                    "firstSeenAt",
+                    "lastSeenAt",
+                    "timesSeen"
+                ],
                 "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
-                    "description": "types/User.ts"
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
+                    "description": "types/SteamUser.ts"
                 }
             },
             "User": {
@@ -571,41 +680,103 @@
                         "type": "string",
                         "nullable": true
                     },
-                    "latestIp": {
-                        "type": "string"
-                    },
-                    "sessionCount": {
-                        "type": "integer",
-                        "description": "Number of times a session has been created or refreshed for this user."
-                    },
                     "steam": {
-                        "type": "object",
-                        "allOf": [
+                        "anyOf": [
                             {
-                                "$ref": "#/components/schemas/SteamConnection"
-                            }
-                        ],
-                        "nullable": true
-                    },
-                    "meta": {
-                        "$ref": "#/components/schemas/UserMeta"
-                    },
-                    "steamMeta": {
-                        "type": "object",
-                        "allOf": [
+                                "$ref": "#/components/schemas/SteamUser"
+                            },
                             {
-                                "$ref": "#/components/schemas/UserMeta"
+                                "type": "object",
+                                "nullable": true
                             }
-                        ],
-                        "nullable": true
-                    },
-                    "permissions": {
-                        "$ref": "#/components/schemas/PermissionsObject"
+                        ]
                     }
                 },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "username",
+                    "avatar"
+                ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
                     "description": "types/User.ts"
+                }
+            },
+            "UserAnalytics": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    },
+                    "firstSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "lastSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "ip": {
+                        "$ref": "#/components/schemas/Ip"
+                    },
+                    "userAgent": {
+                        "$ref": "#/components/schemas/UserAgent"
+                    },
+                    "lifetimeActionCount": {
+                        "type": "integer",
+                        "description": "This does not include the creation or refreshing of sessions."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "firstSeenAt",
+                    "lastSeenAt"
+                ]
+            },
+            "UserSession": {
+                "type": "object",
+                "properties": {
+                    "accessToken": {
+                        "$ref": "#/components/schemas/UserToken"
+                    },
+                    "refreshToken": {
+                        "$ref": "#/components/schemas/UserToken"
+                    },
+                    "startedAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "expiresAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "timesRefreshed": {
+                        "type": "integer"
+                    },
+                    "userId": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    },
+                    "ip": {
+                        "$ref": "#/components/schemas/Ip"
+                    },
+                    "userAgent": {
+                        "$ref": "#/components/schemas/UserAgent"
+                    },
+                    "actionCount": {
+                        "type": "integer",
+                        "description": "This does not include the creation or refreshing of the session."
+                    },
+                    "lastActionAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "startedAt",
+                    "ip",
+                    "userAgent"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserSession.ts",
+                    "description": "types/UserSession.ts"
                 }
             }
         }

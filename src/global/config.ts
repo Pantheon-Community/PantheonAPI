@@ -74,4 +74,19 @@ export const config = {
 
 		port: readFromEnv("DB_PORT", (port) => port.isRequired().isPort()),
 	},
+
+	/** Development-related flags. */
+	dev: {
+		/**
+		 * For an improved debugging experience, setting this to true will monkey patch timer setup
+		 * and teardown to log what is being timed.
+		 */
+		logTimers: readFromEnv("DEV_LOG_TIMERS", (env) =>
+			env.hasDefaultValueOf("false").isBoolean(),
+		),
+
+		immediateSchedules: readFromEnv("DEV_IMMEDIATE_SCHEDULES", (env) =>
+			env.hasDefaultValueOf("false").isBoolean(),
+		),
+	},
 } as const;

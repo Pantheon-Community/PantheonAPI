@@ -20,14 +20,14 @@ export interface InvalidRequestErrorObject extends SiteErrorObject {
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/400 MDN Reference}
  */
 abstract class BadRequestError extends SiteError<InvalidRequestErrorObject> {
-	protected override statusCode = 400; // Bad Request
+	protected override statusCode = 400; // bad request
 }
 
 export class InvalidOriginError extends BadRequestError {
 	public constructor(origin: string) {
 		super({
 			title: "Invalid Origin",
-			description: `The origin header of your request ("${origin}") isn't in the approvied client URLs list.`,
+			description: `The origin header of your request ("${origin}") isn't in the approved client URLs list.`,
 		});
 	}
 }

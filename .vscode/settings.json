@@ -8,5 +8,11 @@
             "source.fixAll.biome": "explicit",
             "source.removeUnusedImports": "explicit"
         }
-    }
+    },
+    "[json]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "json.validate.enable": true,
+    "json.format.enable": true
 }

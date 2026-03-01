@@ -8,7 +8,7 @@ import { SiteError } from "./SiteError";
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401 MDN Reference}
  */
 abstract class UnauthorizedError extends SiteError {
-	protected override statusCode = 401; // Unauthorized
+	protected override statusCode = 401; // unauthorized
 
 	public override makeResponse(res: Response): void {
 		res.setHeader("WWW-Authenticate", "Bearer");
