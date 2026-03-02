@@ -5,6 +5,7 @@ import { serve, setup } from "swagger-ui-express";
 import { app } from "@/global/app";
 import { config } from "@/global/config";
 import { authRoutes } from "./auth/authRoutes";
+import { lookupRoutes } from "./lookup/lookupRoutes";
 import { miscRoutes } from "./miscellaneous/miscRoutes";
 import { registerProvider } from "./registerProvider";
 import { userRoutes } from "./user/userRoutes";
@@ -48,7 +49,7 @@ export function addStaticRoutes(): void {
 
 /** Adds normal routes to the app. */
 export function addRoutes(): void {
-	for (const provider of [...authRoutes, ...miscRoutes, ...userRoutes]) {
+	for (const provider of [...authRoutes, ...miscRoutes, ...userRoutes, ...lookupRoutes]) {
 		registerProvider(provider);
 	}
 }

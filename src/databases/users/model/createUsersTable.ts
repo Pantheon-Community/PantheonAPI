@@ -10,4 +10,6 @@ export async function createUsersTable(): Promise<void> {
             steam_id ${Column.SteamId64} REFERENCES steam_users(id)
         )
     `);
+
+	await pg`CREATE INDEX IF NOT EXISTS idx_users_steam_id ON users(steam_id)`;
 }

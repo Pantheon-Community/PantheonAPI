@@ -12,12 +12,6 @@ export function postgresErrorHandler(): ErrorRequestHandler {
 		}
 
 		if (!(err.cause instanceof SQL.PostgresError)) {
-			log(
-				`${colorize(
-					`${req.method} ${req.url}`,
-					Color.FgRed,
-				)} >> Unwrapped SQL-related method detected`,
-			);
 			next(err);
 			return;
 		}
