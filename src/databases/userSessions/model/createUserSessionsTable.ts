@@ -17,6 +17,8 @@ export async function createUserSessionsTable(): Promise<void> {
         )
     `);
 
-	// TODO: searching sessions via user id
-	await pg`CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)`;
+	await Promise.all([
+		pg`CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at)`,
+		pg`CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)`,
+	]);
 }
