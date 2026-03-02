@@ -9,7 +9,7 @@ const commit = config.commitHash ? colorize(config.commitHash.slice(0, 7), Color
 
 const environment = colorize(config.environment, Color.FgCyan);
 
-if (config !== null) {
+if (commit !== null) {
 	log(`Running in ${environment} (commit ${commit})`);
 } else {
 	log(`Running in ${environment}`);
