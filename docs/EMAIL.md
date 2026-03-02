@@ -2,7 +2,7 @@
 
 The one-stop guide to setting up your own **pantheoncommunity.org** email address! If you don't use gmail this guide will still help you, things will just look a little different.
 
-1. Go to your gmail inbox and press **See all settings**
+1. Go to [your gmail inbox](https://mail.google.com/mail) and press **See all settings**
 
 ![image](./images/email_0.png)
 
