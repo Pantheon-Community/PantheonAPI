@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: HTTP Headers */
-
 import { type APIConnection, ConnectionService, RouteBases } from "discord-api-types/v10";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import type { SteamId64, UserToken } from "@/shared/types/Common";

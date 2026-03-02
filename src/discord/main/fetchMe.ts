@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: HTTP Headers */
-
 import { RouteBases } from "discord-api-types/v10";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import type { UserToken } from "@/shared/types/Common";

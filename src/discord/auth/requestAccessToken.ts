@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: HTTP Headers */
-
 import { OAuth2Routes, type RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import type { DiscordAuthData } from "@/types/Discord";
