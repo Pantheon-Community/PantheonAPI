@@ -2,6 +2,7 @@ import { json } from "express";
 import { app } from "@/global/app";
 import { config } from "@/global/config";
 import { corsMiddleware } from "./corsMiddleware";
+import { postgresErrorHandler } from "./postgresErrorHandler";
 import { rateLimitingMiddleware } from "./rateLimitingMiddleware";
 import { devSiteErrorHandler, siteErrorHandler } from "./siteErrorHandler";
 import { validationMiddleware } from "./validationMiddleware";
@@ -23,4 +24,5 @@ export function attachPostRouteMiddleware(): void {
 	}
 
 	app.use(siteErrorHandler());
+	app.use(postgresErrorHandler());
 }

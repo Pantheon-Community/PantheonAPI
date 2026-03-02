@@ -1,10 +1,17 @@
 import { NotFoundError } from "@/errors/NotFoundError";
 import { pg } from "@/global/pg";
 import type { SteamId64 } from "@/shared/types/Common";
+import { wrapPgError } from "../utils/handlePgError";
 import type { SteamUserModel } from "./model/steamUserModel";
 
 export async function getSteamUserById(id: SteamId64): Promise<SteamUserModel> {
-	const result = await pg<SteamUserModel[]>`SELECT * FROM steam_users WHERE id = ${id}`;
+	let result: SteamUserModel[];
+
+	try {
+		result = await pg`SELECT * FROM steam_users WHERE id = ${id}`;
+	} catch (error) {
+		throw wrapPgError(error);
+	}
 
 	if (result.length === 0) {
 		throw new NotFoundError({

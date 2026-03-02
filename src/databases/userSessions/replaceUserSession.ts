@@ -1,6 +1,7 @@
 import { pg } from "@/global/pg";
 import type { Ip, UserAgent } from "@/shared/types/Common";
 import type { DiscordAuthData } from "@/types/Discord";
+import { wrapPgError } from "../utils/handlePgError";
 import { deleteUserSession } from "./deleteUserSession";
 import type { UserSessionModel } from "./model/userSessionsModel";
 
@@ -10,8 +11,10 @@ export async function replaceUserSession(
 	ip: Ip,
 	userAgent: UserAgent,
 ): Promise<void> {
-	await Promise.allSettled([
-		pg<[UserSessionModel]>`
+	await deleteUserSession(oldSession.access_token);
+
+	try {
+		await pg`
             INSERT INTO user_sessions (
                 access_token,
                 refresh_token,
@@ -33,7 +36,8 @@ export async function replaceUserSession(
                 ${userAgent},
                 ${oldSession.action_count}
             )
-        `,
-		deleteUserSession(oldSession.access_token),
-	]);
+        `;
+	} catch (error) {
+		throw wrapPgError(error);
+	}
 }
