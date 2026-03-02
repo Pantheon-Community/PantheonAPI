@@ -30,4 +30,5 @@ jobs:
                       git reset --hard
                       git clean -d --force --quiet
                       git pull --quiet
+                      GIT_COMMIT_HASH=$(git rev-parse --short HEAD)
                       docker compose up --build --detach

@@ -19,4 +19,3 @@ COPY . .
 # Run app
 USER bun
 ENTRYPOINT [ "bun", "." ]
-

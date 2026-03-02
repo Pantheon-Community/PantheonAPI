@@ -5,7 +5,7 @@ import { Color } from "./types/Color";
 import { colorize } from "./utils/colorize";
 import { log } from "./utils/logging";
 
-const commit = config.commitHash ? colorize(config.commitHash.slice(0, 7), Color.FgCyan) : null;
+const commit = config.commitHash ? colorize(config.commitHash, Color.FgCyan) : null;
 
 const environment = colorize(config.environment, Color.FgCyan);
 
