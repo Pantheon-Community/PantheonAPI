@@ -370,6 +370,59 @@
                     }
                 }
             }
+        },
+        "/lookup/steam-to-discord": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "query",
+                    "name": "ids",
+                    "explode": false,
+                    "schema": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 60,
+                        "items": {
+                            "$ref": "#/components/schemas/SteamId64"
+                        }
+                    }
+                }
+            ],
+            "get": {
+                "tags": [
+                    "Lookups"
+                ],
+                "operationId": "getDiscordFromSteam",
+                "security": [],
+                "description": "Endpoint for looking up Discord user info from Steam IDs.",
+                "responses": {
+                    "200": {
+                        "description": "Array of the relevant Discord user(s) for the given Steam IDs.\n\nNote that this does map 1:1 with the given Steam ID array, since a Steam ID can be associated with any number of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserViaSteamLookup"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -771,7 +824,6 @@
                         ]
                     }
                 },
-                "additionalProperties": false,
                 "required": [
                     "id",
                     "username",
@@ -863,6 +915,27 @@
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserSession.ts",
                     "description": "types/UserSession.ts"
                 }
+            },
+            "UserViaSteamLookup": {
+                "type": "object",
+                "description": "User with a Steam ID instead of a full object.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/User"
+                    }
+                ],
+                "properties": {
+                    "steamId": {
+                        "$ref": "#/components/schemas/SteamId64"
+                    }
+                },
+                "required": [
+                    "steamId"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserViaSteamLookup.ts",
+                    "description": "types/UserViaSteamLookup.ts"
+                }
             }
         }
     },
@@ -878,6 +951,10 @@
         {
             "name": "User",
             "description": "User-related functionality."
+        },
+        {
+            "name": "Lookups",
+            "description": "Endpoints used by our other services for Steam and Discord user lookups."
         }
     ]
 }
