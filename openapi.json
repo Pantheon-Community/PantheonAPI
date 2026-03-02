@@ -332,6 +332,44 @@
                     }
                 }
             }
+        },
+        "/users/@me/sessions": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "getMeSessions",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Endpoint for getting all the current sessions of the currently logged-in user.",
+                "responses": {
+                    "200": {
+                        "description": "User sessions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserSession"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -776,6 +814,7 @@
             },
             "UserSession": {
                 "type": "object",
+                "description": "The **accessToken** and **refreshToken** fields are never returned from any endpoints.",
                 "properties": {
                     "accessToken": {
                         "$ref": "#/components/schemas/UserToken"
@@ -812,8 +851,13 @@
                 "additionalProperties": false,
                 "required": [
                     "startedAt",
+                    "expiresAt",
+                    "timesRefreshed",
+                    "userId",
                     "ip",
-                    "userAgent"
+                    "userAgent",
+                    "actionCount",
+                    "lastActionAt"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserSession.ts",
