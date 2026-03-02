@@ -6,7 +6,7 @@ The one-stop guide to setting up your own **pantheoncommunity.org** email addres
 
 ![image](./images/email_0.png)
 
-2. Check the "Reply from the same address" option (if you want) and then press the **Add another email address* button.
+2. Check the "Reply from the same address" option (if you want) and then press the **Add another email address** button.
 
 ![image](./images/email_1.png)
 
@@ -20,7 +20,7 @@ The one-stop guide to setting up your own **pantheoncommunity.org** email addres
 
 ![image](./images/email_4.png)
 
-5. Now confirm the email (if you don't receive one, contact NachoToast).
+1. Now confirm the email (if you don't receive one, check your spam folder maybe?).
 
 ![image](./images/email_5.png)
 
