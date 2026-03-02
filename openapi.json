@@ -3,7 +3,7 @@
     "openapi": "3.0.3",
     "info": {
         "title": "Pantheon API",
-        "description": "Official web API for the Pantheon community server network.",
+        "description": "Official web API for the Pantheon community server network.\n\nFor more information please see the [Github repository](https://github.com/Pantheon-Community/PantheonAPI).",
         "contact": {
             "name": "NachoToast",
             "url": "https://github.com/NachoToast",
