@@ -13,3 +13,7 @@ Centralised API for the Pantheon Community server network.
 [![Docker](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 If you want to set up your own instance, see the [install guide](docs/INSTALL_GUIDE.md).
+
+- API Spec https://api.pantheoncommunity.org/api-docs
+- Types Library https://github.com/Pantheon-Community/PantheonAPI-Types
+- Dev Client https://github.com/Pantheon-Community/PantheonAPI-Client
