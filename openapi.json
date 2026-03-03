@@ -423,6 +423,76 @@
                     }
                 }
             }
+        },
+        "/lookup/discord-to-steam": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "query",
+                    "name": "ids",
+                    "explode": false,
+                    "schema": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 60,
+                        "items": {
+                            "$ref": "#/components/schemas/DiscordId"
+                        }
+                    }
+                }
+            ],
+            "get": {
+                "tags": [
+                    "Lookups"
+                ],
+                "operationId": "getSteamFromDiscord",
+                "security": [],
+                "description": "Endpoint for looking up Steam user info from Discord IDs.",
+                "responses": {
+                    "200": {
+                        "description": "Array of the relevant Steam users for each of the the given Steam IDs.\n\nNote that this does map 1:1 with the given Discord ID array, since a Discord ID may not be associated with any steam users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "discordid": {
+                                                "$ref": "#/components/schemas/DiscordId"
+                                            },
+                                            "steamid": {
+                                                "$ref": "#/components/schemas/SteamId64"
+                                            },
+                                            "steamusername": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "discordid",
+                                            "steamid",
+                                            "steamusername"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -673,7 +743,7 @@
             "DiscordId": {
                 "type": "string",
                 "description": "A Discord ID snowflake.\n\nhttps://discord.com/developers/docs/reference#snowflakes",
-                "example": "909645967081476147",
+                "example": "240312568273436674",
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
                     "description": "types/Common.ts"
@@ -763,8 +833,7 @@
                                 "$ref": "#/components/schemas/IsoString"
                             },
                             {
-                                "type": "string",
-                                "nullable": true
+                                "$ref": "#/components/schemas/Null"
                             }
                         ],
                         "description": "When this Steam ID was first seen in-game."
@@ -775,8 +844,7 @@
                                 "$ref": "#/components/schemas/IsoString"
                             },
                             {
-                                "type": "string",
-                                "nullable": true
+                                "$ref": "#/components/schemas/Null"
                             }
                         ],
                         "description": "When this Steam ID was last seen in-game."
@@ -789,10 +857,7 @@
                 "additionalProperties": false,
                 "required": [
                     "id",
-                    "username",
-                    "firstSeenAt",
-                    "lastSeenAt",
-                    "timesSeen"
+                    "username"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
@@ -818,8 +883,7 @@
                                 "$ref": "#/components/schemas/SteamUser"
                             },
                             {
-                                "type": "object",
-                                "nullable": true
+                                "$ref": "#/components/schemas/Null"
                             }
                         ]
                     }
@@ -936,6 +1000,12 @@
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserViaSteamLookup.ts",
                     "description": "types/UserViaSteamLookup.ts"
                 }
+            },
+            "Null": {
+                "description": "Schema representation of the **null** type.",
+                "type": "object",
+                "nullable": true,
+                "additionalProperties": false
             }
         }
     },
