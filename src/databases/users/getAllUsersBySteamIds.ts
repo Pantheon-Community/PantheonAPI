@@ -13,7 +13,7 @@ export async function getAllUsersBySteamIds(
 	steamIds: SteamId64[],
 ): Promise<UserModelWithSteamId[]> {
 	try {
-		return await pg`SELECT * FROM users WHERE steam_id = ANY(${sql.array(steamIds, "text")})`;
+		return await pg`SELECT * FROM users WHERE steam_id = ANY(${sql.array(steamIds, "TEXT")})`;
 	} catch (error) {
 		throw wrapPgError(error);
 	}
