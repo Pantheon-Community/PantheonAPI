@@ -1,10 +1,6 @@
-# PantheonAPI
+# PantheonAPI [![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml) [![Deploy](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml) [![codecov](https://codecov.io/gh/Pantheon-Community/PantheonAPI/graph/badge.svg?token=46UQNVJ8S3)](https://codecov.io/gh/Pantheon-Community/PantheonAPI)
 
 Centralised API for the Pantheon Community server network.
-
-[![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml)
-[![Deploy](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml)
-[![codecov](https://codecov.io/gh/Pantheon-Community/PantheonAPI/graph/badge.svg?token=46UQNVJ8S3)](https://codecov.io/gh/Pantheon-Community/PantheonAPI)
 
 [![Bun](https://img.shields.io/badge/Bun-000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.com/)
 [![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -12,8 +8,12 @@ Centralised API for the Pantheon Community server network.
 [![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-If you want to set up your own instance, see the [install guide](docs/INSTALL_GUIDE.md).
+### Links
 
-- API Spec https://api.pantheoncommunity.org/api-docs
-- Types Library https://github.com/Pantheon-Community/PantheonAPI-Types
-- Dev Client https://github.com/Pantheon-Community/PantheonAPI-Client
+- [Github Repository](https://github.com/Pantheon-Community/PantheonAPI)
+- [Live Build](https://api.pantheoncommunity.org/api-docs)
+- [Dev Client](https://github.com/Pantheon-Community/PantheonAPI-Client)
+
+### Installation
+
+If you want to set up your own instance, see the [install guide](docs/INSTALL_GUIDE.md).
