@@ -41,15 +41,5 @@ export async function createUsersTable(): Promise<void> {
         )
     `);
 
-    // migrations
-    await Promise.all([
-        pg`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_seen_at TIMESTAMP NOT NULL DEFAULT NOW()`,
-        pg`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP NOT NULL DEFAULT NOW()`,
-        pg.unsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ip ${Column.Ip}`),
-        pg.unsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS user_agent ${Column.UserAgent}`),
-        pg.unsafe(`ALTER TABLE users ADD COLUMN IF NOT EXISTS origin ${Column.OriginUrl}`),
-        pg`ALTER TABLE users ADD COLUMN IF NOT EXISTS lifetime_action_count INT NOT NULL DEFAULT 0`,
-    ]);
-
     await pg`CREATE INDEX IF NOT EXISTS idx_users_steam_id ON users(steam_id)`;
 }
