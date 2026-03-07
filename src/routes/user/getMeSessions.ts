@@ -1,28 +1,21 @@
-import { getAllUserSessions } from "@/databases/userSessions/getAllUserSessions";
-import { convertToUserSession } from "@/databases/userSessions/model/convertToUserSession";
-import type { UserSession } from "@/shared/types/UserSession";
+import { getUserSessionsByUserId } from "@/databases/userSessions/getUserSessionsByUserId";
+import type { UserSessionBasic } from "@/shared/types/UserSession";
 import { AuthScope } from "@/types/Express/AuthScope";
-import type { EndpointProvider } from "@/types/Express/EndpointProvider";
+import type { Endpoint } from "@/types/Express/Endpoint";
 
-export const getMeSessions: EndpointProvider<void, Partial<UserSession>[]> = {
-	method: "get",
-	path: "/users/@me/sessions",
-	auth: AuthScope.TokenOnly,
-	async handleRequest({ res, timer, session }) {
-		let sessions: Partial<UserSession>[];
+export const getMeSessions: Endpoint<void, UserSessionBasic[]> = {
+    method: "get",
+    path: "/users/@me/sessions",
+    auth: AuthScope.TokenOnly,
+    async handleRequest({ res, timer, session }) {
+        let sessions: UserSessionBasic[];
 
-		{
-			using _ = timer.create(getAllUserSessions);
+        {
+            using _ = timer.create(getUserSessionsByUserId);
 
-			const result = await getAllUserSessions(session.user_id);
+            sessions = await getUserSessionsByUserId(session.userId);
+        }
 
-			sessions = result.map((x) => {
-				const { accessToken, refreshToken, ...rest } = convertToUserSession(x);
-
-				return rest;
-			});
-		}
-
-		timer.addTo(res).status(200).json(sessions);
-	},
+        timer.addTo(res).status(200).json(sessions);
+    },
 };

@@ -1,20 +1,40 @@
+import { InvalidTokenError } from "@/errors/UnauthorizedError";
 import { pg } from "@/global/pg";
-import type { Ip, UserAgent } from "@/shared/types/Common";
+import type { UserSessionId, UserToken } from "@/shared/types/Common";
 import type { DiscordAuthData } from "@/types/Discord";
+import type { RequestAnalytics } from "@/types/RequestAnalytics";
 import { wrapPgError } from "../utils/handlePgError";
-import { deleteUserSession } from "./deleteUserSession";
-import type { UserSessionModel } from "./model/userSessionsModel";
+import type { UserSessionModel } from "./userSessionModel";
+
+type DeleteQuery = Pick<
+    UserSessionModel,
+    "started_at" | "times_refreshed" | "user_id" | "action_count"
+>;
+
+type InsertQuery = Pick<UserSessionModel, "id">;
 
 export async function replaceUserSession(
-	oldSession: UserSessionModel,
-	authData: DiscordAuthData,
-	ip: Ip,
-	userAgent: UserAgent,
-): Promise<void> {
-	await deleteUserSession(oldSession.access_token);
+    oldSessionToken: UserToken,
+    authData: DiscordAuthData,
+    analytics: RequestAnalytics,
+): Promise<UserSessionId> {
+    const { accessToken, refreshToken, expiresAt } = authData;
+    const { ip, userAgent, origin } = analytics;
 
-	try {
-		await pg`
+    try {
+        const deletedSessions = await pg<DeleteQuery[]>`
+            DELETE FROM user_sessions
+            WHERE access_token = ${oldSessionToken}
+            RETURNING started_at, times_refreshed, user_id, action_count
+        `;
+
+        if (deletedSessions.length === 0) {
+            throw new InvalidTokenError();
+        }
+
+        const { started_at, times_refreshed, user_id, action_count } = deletedSessions[0];
+
+        const [createdSession] = await pg<[InsertQuery]>`
             INSERT INTO user_sessions (
                 access_token,
                 refresh_token,
@@ -24,20 +44,24 @@ export async function replaceUserSession(
                 user_id,
                 ip,
                 user_agent,
+                origin,
                 action_count
             ) VALUES (
-                ${authData.accessToken},
-                ${authData.refreshToken},
-                ${oldSession.started_at},
-                ${authData.expiresAt},
-                ${oldSession.times_refreshed + 1},
-                ${oldSession.user_id},
+                ${accessToken},
+                ${refreshToken},
+                ${started_at},
+                ${expiresAt},
+                ${times_refreshed + 1},
+                ${user_id},
                 ${ip},
                 ${userAgent},
-                ${oldSession.action_count}
-            )
+                ${origin},
+                ${action_count}
+            ) RETURNING id
         `;
-	} catch (error) {
-		throw wrapPgError(error);
-	}
+
+        return createdSession.id;
+    } catch (error) {
+        throw wrapPgError(error);
+    }
 }

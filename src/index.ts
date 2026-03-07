@@ -5,14 +5,14 @@ import { Color } from "./types/Color";
 import { colorize } from "./utils/colorize";
 import { log } from "./utils/logging";
 
-const commit = config.commitHash ? colorize(config.commitHash, Color.FgCyan) : null;
-
 const environment = colorize(config.environment, Color.FgCyan);
 
-if (commit !== null) {
-	log(`Running in ${environment} (commit ${commit})`);
+if (config.commitHash === null) {
+    log(`Running in ${environment}`);
 } else {
-	log(`Running in ${environment}`);
+    const commit = colorize(config.commitHash, Color.FgCyan);
+
+    log(`Running in ${environment} (commit ${commit})`);
 }
 
 await Promise.all([startPostgres(), startApi()]);

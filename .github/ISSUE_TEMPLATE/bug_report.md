@@ -1,8 +1,7 @@
 ---
 name: Bug report
 about: Report something not working as intended
-title: ''
+title: ""
 labels: bug
-assignees: ''
-
+assignees: ""
 ---

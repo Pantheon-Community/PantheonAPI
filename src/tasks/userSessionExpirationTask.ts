@@ -6,23 +6,23 @@ import { log, logWithTimeTaken } from "@/utils/logging";
 let isDeletingExpiredSessions = false;
 
 export async function userSessionExpirationTask(): Promise<void> {
-	if (isDeletingExpiredSessions) return;
+    if (isDeletingExpiredSessions) return;
 
-	isDeletingExpiredSessions = true;
+    isDeletingExpiredSessions = true;
 
-	try {
-		const startedAt = Date.now();
+    try {
+        const startedAt = Date.now();
 
-		const count = await deleteExpiredUserSessions();
+        const count = await deleteExpiredUserSessions();
 
-		logWithTimeTaken(
-			`Deleted ${count} expired user session${count !== 1 ? "s" : ""}`,
-			startedAt,
-		);
-	} catch (error) {
-		log(colorize("Error deleting expired user sessions", Color.FgRed));
-		console.error(error);
-	} finally {
-		isDeletingExpiredSessions = false;
-	}
+        logWithTimeTaken(
+            `Deleted ${count} expired user session${count !== 1 ? "s" : ""}`,
+            startedAt,
+        );
+    } catch (error) {
+        log(colorize("Error deleting expired user sessions", Color.FgRed));
+        console.error(error);
+    } finally {
+        isDeletingExpiredSessions = false;
+    }
 }

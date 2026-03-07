@@ -5,8 +5,8 @@
     "scripts": {
         "dev": "bun --watch run src/index.ts",
         "start": "bun .",
-        "lint": "biome check",
-        "lint-fix": "biome check --write",
+        "lint": "oxlint --config .oxlintrc.json",
+        "lint-fix": "oxlint --config .oxlintrc.json --fix",
         "typecheck": "bun run tsc --project tsconfig.strict.json",
         "test": "bun test --concurrent",
         "check-spec": "bun run scripts/checkDeadLinks.ts",
@@ -14,12 +14,14 @@
         "check-all": "bun run lint && bun run typecheck && bun run test && bun run check-spec"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.4.4",
         "@types/bun": "latest",
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",
         "@types/jsonwebtoken": "^9.0.10",
-        "@types/swagger-ui-express": "^4.1.8"
+        "@types/swagger-ui-express": "^4.1.8",
+        "oxfmt": "^0.36.0",
+        "oxlint": "^1.51.0",
+        "oxlint-tsgolint": "^0.16.0"
     },
     "peerDependencies": {
         "typescript": "^5.9.3"

@@ -6,5 +6,5 @@ import { SiteError } from "./SiteError";
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/404 MDN Reference}
  */
 export class NotFoundError extends SiteError {
-	protected override statusCode = 404; // not found
+    protected override statusCode = 404; // not found
 }

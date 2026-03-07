@@ -1,21 +1,21 @@
 import { steamConnectionUsersService } from "@/services/steamConnectionUsersService";
-import type { SteamUser } from "@/shared/types/SteamUser";
+import type { SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
 import { AuthScope } from "@/types/Express/AuthScope";
-import type { EndpointProvider } from "@/types/Express/EndpointProvider";
+import type { Endpoint } from "@/types/Express/Endpoint";
 
-export const getMeSteamUsers: EndpointProvider<void, SteamUser[]> = {
-	method: "get",
-	path: "/users/@me/steam-users",
-	auth: AuthScope.TokenOnly,
-	async handleRequest({ res, timer, session }) {
-		let steamUsers: SteamUser[];
+export const getMeSteamUsers: Endpoint<void, SteamUserBasicWithTimes[]> = {
+    method: "get",
+    path: "/users/@me/steam-users",
+    auth: AuthScope.TokenOnly,
+    async handleRequest({ res, timer, session }) {
+        let steamUsers: SteamUserBasicWithTimes[];
 
-		{
-			using _ = timer.create(steamConnectionUsersService);
+        {
+            using _ = timer.create(steamConnectionUsersService);
 
-			steamUsers = await steamConnectionUsersService(session.access_token);
-		}
+            steamUsers = await steamConnectionUsersService(session.accessToken);
+        }
 
-		timer.addTo(res).status(200).json(steamUsers);
-	},
+        timer.addTo(res).status(200).json(steamUsers);
+    },
 };

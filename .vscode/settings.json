@@ -1,13 +1,17 @@
 {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "oxc.typeAware": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.oxc": "explicit",
+        "source.organizeImports": "explicit"
+    },
     "[typescript]": {
-        "editor.formatOnSave": true,
-        "editor.rulers": [100],
-        "editor.defaultFormatter": "biomejs.biome",
-        "editor.codeActionsOnSave": {
-            "source.organizeImports.biome": "explicit",
-            "source.fixAll.biome": "explicit",
-            "source.removeUnusedImports": "explicit"
-        }
+        "editor.rulers": [100]
+    },
+    "[javascript]": {
+        "editor.rulers": [100]
     },
     "[json]": {
         "editor.formatOnSave": true,

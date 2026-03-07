@@ -1,29 +1,43 @@
 import { pg } from "@/global/pg";
-import type { SteamId64 } from "@/shared/types/Common";
+import type { SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
+import type { UserBasicWithSteam } from "@/shared/types/User";
 import type { DiscordUser } from "@/types/Discord";
+import type { RequestAnalytics } from "@/types/RequestAnalytics";
 import { wrapPgError } from "../utils/handlePgError";
-import type { UserModel } from "./model/userModel";
+import type { UserModel } from "./userModel";
+
+type InsertQuery = Pick<UserModel, "id" | "username" | "avatar">;
 
 export async function upsertUser(
-	discord: DiscordUser,
-	steamId: SteamId64 | null,
-): Promise<UserModel> {
-	const { id, username, global_name, avatar } = discord;
+    discord: DiscordUser,
+    steam: SteamUserBasicWithTimes | null,
+    analytics: RequestAnalytics,
+): Promise<UserBasicWithSteam> {
+    const { id, username, global_name, avatar } = discord;
+    const { ip, userAgent, origin } = analytics;
 
-	const finalUsername = global_name ?? username;
+    const finalUsername = global_name ?? username;
 
-	try {
-		const [result] = await pg<[UserModel]>`
-            INSERT INTO users (id, username, avatar, steam_id)
-            VALUES (${id}, ${finalUsername}, ${avatar}, ${steamId})
+    const steamId = steam !== null ? steam.id : null;
+
+    try {
+        const [createdUser] = await pg<[InsertQuery]>`
+            INSERT INTO users (id, username, avatar, steam_id, ip, user_agent, origin)
+            VALUES (${id}, ${finalUsername}, ${avatar}, ${steamId}, ${ip}, ${userAgent}, ${origin})
             ON CONFLICT (id) DO UPDATE SET
                 username = ${finalUsername},
-                avatar = ${avatar}
-            RETURNING *
+                avatar = ${avatar},
+                last_seen_at = NOW(),
+                ip = ${ip},
+                user_agent = ${userAgent},
+                origin = ${origin}
+            RETURNING id, username, avatar
         `;
 
-		return result;
-	} catch (error) {
-		throw wrapPgError(error);
-	}
+        Object.assign(createdUser, { steam });
+
+        return createdUser as UserBasicWithSteam;
+    } catch (error) {
+        throw wrapPgError(error);
+    }
 }

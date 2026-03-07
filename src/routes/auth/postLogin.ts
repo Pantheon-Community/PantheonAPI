@@ -1,88 +1,82 @@
-import { upsertUserAnalytics } from "@/databases/userAnalytics/upsertUserAnalytics";
-import { createUserSession } from "@/databases/userSessions/createUserSession";
-import { convertToUser } from "@/databases/users/model/convertToUser";
 import { upsertUser } from "@/databases/users/upsertUser";
+import { createUserSession } from "@/databases/userSessions/createUserSession";
 import { requestAccessToken } from "@/discord/auth/requestAccessToken";
 import { fetchMe } from "@/discord/main/fetchMe";
 import { steamConnectionUsersService } from "@/services/steamConnectionUsersService";
-import type { AuthResponse } from "@/shared/types/AuthResponse";
-import type { LoginRequest } from "@/shared/types/LoginRequest";
-import type { SteamUser } from "@/shared/types/SteamUser";
-import type { User } from "@/shared/types/User";
+import type { UserSessionId } from "@/shared/types/Common";
+import type { LoginRequest } from "@/shared/types/Requests/LoginRequest";
+import type { AuthResponse } from "@/shared/types/Responses/AuthResponse";
+import type { SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
+import type { UserBasicWithSteam } from "@/shared/types/User";
 import type { DiscordAuthData, DiscordUser } from "@/types/Discord";
 import { AuthScope } from "@/types/Express/AuthScope";
-import type { EndpointProvider } from "@/types/Express/EndpointProvider";
-import { getIp } from "@/utils/getIp";
-import { getUserAgent } from "@/utils/getUserAgent";
+import type { Endpoint } from "@/types/Express/Endpoint";
+import { getAnalytics } from "@/utils/getAnalytics";
 
-export const postLogin: EndpointProvider<LoginRequest, AuthResponse> = {
-	method: "post",
-	path: "/login",
-	auth: AuthScope.None,
-	async handleRequest({ req, res, timer }) {
-		const { code, redirectUri } = req.body;
+export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
+    method: "post",
+    path: "/login",
+    auth: AuthScope.None,
+    async handleRequest({ req, res, timer }) {
+        const { code, redirectUri } = req.body;
 
-		// 1. login to Discord
+        // 1. login to Discord
 
-		let authData: DiscordAuthData;
+        let authData: DiscordAuthData;
 
-		{
-			using _ = timer.create(requestAccessToken);
+        {
+            using _ = timer.create(requestAccessToken);
 
-			authData = await requestAccessToken(code, redirectUri);
-		}
+            authData = await requestAccessToken(code, redirectUri);
+        }
 
-		// 2. fetch Discord data
+        // 2. fetch Discord data
 
-		let discordUser: DiscordUser;
-		let steamUsers: SteamUser[];
+        let discordUser: DiscordUser;
+        let steamUsers: SteamUserBasicWithTimes[];
 
-		{
-			using _ = timer.create(fetchMe, steamConnectionUsersService);
+        {
+            using _ = timer.create(fetchMe, steamConnectionUsersService);
 
-			const result = await Promise.all([
-				fetchMe(authData.accessToken),
-				steamConnectionUsersService(authData.accessToken),
-			]);
+            const result = await Promise.all([
+                fetchMe(authData.accessToken),
+                steamConnectionUsersService(authData.accessToken),
+            ]);
 
-			discordUser = result[0];
-			steamUsers = result[1];
-		}
+            discordUser = result[0];
+            steamUsers = result[1];
+        }
 
-		// 3. upsert user
+        // 3. upsert user
 
-		let user: User;
+        let user: UserBasicWithSteam;
 
-		{
-			using _ = timer.create(upsertUser);
+        const analytics = getAnalytics(req);
 
-			const rawUser = await upsertUser(discordUser, steamUsers.at(0)?.id ?? null);
+        {
+            using _ = timer.create(upsertUser);
 
-			user = convertToUser(rawUser, steamUsers.at(0) ?? null);
-		}
+            user = await upsertUser(discordUser, steamUsers.at(0) ?? null, analytics);
+        }
 
-		// 4. create new user session and upsert user analytics
+        // 4. create new user session
 
-		{
-			using _ = timer.create(createUserSession, upsertUserAnalytics);
+        let sessionId: UserSessionId;
 
-			const ip = getIp(req);
+        {
+            using _ = timer.create(createUserSession);
 
-			const userAgent = getUserAgent(req);
+            sessionId = await createUserSession(authData, user.id, analytics);
+        }
 
-			await Promise.all([
-				createUserSession(authData, user.id, ip, userAgent),
-				upsertUserAnalytics(user.id, ip, userAgent),
-			]);
-		}
+        // 5. done!
 
-		// 5. done!
-
-		timer.addTo(res).status(200).json({
-			user,
-			steamUsers,
-			expiresAt: authData.expiresAt.toISOString(),
-			token: authData.accessToken,
-		});
-	},
+        timer.addTo(res).status(200).json({
+            user,
+            steamUsers,
+            expiresAt: authData.expiresAt.toISOString(),
+            token: authData.accessToken,
+            sessionId,
+        });
+    },
 };

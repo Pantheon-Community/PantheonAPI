@@ -12,8 +12,8 @@ jobs:
             - name: Checkout Repository
               uses: actions/checkout@v6
               with:
-                submodules: recursive
-                token: ${{ secrets.PANTHEON_API_PAT }}
+                  submodules: recursive
+                  token: ${{ secrets.PANTHEON_API_PAT }}
 
             - name: Install Bun
               uses: oven-sh/setup-bun@v2
@@ -25,7 +25,7 @@ jobs:
               run: bun run typecheck
 
             - name: Lint
-              run: bunx biome ci
+              run: bunx oxlint --config .oxlintrc.json --format=github
 
             - name: Test
               run: bun run test --coverage --coverage-reporter=lcov

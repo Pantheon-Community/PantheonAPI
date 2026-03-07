@@ -1,14 +1,14 @@
-import type {
-	HttpError,
-	ValidationErrorItem,
-} from "express-openapi-validator/dist/framework/types";
 import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
+import type {
+    HttpError,
+    ValidationErrorItem,
+} from "express-openapi-validator/dist/framework/types";
 import { SiteError } from "./SiteError";
 
-export interface InvalidRequestErrorObject extends SiteErrorObject {
-	message?: string;
+interface BadRequestErrorObject extends SiteErrorObject {
+    message?: string;
 
-	extra?: ValidationErrorItem[];
+    extra?: ValidationErrorItem[];
 }
 
 /**
@@ -19,26 +19,26 @@ export interface InvalidRequestErrorObject extends SiteErrorObject {
  *
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/400 MDN Reference}
  */
-abstract class BadRequestError extends SiteError<InvalidRequestErrorObject> {
-	protected override statusCode = 400; // bad request
+abstract class BadRequestError extends SiteError<BadRequestErrorObject> {
+    protected override statusCode = 400; // bad request
 }
 
 export class InvalidOriginError extends BadRequestError {
-	public constructor(origin: string) {
-		super({
-			title: "Invalid Origin",
-			description: `The origin header of your request ("${origin}") isn't in the approved client URLs list.`,
-		});
-	}
+    public constructor(origin: string) {
+        super({
+            title: "Invalid Origin",
+            description: `The origin header of your request ("${origin}") isn't in the approved client URLs list.`,
+        });
+    }
 }
 
 export class InvalidRequestError extends BadRequestError {
-	public constructor(error: HttpError) {
-		super({
-			title: "Invalid Request",
-			description: "Your client made an invalid request to the API.",
-			message: error.message,
-			extra: error.errors,
-		});
-	}
+    public constructor(error: HttpError) {
+        super({
+            title: "Invalid Request",
+            description: "Your client made an invalid request to the API.",
+            message: error.message,
+            extra: error.errors,
+        });
+    }
 }

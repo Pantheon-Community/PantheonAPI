@@ -1,4 +1,4 @@
-import { getDiscordFromSteam } from "./getDiscordFromSteam";
-import { getSteamFromDiscord } from "./getSteamFromDiscord";
+import { getDiscordToSteam } from "./getDiscordToSteam";
+import { getSteamToDiscord } from "./getSteamToDiscord";
 
-export const lookupRoutes = [getDiscordFromSteam, getSteamFromDiscord];
+export const lookupRoutes = [getSteamToDiscord, getDiscordToSteam];

@@ -8,38 +8,38 @@ import { SiteError } from "./SiteError";
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401 MDN Reference}
  */
 abstract class UnauthorizedError extends SiteError {
-	protected override statusCode = 401; // unauthorized
+    protected override statusCode = 401; // unauthorized
 
-	public override makeResponse(res: Response): void {
-		res.setHeader("WWW-Authenticate", "Bearer");
-		super.makeResponse(res);
-	}
+    public override makeResponse(res: Response): void {
+        res.setHeader("WWW-Authenticate", "Bearer");
+        super.makeResponse(res);
+    }
 }
 
 export class MissingTokenError extends UnauthorizedError {
-	public constructor() {
-		super({
-			title: "Missing Token",
-			description: 'A token was not provided in the "Authorization" header.',
-		});
-	}
+    public constructor() {
+        super({
+            title: "Missing Token",
+            description: 'A token was not provided in the "Authorization" header.',
+        });
+    }
 }
 
 export class InvalidTokenError extends UnauthorizedError {
-	public constructor() {
-		super({
-			title: "Invalid Token",
-			description:
-				"The provided authorization token was invalid, it may have expired or been deleted.",
-		});
-	}
+    public constructor() {
+        super({
+            title: "Invalid Token",
+            description:
+                "The provided authorization token was invalid, it may have expired or been deleted.",
+        });
+    }
 }
 
 export class ExpiredTokenError extends UnauthorizedError {
-	public constructor() {
-		super({
-			title: "Expired Token",
-			description: "The provided authorization token has expired, please log back in.",
-		});
-	}
+    public constructor() {
+        super({
+            title: "Expired Token",
+            description: "The provided authorization token has expired, please log back in.",
+        });
+    }
 }

@@ -1,8 +1,21 @@
-import { Column } from "@/databases/utils/column";
 import { pg } from "@/global/pg";
+import type { SteamId64 } from "@/shared/types/Common";
+import { Column } from "../utils/column";
+
+export interface SteamUserModel {
+    readonly id: SteamId64;
+
+    readonly username: string;
+
+    readonly first_seen_at: Date | null;
+
+    readonly last_seen_at: Date | null;
+
+    readonly times_seen: number;
+}
 
 export async function createSteamUsersTable(): Promise<void> {
-	await pg.unsafe(`
+    await pg.unsafe(`
         CREATE TABLE IF NOT EXISTS steam_users (
             id ${Column.SteamId64} PRIMARY KEY,
             username VARCHAR(32) NOT NULL,
@@ -11,7 +24,4 @@ export async function createSteamUsersTable(): Promise<void> {
             times_seen INT NOT NULL DEFAULT 0
         )
     `);
-
-	// TODO: searching steam users via username
-	await pg`CREATE INDEX IF NOT EXISTS idx_steam_users_username ON steam_users(username)`;
 }

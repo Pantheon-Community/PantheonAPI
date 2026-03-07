@@ -8,8 +8,8 @@ const { clientId, clientSecret } = config.discord;
  * {@link https://docs.discord.com/developers/topics/oauth2#authorization-code-grant Discord Reference}
  */
 export function makeAuthRequestBody(): URLSearchParams {
-	return new URLSearchParams([
-		["client_id", clientId],
-		["client_secret", clientSecret],
-	]);
+    return new URLSearchParams([
+        ["client_id", clientId],
+        ["client_secret", clientSecret],
+    ]);
 }

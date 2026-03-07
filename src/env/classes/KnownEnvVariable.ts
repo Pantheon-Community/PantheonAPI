@@ -6,19 +6,19 @@ import { BaseEnvVariable } from "./BaseEnvVariable";
  * These are made after validating an **InitialEnvVariable**.
  */
 export class KnownEnvVariable<T> extends BaseEnvVariable {
-	public readonly value: T;
+    public readonly value: T;
 
-	public constructor(key: string, value: T) {
-		super(key);
-		this.value = value;
-	}
+    public constructor(key: string, value: T) {
+        super(key);
+        this.value = value;
+    }
 
-	/** Ensures this value passes some custom validation logic. */
-	public errorIf(condition: (value: T) => boolean, message: string): this {
-		if (condition(this.value)) {
-			throw new Error(`${this.named()} ${message}`);
-		}
+    /** Ensures this value passes some custom validation logic. */
+    public errorIf(condition: (value: T) => boolean, message: string): this {
+        if (condition(this.value)) {
+            throw new Error(`${this.named()} ${message}`);
+        }
 
-		return this;
-	}
+        return this;
+    }
 }

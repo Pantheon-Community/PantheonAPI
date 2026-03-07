@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: HTTP Header Convention */
-
 import { discordUserAgent } from "./discordUserAgent";
 
 /**
@@ -8,9 +6,9 @@ import { discordUserAgent } from "./discordUserAgent";
  * {@link https://docs.discord.com/developers/reference#http-api Discord Reference}
  */
 export function makeAuthRequestHeaders(): Record<string, string> {
-	return {
-		"Content-Type": "application/x-www-form-urlencoded",
-		Accept: "application/json",
-		"User-Agent": discordUserAgent,
-	};
+    return {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+        "User-Agent": discordUserAgent,
+    };
 }
