@@ -14,7 +14,7 @@ export async function updateUserSession(
             UPDATE user_sessions SET
                 ip = ${ip},
                 user_agent = ${userAgent},
-                origin = ${origin}
+                origin = ${origin},
                 last_action_at = NOW()
             WHERE access_token = ${token}
         `;
