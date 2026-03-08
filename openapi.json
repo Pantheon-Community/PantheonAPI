@@ -933,9 +933,8 @@
                     "description": "types/SiteErrorObject.ts"
                 }
             },
-            "SteamUser": {
+            "SteamUserBasic": {
                 "type": "object",
-                "description": "Steam user information, sourced from either in-game player info or Discord user connections.\n\nNote that tracking fields (**firstSeenAt**, **lastSeenAt**, and **timesSeen**) are only updated from in-game player info - never from Discord user conections. This is because in-game activity is much more useful to us than website activity.",
                 "properties": {
                     "id": {
                         "$ref": "#/components/schemas/SteamId64"
@@ -943,7 +942,25 @@
                     "username": {
                         "type": "string",
                         "description": "Latest username associated with this Steam ID.\n\nThis may come from in-game player info or a Discord user connection."
-                    },
+                    }
+                },
+                "required": [
+                    "id",
+                    "username"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
+                    "description": "types/SteamUser.ts"
+                }
+            },
+            "SteamUserBasicWithTimes": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/SteamUserBasic"
+                    }
+                ],
+                "properties": {
                     "firstSeenAt": {
                         "anyOf": [
                             {
@@ -965,45 +982,33 @@
                             }
                         ],
                         "description": "When this Steam ID was last seen in-game."
-                    },
+                    }
+                },
+                "required": [
+                    "firstSeenAt",
+                    "lastSeenAt"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
+                    "description": "types/SteamUser.ts"
+                }
+            },
+            "SteamUser": {
+                "type": "object",
+                "description": "Steam user information, sourced from either in-game player info or Discord user connections.\n\nNote that tracking fields (**firstSeenAt**, **lastSeenAt**, and **timesSeen**) are only updated from in-game player info - never from Discord user conections. This is because in-game activity is much more useful to us than website activity.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                    }
+                ],
+                "properties": {
                     "timesSeen": {
                         "type": "integer",
                         "description": "Number of times this Steam ID has been seen in-game."
                     }
                 },
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
-                    "description": "types/SteamUser.ts"
-                }
-            },
-            "SteamUserBasic": {
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/SteamUser"
-                    }
-                ],
                 "required": [
-                    "id",
-                    "username"
-                ],
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
-                    "description": "types/SteamUser.ts"
-                }
-            },
-            "SteamUserBasicWithTimes": {
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/SteamUser"
-                    }
-                ],
-                "required": [
-                    "id",
-                    "username",
-                    "firstSeenAt",
-                    "lastSeenAt"
+                    "timesSeen"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
@@ -1067,7 +1072,7 @@
                     "description": "types/SteamUserInfo.ts"
                 }
             },
-            "User": {
+            "UserBasic": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -1079,69 +1084,8 @@
                     "avatar": {
                         "type": "string",
                         "nullable": true
-                    },
-                    "steam": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/SteamUserBasicWithTimes"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Null"
-                            }
-                        ]
-                    },
-                    "firstSeenAt": {
-                        "$ref": "#/components/schemas/IsoString"
-                    },
-                    "lastSeenAt": {
-                        "$ref": "#/components/schemas/IsoString"
-                    },
-                    "ip": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/Ip"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Null"
-                            }
-                        ]
-                    },
-                    "userAgent": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/UserAgent"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Null"
-                            }
-                        ]
-                    },
-                    "origin": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/Origin"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Null"
-                            }
-                        ]
-                    },
-                    "lifetimeActionCount": {
-                        "type": "integer"
                     }
                 },
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
-                    "description": "types/User.ts"
-                }
-            },
-            "UserBasic": {
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/User"
-                    }
-                ],
                 "required": [
                     "id",
                     "username",
@@ -1156,13 +1100,22 @@
                 "type": "object",
                 "allOf": [
                     {
-                        "$ref": "#/components/schemas/User"
+                        "$ref": "#/components/schemas/UserBasic"
                     }
                 ],
+                "properties": {
+                    "steam": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    }
+                },
                 "required": [
-                    "id",
-                    "username",
-                    "avatar",
                     "steam"
                 ],
                 "externalDocs": {
