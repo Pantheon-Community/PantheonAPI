@@ -491,6 +491,75 @@
                     }
                 }
             }
+        },
+        "/users/@me/steam-users/primary": {
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "deleteMeSteamUsersPrimary",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Endpoint for clearing the primary Steam connection of the logged-in user's account.",
+                "responses": {
+                    "200": {
+                        "description": "Success."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/users/@me/steam-users/primary/{id}": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "id",
+                    "schema": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    }
+                }
+            ],
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "putMeSteamUsersPrimary",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Endpoint for setting the primary Steam connection of the logged-in user's account.",
+                "responses": {
+                    "200": {
+                        "description": "Success."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
         }
     },
     "components": {

@@ -34,7 +34,7 @@ interface EndpointBase<
     noUpdateSessions?: true;
 
     /** Entry point for handling requests. */
-    handleRequest({ req, res }: HandlerArgs): Promise<void> | void;
+    handleRequest({ req, res, timer }: HandlerArgs): Promise<void> | void;
 }
 
 type NoAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams> = EndpointBase<
