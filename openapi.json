@@ -334,6 +334,47 @@
                 }
             }
         },
+        "/lookup/steam-users/{id}": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "id",
+                    "schema": {
+                        "$ref": "#/components/schemas/SteamId64"
+                    }
+                }
+            ],
+            "get": {
+                "tags": [
+                    "Lookups"
+                ],
+                "operationId": "getSteamUserInfo",
+                "security": [],
+                "description": "Endpoint for getting basic information about a Steam user.",
+                "responses": {
+                    "200": {
+                        "description": "Steam user info, hopefully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SteamUserInfo"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    },
+                    "501": {
+                        "$ref": "#/components/responses/SecondaryRequestError501"
+                    }
+                }
+            }
+        },
         "/users/@me": {
             "get": {
                 "tags": [
@@ -921,6 +962,40 @@
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUserFromDiscord.ts",
                     "description": "types/SteamUserFromDiscord.ts"
+                }
+            },
+            "SteamUserInfo": {
+                "type": "object",
+                "properties": {
+                    "avatarFull": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "https://avatars.fastly.steamstatic.com/d789a47289ccb8c36eea2055a9b700e7718c6fac_full.jpg"
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "New Zealand"
+                    },
+                    "memberSince": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/IsoString"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "avatarFull",
+                    "location",
+                    "memberSince"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUserInfo.ts",
+                    "description": "types/SteamUserInfo.ts"
                 }
             },
             "User": {
