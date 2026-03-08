@@ -33,8 +33,6 @@ export async function fetchMySteamConnections(token: UserToken): Promise<Discord
             output.push({ id: connection.id as SteamId64, username: connection.name });
         }
 
-        output.push({ id: "123" as SteamId64, username: "test" });
-
         return output;
     } catch (error) {
         throw new SecondaryRequestError(
