@@ -45,6 +45,8 @@ export function addStaticRoutes(): void {
     app.use("/sonar.webp", serveStatic("static/sonar.webp"));
 
     app.use("/spec", serveStatic("openapi.json"));
+
+    app.use("/api-spec-2", serveStatic("static/api-spec.html"));
 }
 
 /** Adds normal routes to the app. */
