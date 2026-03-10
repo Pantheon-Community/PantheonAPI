@@ -33,6 +33,10 @@ export class ListEnvVariable<T> extends KnownEnvVariable<T[]> {
         for (let i = 0; i < this.value.length; i++) {
             const entry = this.value[i];
 
+            if (entry === undefined) {
+                continue;
+            }
+
             if (seen.has(entry)) {
                 throw new Error(
                     `${this.named()} contains duplicate a entry at index ${i}: ${colorize(String(entry), Color.FgRed)}`,

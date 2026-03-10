@@ -1,10 +1,16 @@
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import type { SteamId64, UserToken } from "@/shared/types/Common";
 import type { DiscordSteamConnection } from "@/types/Discord";
+import type { ServerTimer } from "@/utils/serverTimer";
 import { type APIConnection, ConnectionService, RouteBases } from "discord-api-types/v10";
 import { makeElevatedRequestHeaders } from "../utils/makeElevatedRequestHeaders";
 
-export async function fetchMySteamConnections(token: UserToken): Promise<DiscordSteamConnection[]> {
+export async function fetchMySteamConnections(
+    token: UserToken,
+    timer: ServerTimer,
+): Promise<DiscordSteamConnection[]> {
+    using _ = timer.create("discord/users/@me/connections");
+
     try {
         const response = await fetch(`${RouteBases.api}/users/@me/connections`, {
             headers: makeElevatedRequestHeaders(token),

@@ -1,10 +1,10 @@
 import { SQL } from "bun";
 
-/** Bun's PostgresError objects don't include the full stacktrace. */
+/** Bun's PostgresError objects don't include a full stacktrace. */
 export function wrapPgError(error: unknown): unknown {
-    if (!(error instanceof SQL.PostgresError)) {
-        return error;
+    if (error instanceof SQL.PostgresError) {
+        return new Error(error.message, { cause: error });
     }
 
-    return new Error(error.message, { cause: error });
+    return error;
 }

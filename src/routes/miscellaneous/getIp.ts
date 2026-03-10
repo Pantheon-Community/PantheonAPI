@@ -7,7 +7,7 @@ export const getIp: Endpoint<void, Ip | null> = {
     method: "get",
     path: "/ip",
     auth: AuthScope.None,
-    handleRequest({ req, res }) {
-        res.status(200).send(getAnalytics(req).ip);
+    handleRequest({ req }) {
+        return getAnalytics(req).ip;
     },
 };

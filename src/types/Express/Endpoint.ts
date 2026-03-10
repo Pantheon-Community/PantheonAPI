@@ -1,23 +1,11 @@
+import type { RequestMethod } from "@/shared/types/RequestMethod";
 import type { AuthScope } from "./AuthScope";
-import type {
-    NoAuthHandlerArgs,
-    OptionalUserHandlerArgs,
-    PluginHandlerArgs,
-    TokenOnlyHandlerArgs,
-    UserHandlerArgs,
-} from "./HandlerArgs";
+import type { NoAuthHandlerArgs, SessionAuthHandlerArgs } from "./HandlerArgs";
 
-interface EndpointBase<
-    Auth extends AuthScope,
-    RequestBody,
-    ResponseBody,
-    PathParams,
-    QueryParams,
-    HandlerArgs extends NoAuthHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>,
-> {
-    method: "get" | "post" | "put" | "patch" | "delete";
+interface EndpointBase<Auth extends AuthScope> {
+    method: RequestMethod;
 
-    path: string;
+    path: `/${string}`;
 
     auth: Auth;
 
@@ -31,56 +19,48 @@ interface EndpointBase<
      * This is needed if the endpoint modifies or deletes the user session (such as refreshing or
      * logging out), which could conflict with background updates to it.
      */
-    noUpdateSessions?: true;
-
-    /** Entry point for handling requests. */
-    handleRequest({ req, res, timer }: HandlerArgs): Promise<void> | void;
+    // noUpdateSessions?: true;
 }
 
-type NoAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams> = EndpointBase<
-    AuthScope.None,
-    RequestBody,
-    ResponseBody,
-    PathParams,
-    QueryParams,
-    NoAuthHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>
->;
+export interface NoAuthEndpoint<
+    RequestBody = any,
+    ResponseBody = any,
+    PathParams = any,
+    QueryParams = any,
+> extends EndpointBase<AuthScope.None> {
+    handleRequest({
+        req,
+        res,
+        timer,
+    }: NoAuthHandlerArgs<RequestBody, PathParams, QueryParams>):
+        | Promise<ResponseBody>
+        | ResponseBody;
+}
 
-type TokenOnlyEndpoint<RequestBody, ResponseBody, PathParams, QueryParams> = EndpointBase<
-    AuthScope.TokenOnly,
-    RequestBody,
-    ResponseBody,
-    PathParams,
-    QueryParams,
-    TokenOnlyHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>
->;
+export interface SessionAuthEndpoint<
+    RequestBody = any,
+    ResponseBody = any,
+    PathParams = any,
+    QueryParams = any,
+> extends EndpointBase<AuthScope.Session> {
+    /**
+     * If this endpoint deletes the user's current session, this should be set to `true` to prevent
+     * background session updates failing.
+     *
+     * This is exclusively used by the `/refresh` and `/logout` endpoints.
+     */
+    skipSessionUpdates?: boolean;
 
-type OptionalUserEndpoint<RequestBody, ResponseBody, PathParams, QueryParams> = EndpointBase<
-    AuthScope.OptionalUser,
-    RequestBody,
-    ResponseBody,
-    PathParams,
-    QueryParams,
-    OptionalUserHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>
->;
-
-type UserEndpoint<RequestBody, ResponseBody, PathParams, QueryParams> = EndpointBase<
-    AuthScope.User,
-    RequestBody,
-    ResponseBody,
-    PathParams,
-    QueryParams,
-    UserHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>
->;
-
-type PluginEndpoint<RequestBody, ResponseBody, PathParams, QueryParams> = EndpointBase<
-    AuthScope.Plugin,
-    RequestBody,
-    ResponseBody,
-    PathParams,
-    QueryParams,
-    PluginHandlerArgs<RequestBody, ResponseBody, PathParams, QueryParams>
->;
+    handleRequest({
+        req,
+        res,
+        timer,
+        session,
+        analytics,
+    }: SessionAuthHandlerArgs<RequestBody, PathParams, QueryParams>):
+        | Promise<ResponseBody>
+        | ResponseBody;
+}
 
 export type Endpoint<
     RequestBody = void,
@@ -89,7 +69,4 @@ export type Endpoint<
     QueryParams = unknown,
 > =
     | NoAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
-    | TokenOnlyEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
-    | OptionalUserEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
-    | UserEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
-    | PluginEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>;
+    | SessionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>;

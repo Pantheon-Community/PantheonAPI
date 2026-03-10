@@ -12,15 +12,7 @@ export const getDiscordToSteam: Endpoint<void, SteamUserFromDiscord[], void, Que
     method: "get",
     path: "/lookup/discord-to-steam",
     auth: AuthScope.None,
-    async handleRequest({ req, res, timer }) {
-        let users: SteamUserFromDiscord[];
-
-        {
-            using _ = timer.create(getSteamUsersFromDiscord);
-
-            users = await getSteamUsersFromDiscord(req.query.ids);
-        }
-
-        timer.addTo(res).status(200).json(users);
+    async handleRequest({ req, timer }) {
+        return await getSteamUsersFromDiscord(req.query.ids, timer);
     },
 };

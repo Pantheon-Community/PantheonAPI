@@ -1,6 +1,7 @@
 import { pg } from "@/global/pg";
 import type { SteamId64 } from "@/shared/types/Common";
 import type { UserFromSteam } from "@/shared/types/UserFromSteam";
+import type { ServerTimer } from "@/utils/serverTimer";
 import { sql } from "bun";
 import { wrapPgError } from "../utils/handlePgError";
 import type { UserModel } from "./userModel";
@@ -15,11 +16,16 @@ interface SelectQuery {
     discord_avatar: UserModel["avatar"];
 }
 
-export async function getDiscordUserBySteam(steamIds: SteamId64[]): Promise<UserFromSteam[]> {
+export async function getDiscordUsersFromSteam(
+    steamIds: SteamId64[],
+    timer: ServerTimer,
+): Promise<UserFromSteam[]> {
+    using _ = timer.create("getDiscordUsersFromSteam");
+
     try {
         const users = await pg<SelectQuery[]>`
             SELECT
-                users.steam_id AS steam_id,
+                users.steam_id,
                 users.id AS discord_id,
                 users.username AS discord_username,
                 users.avatar AS discord_avatar

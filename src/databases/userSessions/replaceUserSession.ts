@@ -3,6 +3,7 @@ import { pg } from "@/global/pg";
 import type { UserSessionId, UserToken } from "@/shared/types/Common";
 import type { DiscordAuthData } from "@/types/Discord";
 import type { RequestAnalytics } from "@/types/RequestAnalytics";
+import type { ServerTimer } from "@/utils/serverTimer";
 import { wrapPgError } from "../utils/handlePgError";
 import type { UserSessionModel } from "./userSessionModel";
 
@@ -17,22 +18,25 @@ export async function replaceUserSession(
     oldSessionToken: UserToken,
     authData: DiscordAuthData,
     analytics: RequestAnalytics,
+    timer: ServerTimer,
 ): Promise<UserSessionId> {
+    using _ = timer.create("replaceUserSession");
+
     const { accessToken, refreshToken, expiresAt } = authData;
     const { ip, userAgent, origin } = analytics;
 
     try {
-        const deletedSessions = await pg<DeleteQuery[]>`
+        const [deletedSession] = await pg<DeleteQuery[]>`
             DELETE FROM user_sessions
             WHERE access_token = ${oldSessionToken}
             RETURNING started_at, times_refreshed, user_id, action_count
         `;
 
-        if (deletedSessions.length === 0) {
+        if (deletedSession === undefined) {
             throw new InvalidTokenError();
         }
 
-        const { started_at, times_refreshed, user_id, action_count } = deletedSessions[0];
+        const { started_at, times_refreshed, user_id, action_count } = deletedSession;
 
         const [createdSession] = await pg<[InsertQuery]>`
             INSERT INTO user_sessions (

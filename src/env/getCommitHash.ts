@@ -4,10 +4,10 @@ import process from "node:process";
 /**
  * Attempts to get the current git commit hash.
  *
- * @example "8336a7b15e35038f8dae693f4f2d46acd374ad0f"
+ * @example "8336a7b"
  */
 export function getCommitHash(): string | null {
-    const fromEnv = process.env.GIT_COMMIT_HASH;
+    const fromEnv = process.env["GIT_COMMIT_HASH"];
 
     if (fromEnv !== undefined && fromEnv.trim().length > 0) {
         return fromEnv.trim();

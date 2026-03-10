@@ -5,31 +5,22 @@ import { colorize } from "./colorize";
 import { log, logWithTimeTaken } from "./logging";
 
 export class ServerTimer {
-    private readonly times: [name: string, duration: number][] = [];
+    public readonly times: [name: string, duration: number][] = [];
 
-    public create(...fns: { name: string }[]): Disposable {
+    public create(name: string): Disposable {
         const startTime = Date.now();
 
-        const name = fns.map((x) => x.name).join("+");
-
-        return {
-            [Symbol.dispose]: () => {
-                const endTime = Date.now();
-
-                this.times.push([name, endTime - startTime]);
-            },
-        };
+        return { [Symbol.dispose]: () => this.times.push([name, Date.now() - startTime]) };
     }
 
-    public addTo<T extends Response>(res: T): T {
+    public addTo(res: Response): void {
         if (res.headersSent) {
-            log(`Timer.${this.addTo.name} was called but headers were already sent!`);
-            return res;
+            log(`Timer.addTo was called but headers were already sent!`);
+            return;
         }
 
         if (this.times.length === 0) {
-            log(`Timer.${this.addTo.name} was called but had no recorded times!`);
-            return res;
+            return;
         }
 
         const output: string[] = [];
@@ -39,8 +30,6 @@ export class ServerTimer {
         }
 
         res.setHeader("Server-Timing", output.join(","));
-
-        return res;
     }
 }
 
@@ -51,28 +40,26 @@ if (config.dev.logTimers) {
     // oxlint-disable-next-line typescript/unbound-method
     const originalAddTo = ServerTimer.prototype.addTo;
 
-    ServerTimer.prototype.create = function create(...args): Disposable {
+    ServerTimer.prototype.create = function create(name): Disposable {
         const startedAt = Date.now();
 
-        const name = colorize(args.map((x) => x.name).join("+"), Color.FgCyan);
+        name = colorize(name, Color.FgCyan);
 
-        const result = originalCreate.apply(this, args);
+        const result = originalCreate.apply(this, [name]);
 
         log(`${name} Started`);
 
         return {
-            [Symbol.dispose]: (): void => {
+            [Symbol.dispose]: () => {
                 result[Symbol.dispose]();
                 logWithTimeTaken(`${name} Finished`, startedAt);
             },
         };
     };
 
-    ServerTimer.prototype.addTo = function addTo<T extends Response>(res: T): T {
+    ServerTimer.prototype.addTo = function addTo(res: Response): void {
         originalAddTo.apply(this, [res]);
 
         log(`${colorize(`${res.req.method} ${res.req.url}`, Color.FgMagenta)} Finished`);
-
-        return res;
     };
 }

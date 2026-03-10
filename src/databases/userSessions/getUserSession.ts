@@ -2,6 +2,7 @@ import { ExpiredTokenError, InvalidTokenError } from "@/errors/UnauthorizedError
 import { pg } from "@/global/pg";
 import type { UserToken } from "@/shared/types/Common";
 import type { InternalSession } from "@/types/Internal";
+import type { ServerTimer } from "@/utils/serverTimer";
 import { wrapPgError } from "../utils/handlePgError";
 import type { UserSessionModel } from "./userSessionModel";
 
@@ -10,7 +11,12 @@ type SelectQuery = Pick<
     "access_token" | "refresh_token" | "expires_at" | "user_id"
 >;
 
-export async function getUserSession(token: UserToken): Promise<InternalSession> {
+export async function getUserSession(
+    token: UserToken,
+    timer: ServerTimer,
+): Promise<InternalSession> {
+    using _ = timer.create("getUserSession");
+
     try {
         const sessions = await pg<SelectQuery[]>`
             SELECT
@@ -22,11 +28,13 @@ export async function getUserSession(token: UserToken): Promise<InternalSession>
             WHERE access_token = ${token}
         `;
 
-        if (sessions.length === 0) {
+        const session = sessions.at(0);
+
+        if (session === undefined) {
             throw new InvalidTokenError();
         }
 
-        const { expires_at, access_token, refresh_token, user_id } = sessions[0];
+        const { expires_at, access_token, refresh_token, user_id } = session;
 
         if (expires_at.getTime() < Date.now()) {
             throw new ExpiredTokenError();

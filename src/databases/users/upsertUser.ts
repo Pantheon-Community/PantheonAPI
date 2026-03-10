@@ -1,24 +1,32 @@
 import { pg } from "@/global/pg";
-import type { SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
-import type { UserBasicWithSteam } from "@/shared/types/User";
+import type { SteamId64 } from "@/shared/types/Common";
+import type { UserBasic } from "@/shared/types/User";
 import type { DiscordUser } from "@/types/Discord";
 import type { RequestAnalytics } from "@/types/RequestAnalytics";
+import type { ServerTimer } from "@/utils/serverTimer";
 import { wrapPgError } from "../utils/handlePgError";
 import type { UserModel } from "./userModel";
 
-type InsertQuery = Pick<UserModel, "id" | "username" | "avatar">;
+type InsertQuery = Pick<UserModel, "steam_id">;
+
+interface UpsertUserResult {
+    upsertedUser: UserBasic;
+
+    steamId: SteamId64 | null;
+}
 
 export async function upsertUser(
-    discord: DiscordUser,
-    steam: SteamUserBasicWithTimes | null,
+    discordUser: DiscordUser,
+    steamId: SteamId64 | null,
     analytics: RequestAnalytics,
-): Promise<UserBasicWithSteam> {
-    const { id, username, global_name, avatar } = discord;
+    timer: ServerTimer,
+): Promise<UpsertUserResult> {
+    using _ = timer.create("upsertUser");
+
+    const { id, username, global_name, avatar } = discordUser;
     const { ip, userAgent, origin } = analytics;
 
     const finalUsername = global_name ?? username;
-
-    const steamId = steam !== null ? steam.id : null;
 
     try {
         const [createdUser] = await pg<[InsertQuery]>`
@@ -31,12 +39,13 @@ export async function upsertUser(
                 ip = ${ip},
                 user_agent = ${userAgent},
                 origin = ${origin}
-            RETURNING id, username, avatar
+            RETURNING steam_id
         `;
 
-        Object.assign(createdUser, { steam });
-
-        return createdUser as UserBasicWithSteam;
+        return {
+            upsertedUser: { id, username: finalUsername, avatar },
+            steamId: createdUser.steam_id,
+        };
     } catch (error) {
         throw wrapPgError(error);
     }

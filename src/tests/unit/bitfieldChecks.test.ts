@@ -7,18 +7,20 @@ function checkBitfield(obj: object, name: string): void {
         (x): x is [string, number] => typeof x[1] === "number",
     );
 
-    if (entries.length === 0) {
+    const firstEntry = entries[0];
+
+    if (firstEntry === undefined) {
         throw new Error(`The ${name} bitfield is empty`);
     }
 
-    if (entries[0][1] !== 0) {
+    if (firstEntry[1] !== 0) {
         throw new Error(
-            `Expected first value "${entries[0][0]}" of the ${name} bitfield to be 0 (got ${entries[0][1]})`,
+            `Expected first value "${firstEntry[0]}" of the ${name} bitfield to be 0 (got ${firstEntry[1]})`,
         );
     }
 
     for (let i = 1; i < entries.length; i++) {
-        const [key, actual] = entries[i];
+        const [key, actual] = entries[i]!;
 
         const expected = 1 << (i - 1);
 

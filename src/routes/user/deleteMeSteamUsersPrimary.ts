@@ -3,16 +3,10 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
 export const deleteMeSteamUsersPrimary: Endpoint = {
-    auth: AuthScope.TokenOnly,
+    auth: AuthScope.Session,
     method: "delete",
     path: "/users/@me/steam-users/primary",
-    async handleRequest({ res, timer, session }) {
-        {
-            using _ = timer.create(setUserSteam);
-
-            await setUserSteam(session.userId, null);
-        }
-
-        timer.addTo(res).sendStatus(200);
+    async handleRequest({ timer, session }) {
+        await setUserSteam(session.userId, null, timer);
     },
 };

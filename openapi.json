@@ -3,16 +3,7 @@
     "openapi": "3.0.3",
     "info": {
         "title": "Pantheon API",
-        "description": "Official web API for the Pantheon community server network.\n\nFor more information please see the [Github repository](https://github.com/Pantheon-Community/PantheonAPI).",
-        "contact": {
-            "name": "NachoToast",
-            "url": "https://github.com/NachoToast",
-            "email": "nachotoast@pantheoncommunity.org"
-        },
-        "license": {
-            "name": "MIT",
-            "url": "https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE"
-        },
+        "description": "Official web API for the Pantheon community server network.\n\nFor more information (including licensing, source code, and contact details) please see the [Github repository](https://github.com/Pantheon-Community/PantheonAPI).",
         "version": "1.0.0"
     },
     "servers": [
@@ -330,47 +321,6 @@
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
-                    }
-                }
-            }
-        },
-        "/lookup/steam-users/{id}": {
-            "parameters": [
-                {
-                    "required": true,
-                    "in": "path",
-                    "name": "id",
-                    "schema": {
-                        "$ref": "#/components/schemas/SteamId64"
-                    }
-                }
-            ],
-            "get": {
-                "tags": [
-                    "Lookups"
-                ],
-                "operationId": "getSteamUserInfo",
-                "security": [],
-                "description": "Endpoint for getting basic information about a Steam user.",
-                "responses": {
-                    "200": {
-                        "description": "Steam user info, hopefully.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SteamUserInfo"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequestError400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/RateLimited429"
-                    },
-                    "501": {
-                        "$ref": "#/components/responses/SecondaryRequestError501"
                     }
                 }
             }
@@ -827,9 +777,6 @@
                     "description": "types/Responses/GetMeResponse.ts"
                 }
             },
-            "HexColorString": {
-                "type": "string"
-            },
             "IsoString": {
                 "type": "string",
                 "description": "A string in ISO format, used to store dates.\n\nhttps://en.wikipedia.org/wiki/ISO_8601",
@@ -993,28 +940,6 @@
                     "description": "types/SteamUser.ts"
                 }
             },
-            "SteamUser": {
-                "type": "object",
-                "description": "Steam user information, sourced from either in-game player info or Discord user connections.\n\nNote that tracking fields (**firstSeenAt**, **lastSeenAt**, and **timesSeen**) are only updated from in-game player info - never from Discord user conections. This is because in-game activity is much more useful to us than website activity.",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/SteamUserBasicWithTimes"
-                    }
-                ],
-                "properties": {
-                    "timesSeen": {
-                        "type": "integer",
-                        "description": "Number of times this Steam ID has been seen in-game."
-                    }
-                },
-                "required": [
-                    "timesSeen"
-                ],
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
-                    "description": "types/SteamUser.ts"
-                }
-            },
             "SteamUserFromDiscord": {
                 "type": "object",
                 "properties": {
@@ -1036,40 +961,6 @@
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUserFromDiscord.ts",
                     "description": "types/SteamUserFromDiscord.ts"
-                }
-            },
-            "SteamUserInfo": {
-                "type": "object",
-                "properties": {
-                    "avatarFull": {
-                        "type": "string",
-                        "nullable": true,
-                        "example": "https://avatars.fastly.steamstatic.com/d789a47289ccb8c36eea2055a9b700e7718c6fac_full.jpg"
-                    },
-                    "location": {
-                        "type": "string",
-                        "nullable": true,
-                        "example": "New Zealand"
-                    },
-                    "memberSince": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/IsoString"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Null"
-                            }
-                        ]
-                    }
-                },
-                "required": [
-                    "avatarFull",
-                    "location",
-                    "memberSince"
-                ],
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUserInfo.ts",
-                    "description": "types/SteamUserInfo.ts"
                 }
             },
             "UserBasic": {
@@ -1151,29 +1042,14 @@
                     "description": "types/UserFromSteam.ts"
                 }
             },
-            "UserSession": {
+            "UserSessionBasic": {
                 "type": "object",
                 "properties": {
                     "id": {
                         "$ref": "#/components/schemas/UserSessionId"
                     },
-                    "accessToken": {
-                        "$ref": "#/components/schemas/UserToken"
-                    },
-                    "refreshToken": {
-                        "$ref": "#/components/schemas/UserToken"
-                    },
                     "startedAt": {
                         "$ref": "#/components/schemas/IsoString"
-                    },
-                    "expiresAt": {
-                        "$ref": "#/components/schemas/IsoString"
-                    },
-                    "timesRefreshed": {
-                        "type": "integer"
-                    },
-                    "userId": {
-                        "$ref": "#/components/schemas/DiscordId"
                     },
                     "ip": {
                         "anyOf": [
@@ -1195,31 +1071,26 @@
                             }
                         ]
                     },
-                    "actionCount": {
-                        "type": "integer",
-                        "description": "This does not include the creation or refreshing of the session."
+                    "origin": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/Origin"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
                     },
                     "lastActionAt": {
                         "$ref": "#/components/schemas/IsoString"
                     }
                 },
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserSession.ts",
-                    "description": "types/UserSession.ts"
-                }
-            },
-            "UserSessionBasic": {
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/UserSession"
-                    }
-                ],
                 "required": [
                     "id",
                     "startedAt",
                     "ip",
                     "userAgent",
+                    "origin",
                     "lastActionAt"
                 ],
                 "externalDocs": {

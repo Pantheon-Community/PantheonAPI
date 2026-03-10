@@ -6,6 +6,7 @@ export function convertToDiscordAuthSession(
     data: RESTPostOAuth2AccessTokenResult,
 ): DiscordAuthData {
     const { access_token, refresh_token, expires_in } = data;
+
     return {
         accessToken: access_token as UserToken,
         refreshToken: refresh_token as UserToken,

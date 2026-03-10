@@ -1,0 +1,10 @@
+html.dark-mode {
+    a {
+        color: lightblue;
+    }
+
+    .header-col li,
+    td.header-col {
+        color: lightgray;
+    }
+}
