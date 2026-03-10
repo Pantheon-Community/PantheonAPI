@@ -70,3 +70,5 @@ export type Endpoint<
 > =
     | NoAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
     | SessionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>;
+
+export type AnyEndpoint = Endpoint<any, any, any, any>;

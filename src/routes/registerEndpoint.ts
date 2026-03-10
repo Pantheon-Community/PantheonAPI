@@ -7,7 +7,12 @@ import type { UserToken } from "@/shared/types/Common";
 import { Color } from "@/types/Color";
 import type { AnyRequest } from "@/types/Express/AnyRequest";
 import { AuthScope } from "@/types/Express/AuthScope";
-import type { Endpoint, NoAuthEndpoint, SessionAuthEndpoint } from "@/types/Express/Endpoint";
+import type {
+    AnyEndpoint,
+    Endpoint,
+    NoAuthEndpoint,
+    SessionAuthEndpoint,
+} from "@/types/Express/Endpoint";
 import { colorize } from "@/utils/colorize";
 import { getAnalytics } from "@/utils/getAnalytics";
 import { log } from "@/utils/logging";
@@ -91,7 +96,7 @@ function registerSessionAuthEndpoint(endpoint: SessionAuthEndpoint): void {
     });
 }
 
-export function registerEndpoint(provider: Endpoint<any, any, any, any>): void {
+export function registerEndpoint(provider: AnyEndpoint): void {
     switch (provider.auth) {
         case AuthScope.None:
             return registerNoAuthEndpoint(provider);
