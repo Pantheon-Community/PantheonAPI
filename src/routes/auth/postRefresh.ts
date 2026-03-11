@@ -1,12 +1,13 @@
 import { replaceUserSession } from "@/databases/userSessions/replaceUserSession";
 import { refreshAccessToken } from "@/other/discord/auth/refreshAccessToken";
 import { userService } from "@/services/userService";
+import { RequestMethod } from "@/shared/types/RequestMethod";
 import type { AuthResponse } from "@/shared/types/Responses/AuthResponse";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
 export const postRefresh: Endpoint<void, AuthResponse> = {
-    method: "post",
+    method: RequestMethod.Post,
     path: "/refresh",
     auth: AuthScope.Session,
     skipSessionUpdates: true,

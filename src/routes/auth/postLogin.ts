@@ -1,6 +1,7 @@
 import { createUserSession } from "@/databases/userSessions/createUserSession";
 import { requestAccessToken } from "@/other/discord/auth/requestAccessToken";
 import { userService } from "@/services/userService";
+import { RequestMethod } from "@/shared/types/RequestMethod";
 import type { LoginRequest } from "@/shared/types/Requests/LoginRequest";
 import type { AuthResponse } from "@/shared/types/Responses/AuthResponse";
 import { AuthScope } from "@/types/Express/AuthScope";
@@ -8,7 +9,7 @@ import type { Endpoint } from "@/types/Express/Endpoint";
 import { getAnalytics } from "@/utils/getAnalytics";
 
 export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
-    method: "post",
+    method: RequestMethod.Post,
     path: "/login",
     auth: AuthScope.None,
     async handleRequest({ req, timer }) {

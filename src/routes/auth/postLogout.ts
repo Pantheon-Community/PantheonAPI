@@ -1,10 +1,11 @@
 import { deleteUserSessionByToken } from "@/databases/userSessions/deleteUserSession";
 import { revokeAccessToken } from "@/other/discord/auth/revokeAccessToken";
+import { RequestMethod } from "@/shared/types/RequestMethod";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
 export const postLogout: Endpoint = {
-    method: "post",
+    method: RequestMethod.Post,
     path: "/logout",
     auth: AuthScope.Session,
     skipSessionUpdates: true,
