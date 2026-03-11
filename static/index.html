@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Metatags -->
+    <title>Pantheon API</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <meta name="title" content="Pantheon API" />
+    <meta name="description" content="Centralised API for the Pantheon Community server network." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:description"
+          content="Centralised API for the Pantheon Community server network." />
+    <meta property="og:determiner" content="the" />
+    <meta property="og:locale" content="en_NZ" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://api.pantheoncommunity.org/" />
+    <meta property="og:title" content="Pantheon API" />
+    <meta property="og:image" content="https://api.pantheoncommunity.org/logo.png" />
+    <meta property="og:image:alt" content="Stylised Roman centurion helmet with blue highlights" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="511" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://api.pantheoncommunity.org/">
+    <meta property="twitter:title" content="Pantheon API">
+    <meta property="twitter:description" content="Pantheon API">
+    <meta property="twitter:image" content="https://api.pantheoncommunity.org/logo-wide.png">
+
+    <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+</head>
+
+<body>
+    <rapi-doc
+              spec-url="./spec"
+              persist-auth="true"
+              show-header="false"
+              show-curl-before-try="true"
+              show-components="true"
+              show-method-in-nav-bar="as-colored-text"
+              use-path-in-nav-bar="true"
+              allow-spec-file-download="true">
+    </rapi-doc>
+
+    <script>
+        if (window.location.hostname === "localhost") {
+            window.addEventListener("DOMContentLoaded", () => {
+                const el = document.querySelector("rapi-doc");
+
+                el.addEventListener("spec-loaded", () => {
+                    el.setApiServer(`http://localhost:{port}`);
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>

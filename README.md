@@ -11,9 +11,17 @@ Centralised API for the Pantheon Community server network.
 ### Links
 
 - [Github Repository](https://github.com/Pantheon-Community/PantheonAPI)
-- [Live Build](https://api.pantheoncommunity.org/api-docs)
+- [Live Build](https://api.pantheoncommunity.org)
 - [Dev Client](https://github.com/Pantheon-Community/PantheonAPI-Client)
 
 ### Installation
 
 If you want to set up your own instance, see the [install guide](docs/INSTALL_GUIDE.md).
+
+### Contact
+
+If you need help using or developing the API, feel free to message NachoToast on Discord.
+
+### Licensing
+
+This API and its source code is licensed under the MIT license. [Read more here](https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE).

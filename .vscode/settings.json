@@ -18,5 +18,10 @@
         "editor.defaultFormatter": "vscode.json-language-features"
     },
     "json.validate.enable": true,
-    "json.format.enable": true
+    "json.format.enable": true,
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "html.format.wrapLineLength": 0,
+    "html.format.wrapAttributes": "preserve-aligned"
 }

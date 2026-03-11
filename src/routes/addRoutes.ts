@@ -38,15 +38,9 @@ function addApiSpecRoutes(): void {
 export function addStaticRoutes(): void {
     addApiSpecRoutes();
 
-    app.use("/betterDarkMode.css", serveStatic("static/betterDarkMode.css"));
-
-    app.use("/favicon.ico", serveStatic("static/favicon.ico"));
-
-    app.use("/sonar.webp", serveStatic("static/sonar.webp"));
+    app.use("/", serveStatic("static"));
 
     app.use("/spec", serveStatic("openapi.json"));
-
-    app.use("/api-spec-2", serveStatic("static/api-spec.html"));
 }
 
 /** Adds normal routes to the app. */
