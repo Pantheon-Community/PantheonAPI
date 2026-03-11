@@ -12,7 +12,7 @@ export async function refreshAccessToken(
     refreshToken: UserToken,
     timer: ServerTimer,
 ): Promise<DiscordAuthData> {
-    using _ = timer.create("discord>oauth2>token");
+    using _ = timer.create("discord_oauth2_token");
 
     const body = makeAuthRequestBody();
 
