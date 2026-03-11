@@ -1,4 +1,4 @@
-import type { RequestMethod } from "@/shared/types/RequestMethod";
+import type { RequestMethod } from "../RequestMethod";
 import type { AuthScope } from "./AuthScope";
 import type { NoAuthHandlerArgs, SessionAuthHandlerArgs } from "./HandlerArgs";
 
