@@ -18,7 +18,7 @@ export async function getUserSession(
     using _ = timer.create("getUserSession");
 
     try {
-        const sessions = await pg<SelectQuery[]>`
+        const [session] = await pg<SelectQuery[]>`
             SELECT
                 access_token,
                 refresh_token,
@@ -27,8 +27,6 @@ export async function getUserSession(
             FROM user_sessions
             WHERE access_token = ${token}
         `;
-
-        const session = sessions.at(0);
 
         if (session === undefined) {
             throw new InvalidTokenError();
