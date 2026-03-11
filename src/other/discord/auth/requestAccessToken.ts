@@ -16,7 +16,7 @@ export async function requestAccessToken(
     redirectUri: string,
     timer: ServerTimer,
 ): Promise<DiscordAuthData> {
-    using _ = timer.create("discord/oauth2/token");
+    using _ = timer.create("discord>oauth2>token");
 
     const body = makeAuthRequestBody();
 

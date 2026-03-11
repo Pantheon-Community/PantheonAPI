@@ -6,7 +6,7 @@ import { RouteBases } from "discord-api-types/v10";
 import { makeElevatedRequestHeaders } from "../utils/makeElevatedRequestHeaders";
 
 export async function fetchMe(token: UserToken, timer: ServerTimer): Promise<DiscordUser> {
-    using _ = timer.create("discord/users/@me");
+    using _ = timer.create("discord>users>@me");
 
     try {
         const response = await fetch(`${RouteBases.api}/users/@me`, {

@@ -11,7 +11,7 @@ import { makeAuthRequestHeaders } from "../utils/makeAuthRequestHeaders";
  * token.
  */
 export async function revokeAccessToken(accessToken: UserToken, timer: ServerTimer): Promise<void> {
-    using _ = timer.create("discord/oauth2/token/revoke");
+    using _ = timer.create("discord>oauth2>token>revoke");
 
     const body = makeAuthRequestBody();
 
