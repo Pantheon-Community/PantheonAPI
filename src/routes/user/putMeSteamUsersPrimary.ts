@@ -2,7 +2,6 @@ import { setUserSteam } from "@/databases/users/setUserSteam";
 import { NotFoundError } from "@/errors/NotFoundError";
 import { steamConnectionService } from "@/services/steamConnectionService";
 import type { SteamId64 } from "@/shared/types/Common";
-import { RequestMethod } from "@/shared/types/RequestMethod";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
@@ -12,7 +11,7 @@ interface PathParams {
 
 export const putMeSteamUsersPrimary: Endpoint<void, void, PathParams> = {
     auth: AuthScope.Session,
-    method: RequestMethod.Put,
+    method: "put",
     path: "/users/@me/steam-users/primary/:id",
     async handleRequest({ req, timer, session }) {
         const steamUsers = await steamConnectionService(session.accessToken, timer);

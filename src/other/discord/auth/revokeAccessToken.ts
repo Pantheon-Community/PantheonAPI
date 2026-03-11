@@ -1,6 +1,5 @@
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import type { UserToken } from "@/shared/types/Common";
-import { RequestMethod } from "@/shared/types/RequestMethod";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { OAuth2Routes } from "discord-api-types/v10";
 import { makeAuthRequestBody } from "../utils/makeAuthRequestBody";
@@ -21,7 +20,7 @@ export async function revokeAccessToken(accessToken: UserToken, timer: ServerTim
         const response = await fetch(OAuth2Routes.tokenRevocationURL, {
             body,
             headers: makeAuthRequestHeaders(),
-            method: RequestMethod.Post,
+            method: "post",
         });
 
         if (!response.ok) {

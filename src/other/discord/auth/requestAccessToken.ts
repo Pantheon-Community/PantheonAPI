@@ -1,5 +1,4 @@
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
-import { RequestMethod } from "@/shared/types/RequestMethod";
 import type { DiscordAuthData } from "@/types/Discord";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { OAuth2Routes, type RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
@@ -28,7 +27,7 @@ export async function requestAccessToken(
         const response = await fetch(OAuth2Routes.tokenURL, {
             body,
             headers: makeAuthRequestHeaders(),
-            method: RequestMethod.Post,
+            method: "post",
         });
 
         if (!response.ok) {
