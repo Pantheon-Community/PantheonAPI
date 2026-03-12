@@ -39,6 +39,36 @@
                 }
             }
         },
+        "/spec": {
+            "get": {
+                "tags": [
+                    "Miscellaneous"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OpenAPI specification for the FoundationX API.",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/api-docs": {
+            "get": {
+                "tags": [
+                    "Miscellaneous"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alternate API viewing page.",
+                        "content": {
+                            "text/html": {}
+                        }
+                    }
+                }
+            }
+        },
         "/ip": {
             "get": {
                 "tags": [
@@ -69,36 +99,6 @@
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
-                    }
-                }
-            }
-        },
-        "/spec": {
-            "get": {
-                "tags": [
-                    "Miscellaneous"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OpenAPI specification for the FoundationX API.",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/api-docs": {
-            "get": {
-                "tags": [
-                    "Miscellaneous"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Alternate API viewing page.",
-                        "content": {
-                            "text/html": {}
-                        }
                     }
                 }
             }
@@ -254,12 +254,6 @@
                     "400": {
                         "$ref": "#/components/responses/BadRequestError400"
                     },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/ForbiddenError403"
-                    },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
                     }
@@ -306,12 +300,6 @@
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequestError400"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError401"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/ForbiddenError403"
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
@@ -388,6 +376,50 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/users/@me/sessions/{id}": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "id",
+                    "schema": {
+                        "$ref": "#/components/schemas/UserSessionId"
+                    }
+                }
+            ],
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "deleteMeSession",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Endpoint for deleting specific user sessions.",
+                "responses": {
+                    "200": {
+                        "description": "Success."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
@@ -501,6 +533,9 @@
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
+                    },
+                    "501": {
+                        "$ref": "#/components/responses/SecondaryRequestError501"
                     }
                 }
             }
