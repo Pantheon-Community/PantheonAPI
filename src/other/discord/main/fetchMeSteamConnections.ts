@@ -9,7 +9,7 @@ export async function fetchMySteamConnections(
     token: UserToken,
     timer: ServerTimer,
 ): Promise<DiscordSteamConnection[]> {
-    using _ = timer.create("discord_users_@me_connections");
+    using _ = timer.create("DISCORD_fetchMySteamConnections");
 
     try {
         const response = await fetch(`${RouteBases.api}/users/@me/connections`, {

@@ -14,7 +14,7 @@ export async function getAllOfMySessions(
     id: DiscordId,
     timer: ServerTimer,
 ): Promise<UserSessionBasic[]> {
-    using _ = timer.create("getUserSessionsByUserId");
+    using _ = timer.create("getAllOfMySessions");
 
     try {
         const sessions = await pg<SelectQuery[]>`

@@ -12,7 +12,7 @@ type SelectQuery = Pick<
 >;
 
 export async function getMySession(token: UserToken, timer: ServerTimer): Promise<InternalSession> {
-    using _ = timer.create("getUserSession");
+    using _ = timer.create("getMySession");
 
     try {
         const [session] = await pg<SelectQuery[]>`
