@@ -8,7 +8,7 @@ import type { UserSessionModel } from "../userSessionModel";
 
 type SelectQuery = Pick<
     UserSessionModel,
-    "access_token" | "refresh_token" | "expires_at" | "user_id"
+    "id" | "access_token" | "refresh_token" | "expires_at" | "user_id"
 >;
 
 export async function getMySession(token: UserToken, timer: ServerTimer): Promise<InternalSession> {
@@ -17,6 +17,7 @@ export async function getMySession(token: UserToken, timer: ServerTimer): Promis
     try {
         const [session] = await pg<SelectQuery[]>`
             SELECT
+                id,
                 access_token,
                 refresh_token,
                 expires_at,
@@ -29,13 +30,13 @@ export async function getMySession(token: UserToken, timer: ServerTimer): Promis
             throw new InvalidTokenError();
         }
 
-        const { expires_at, access_token, refresh_token, user_id } = session;
+        const { id, expires_at, access_token, refresh_token, user_id } = session;
 
         if (expires_at.getTime() < Date.now()) {
             throw new ExpiredTokenError();
         }
 
-        return { accessToken: access_token, refreshToken: refresh_token, userId: user_id };
+        return { id, accessToken: access_token, refreshToken: refresh_token, userId: user_id };
     } catch (error) {
         throw wrapPgError(error);
     }
