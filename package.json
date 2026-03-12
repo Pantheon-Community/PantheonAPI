@@ -10,8 +10,9 @@
         "typecheck": "bun run tsc --project tsconfig.strict.json",
         "test": "bun test --concurrent",
         "check-spec": "bun run scripts/checkDeadLinks.ts",
-        "gen-tokens": "bun run scripts/generateTokens.ts",
-        "check-all": "bun run lint && bun run typecheck && bun run test && bun run check-spec"
+        "check-readme": "bun run scripts/checkReadme.ts",
+        "check-all": "bun run lint && bun run typecheck && bun run test && bun run check-spec && bun run check-readme",
+        "gen-tokens": "bun run scripts/generateTokens.ts"
     },
     "devDependencies": {
         "@types/bun": "latest",

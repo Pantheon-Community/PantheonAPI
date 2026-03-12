@@ -33,6 +33,9 @@ jobs:
             - name: Check Spec
               run: bun run check-spec
 
+            - name: Check README
+              run: bun run check-readme
+
             - name: Upload Coverage to Codecov
               uses: codecov/codecov-action@v5
               with:
