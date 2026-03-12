@@ -7,10 +7,10 @@ import process from "node:process";
  * @example "8336a7b"
  */
 export function getCommitHash(): string | null {
-    const fromEnv = process.env["GIT_COMMIT_HASH"];
+    const fromEnv = process.env["GIT_COMMIT_HASH"]?.trim();
 
-    if (fromEnv !== undefined && fromEnv.trim().length > 0) {
-        return fromEnv.trim();
+    if (fromEnv !== undefined && fromEnv.length > 0 && fromEnv !== "unknown") {
+        return fromEnv;
     }
 
     try {
