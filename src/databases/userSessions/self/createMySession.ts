@@ -40,7 +40,7 @@ export async function createMySession(
             ) RETURNING id
         `;
 
-        return createdSession.id;
+        return Number(createdSession.id) as UserSessionId;
     } catch (error) {
         throw wrapPgError(error);
     }

@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import type { DiscordId } from "@/shared/types/Common";
+import type { DiscordId, UserSessionId } from "@/shared/types/Common";
 import type { UserSessionBasic } from "@/shared/types/UserSession";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { wrapPgError } from "../../utils/handlePgError";
@@ -24,7 +24,7 @@ export async function getAllOfMySessions(
         `;
 
         return sessions.map((x) => ({
-            id: x.id,
+            id: Number(x.id) as UserSessionId,
             startedAt: x.started_at.toISOString(),
             ip: x.ip,
             userAgent: x.user_agent,

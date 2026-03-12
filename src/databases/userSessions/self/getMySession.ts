@@ -1,6 +1,6 @@
 import { ExpiredTokenError, InvalidTokenError } from "@/errors/UnauthorizedError";
 import { pg } from "@/global/pg";
-import type { UserToken } from "@/shared/types/Common";
+import type { UserSessionId, UserToken } from "@/shared/types/Common";
 import type { InternalSession } from "@/types/Internal";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { wrapPgError } from "../../utils/handlePgError";
@@ -36,7 +36,12 @@ export async function getMySession(token: UserToken, timer: ServerTimer): Promis
             throw new ExpiredTokenError();
         }
 
-        return { id, accessToken: access_token, refreshToken: refresh_token, userId: user_id };
+        return {
+            id: Number(id) as UserSessionId,
+            accessToken: access_token,
+            refreshToken: refresh_token,
+            userId: user_id,
+        };
     } catch (error) {
         throw wrapPgError(error);
     }

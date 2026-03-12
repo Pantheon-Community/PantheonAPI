@@ -1,20 +1,13 @@
 import { Column } from "@/databases/utils/column";
 import { pg } from "@/global/pg";
-import type {
-    DiscordId,
-    Ip,
-    Origin,
-    UserAgent,
-    UserSessionId,
-    UserToken,
-} from "@/shared/types/Common";
+import type { DiscordId, Ip, Origin, UserAgent, UserToken } from "@/shared/types/Common";
 
 export interface UserSessionModel {
     readonly access_token: UserToken;
 
     readonly refresh_token: UserToken;
 
-    readonly id: UserSessionId;
+    readonly id: string;
 
     readonly started_at: Date;
 
