@@ -1,4 +1,4 @@
-import { createUserSession } from "@/databases/userSessions/createUserSession";
+import { createMySession } from "@/databases/userSessions/self/createMySession";
 import { requestAccessToken } from "@/other/discord/auth/requestAccessToken";
 import { userService } from "@/services/userService";
 import type { LoginRequest } from "@/shared/types/Requests/LoginRequest";
@@ -28,7 +28,7 @@ export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
 
         // 3. create new session
 
-        const sessionId = await createUserSession(authData, user.id, analytics, timer);
+        const sessionId = await createMySession(authData, user.id, analytics, timer);
 
         // 4. done!
 

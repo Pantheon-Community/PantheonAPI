@@ -1,4 +1,4 @@
-import { deleteExpiredUserSessions } from "@/databases/userSessions/deleteExpiredUserSessions";
+import { deleteExpiredSessions } from "@/databases/userSessions/other/deleteExpiredSessions";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
 import { log, logWithTimeTaken } from "@/utils/logging";
@@ -13,7 +13,7 @@ export async function userSessionExpirationTask(): Promise<void> {
     try {
         const startedAt = Date.now();
 
-        const count = await deleteExpiredUserSessions();
+        const count = await deleteExpiredSessions();
 
         logWithTimeTaken(
             `Deleted ${count} expired user session${count !== 1 ? "s" : ""}`,

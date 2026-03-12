@@ -2,15 +2,15 @@ import { pg } from "@/global/pg";
 import type { DiscordId } from "@/shared/types/Common";
 import type { UserSessionBasic } from "@/shared/types/UserSession";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "../utils/handlePgError";
-import type { UserSessionModel } from "./userSessionModel";
+import { wrapPgError } from "../../utils/handlePgError";
+import type { UserSessionModel } from "../userSessionModel";
 
 type SelectQuery = Pick<
     UserSessionModel,
     "id" | "started_at" | "ip" | "user_agent" | "origin" | "last_action_at"
 >;
 
-export async function getUserSessionsByUserId(
+export async function getAllOfMySessions(
     id: DiscordId,
     timer: ServerTimer,
 ): Promise<UserSessionBasic[]> {

@@ -3,18 +3,15 @@ import { pg } from "@/global/pg";
 import type { UserToken } from "@/shared/types/Common";
 import type { InternalSession } from "@/types/Internal";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "../utils/handlePgError";
-import type { UserSessionModel } from "./userSessionModel";
+import { wrapPgError } from "../../utils/handlePgError";
+import type { UserSessionModel } from "../userSessionModel";
 
 type SelectQuery = Pick<
     UserSessionModel,
     "access_token" | "refresh_token" | "expires_at" | "user_id"
 >;
 
-export async function getUserSession(
-    token: UserToken,
-    timer: ServerTimer,
-): Promise<InternalSession> {
+export async function getMySession(token: UserToken, timer: ServerTimer): Promise<InternalSession> {
     using _ = timer.create("getUserSession");
 
     try {

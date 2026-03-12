@@ -1,6 +1,6 @@
 import { updateUserAnalytics } from "@/databases/users/updateUserAnalytics";
-import { getUserSession } from "@/databases/userSessions/getUserSession";
-import { updateSessionAnalytics } from "@/databases/userSessions/updateSessionAnalytics";
+import { getMySession } from "@/databases/userSessions/self/getMySession";
+import { updateMySessionAnalytics } from "@/databases/userSessions/self/updateMySessionAnalytics";
 import { MissingTokenError } from "@/errors/UnauthorizedError";
 import { app } from "@/global/app";
 import type { UserToken } from "@/shared/types/Common";
@@ -65,7 +65,7 @@ function registerNoAuthEndpoint(endpoint: NoAuthEndpoint): void {
 function registerSessionAuthEndpoint(endpoint: SessionAuthEndpoint): void {
     const finalUpateSessionAnalytics = endpoint.skipSessionUpdates
         ? async (): Promise<void> => {}
-        : updateSessionAnalytics;
+        : updateMySessionAnalytics;
 
     registerBaseEndpoint(endpoint, async function (req, res, timer) {
         const token = getToken(req);
@@ -74,7 +74,7 @@ function registerSessionAuthEndpoint(endpoint: SessionAuthEndpoint): void {
             throw new MissingTokenError();
         }
 
-        const session = await getUserSession(token, timer);
+        const session = await getMySession(token, timer);
 
         const analytics = getAnalytics(req);
 

@@ -1,9 +1,9 @@
 import { pg } from "@/global/pg";
 import type { UserToken } from "@/shared/types/Common";
 import type { RequestAnalytics } from "@/types/RequestAnalytics";
-import { wrapPgError } from "../utils/handlePgError";
+import { wrapPgError } from "../../utils/handlePgError";
 
-export async function updateSessionAnalytics(
+export async function updateMySessionAnalytics(
     token: UserToken,
     analytics: RequestAnalytics,
 ): Promise<void> {

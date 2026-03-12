@@ -1,4 +1,4 @@
-import { deleteUserSessionByToken } from "@/databases/userSessions/deleteUserSession";
+import { deleteMySession } from "@/databases/userSessions/self/deleteMySession";
 import { revokeAccessToken } from "@/other/discord/auth/revokeAccessToken";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
@@ -15,6 +15,6 @@ export const postLogout: Endpoint = {
 
         await revokeAccessToken(session.accessToken, timer);
 
-        await deleteUserSessionByToken(session.accessToken, timer);
+        await deleteMySession(session.accessToken, timer);
     },
 };

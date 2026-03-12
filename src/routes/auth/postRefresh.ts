@@ -1,4 +1,4 @@
-import { replaceUserSession } from "@/databases/userSessions/replaceUserSession";
+import { replaceMySession } from "@/databases/userSessions/self/replaceMySession";
 import { refreshAccessToken } from "@/other/discord/auth/refreshAccessToken";
 import { userService } from "@/services/userService";
 import type { AuthResponse } from "@/shared/types/Responses/AuthResponse";
@@ -23,7 +23,7 @@ export const postRefresh: Endpoint<void, AuthResponse> = {
 
         // 3. replace existing session
 
-        const sessionId = await replaceUserSession(session.accessToken, authData, analytics, timer);
+        const sessionId = await replaceMySession(session.accessToken, authData, analytics, timer);
 
         // 4. done!
 

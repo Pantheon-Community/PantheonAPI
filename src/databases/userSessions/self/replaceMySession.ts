@@ -4,8 +4,8 @@ import type { UserSessionId, UserToken } from "@/shared/types/Common";
 import type { DiscordAuthData } from "@/types/Discord";
 import type { RequestAnalytics } from "@/types/RequestAnalytics";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "../utils/handlePgError";
-import type { UserSessionModel } from "./userSessionModel";
+import { wrapPgError } from "../../utils/handlePgError";
+import type { UserSessionModel } from "../userSessionModel";
 
 type DeleteQuery = Pick<
     UserSessionModel,
@@ -14,7 +14,7 @@ type DeleteQuery = Pick<
 
 type InsertQuery = Pick<UserSessionModel, "id">;
 
-export async function replaceUserSession(
+export async function replaceMySession(
     oldSessionToken: UserToken,
     authData: DiscordAuthData,
     analytics: RequestAnalytics,

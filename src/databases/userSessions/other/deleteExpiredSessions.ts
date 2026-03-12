@@ -1,7 +1,7 @@
 import { pg } from "@/global/pg";
-import { wrapPgError } from "../utils/handlePgError";
+import { wrapPgError } from "../../utils/handlePgError";
 
-export async function deleteExpiredUserSessions(): Promise<number> {
+export async function deleteExpiredSessions(): Promise<number> {
     try {
         const deletedRows = await pg`DELETE FROM user_sessions WHERE expires_at <= NOW()`;
 
