@@ -13,7 +13,7 @@ interface ForbiddenErrorObject extends SiteErrorObject {
  *
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403 MDN Reference}
  */
-abstract class ForbiddenError extends SiteError<ForbiddenErrorObject> {
+export class ForbiddenError extends SiteError<ForbiddenErrorObject> {
     protected override statusCode = 403; // forbidden
 }
 
@@ -23,15 +23,6 @@ export class MissingPermissionError extends ForbiddenError {
             title: "Missing Permissions",
             description: "You do not have the required permissions to do this action.",
             missingPermissions,
-        });
-    }
-}
-
-export class NeverAllowedError extends ForbiddenError {
-    public constructor() {
-        super({
-            title: "Not Allowed",
-            description: "This action cannot be done, regardless of permissions.",
         });
     }
 }

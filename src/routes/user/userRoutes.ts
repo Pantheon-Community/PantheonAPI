@@ -1,4 +1,5 @@
 import type { AnyEndpoint } from "@/types/Express/Endpoint";
+import { deleteMeSession } from "./deleteMeSession";
 import { deleteMeSteamUsersPrimary } from "./deleteMeSteamUsersPrimary";
 import { getMe } from "./getMe";
 import { getMeSessions } from "./getMeSessions";
@@ -11,4 +12,5 @@ export const userRoutes: AnyEndpoint[] = [
     getMeSessions,
     putMeSteamUsersPrimary,
     deleteMeSteamUsersPrimary,
+    deleteMeSession,
 ];
