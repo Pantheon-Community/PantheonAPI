@@ -3,9 +3,10 @@ import { config } from "@/global/config";
 import { attachPostRouteMiddleware, attachPreRouteMiddleware } from "@/middleware/attachMiddleware";
 import { addRoutes, addStaticRoutes } from "@/routes/addRoutes";
 import { Color } from "@/types/Color";
+import type { TeardownFn } from "@/types/TeardownFn";
 import { colorize } from "@/utils/colorize";
 import { logWithTimeTaken } from "@/utils/logging";
-import { createServer } from "node:http";
+import { createServer, Server } from "node:http";
 
 function setupAppEnv(): void {
     const { environment, api } = config;
@@ -20,10 +21,10 @@ function setupAppEnv(): void {
     }
 }
 
-function startListeningOnPort(): Promise<string> {
+function startListeningOnPort(): Promise<[Server, string]> {
     const server = createServer(app);
 
-    return new Promise<string>((resolve) => {
+    return new Promise<[Server, string]>((resolve) => {
         server.listen(config.api.port, () => {
             const addressData = server.address();
 
@@ -42,12 +43,12 @@ function startListeningOnPort(): Promise<string> {
                 color = Color.FgCyan;
             }
 
-            resolve(colorize(reportedLocation, color));
+            resolve([server, colorize(reportedLocation, color)]);
         });
     });
 }
 
-export async function startApi(): Promise<void> {
+export async function startApi(): Promise<TeardownFn> {
     const startedAt = Date.now();
 
     setupAppEnv();
@@ -60,7 +61,16 @@ export async function startApi(): Promise<void> {
 
     attachPostRouteMiddleware();
 
-    const listeningOn = await startListeningOnPort();
+    const [server, listeningOn] = await startListeningOnPort();
 
     logWithTimeTaken(`Web API listening on ${listeningOn}`, startedAt);
+
+    return (receivedAt) => {
+        return new Promise((resolve) => {
+            server.close(() => {
+                logWithTimeTaken(`Web API closed`, receivedAt);
+                resolve();
+            });
+        });
+    };
 }

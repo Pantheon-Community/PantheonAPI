@@ -1,3 +1,4 @@
+import process from "node:process";
 import { config } from "./global/config";
 import { startApi } from "./start/startApi";
 import { startPostgres } from "./start/startPostgres";
@@ -15,4 +16,16 @@ if (config.commitHash === null) {
     log(`Running in ${environment} (commit ${commit})`);
 }
 
-await Promise.all([startPostgres(), startApi()]);
+const teardownFns = await Promise.all([startPostgres(), startApi()]);
+
+process.on("SIGTERM", async () => {
+    const receivedAt = Date.now();
+
+    log(`SIGTERM signal received`);
+
+    await Promise.all(teardownFns.map((x) => x(receivedAt)));
+
+    log(`Goodbye!`);
+
+    process.exit(0);
+});

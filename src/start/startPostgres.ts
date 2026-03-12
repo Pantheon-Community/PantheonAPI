@@ -5,6 +5,7 @@ import { config } from "@/global/config";
 import { setPg } from "@/global/pg";
 import { userSessionExpirationTask } from "@/tasks/userSessionExpirationTask";
 import { Color } from "@/types/Color";
+import type { TeardownFn } from "@/types/TeardownFn";
 import { colorize } from "@/utils/colorize";
 import { log, logWithTimeTaken } from "@/utils/logging";
 import { SQL } from "bun";
@@ -19,7 +20,7 @@ enum ConnectionStatus {
     Disconnected,
 }
 
-async function connectToPostgres(): Promise<void> {
+async function connectToPostgres(): Promise<TeardownFn> {
     const { hostname, port, database, username, password } = config.db;
 
     const startedAt = Date.now();
@@ -27,6 +28,8 @@ async function connectToPostgres(): Promise<void> {
     // Logging In
 
     let connectionStatus = ConnectionStatus.Attempting;
+
+    let isClosingIntentionally = false;
 
     const pg = new SQL({
         hostname,
@@ -44,6 +47,8 @@ async function connectToPostgres(): Promise<void> {
         },
 
         onclose: (error: Error | null): void => {
+            if (isClosingIntentionally) return;
+
             switch (connectionStatus) {
                 case ConnectionStatus.Attempting:
                     log(colorize("Failed to connect to PostgreSQL", Color.FgRed));
@@ -66,6 +71,14 @@ async function connectToPostgres(): Promise<void> {
     setPg(pg);
 
     await pg.connect();
+
+    return async (receivedAt) => {
+        isClosingIntentionally = true;
+
+        await pg.close();
+
+        logWithTimeTaken(`Disconnected from PostgreSQL`, receivedAt);
+    };
 }
 
 async function setupTables(): Promise<void> {
@@ -88,8 +101,10 @@ async function scheduleTasks(): Promise<void> {
     }
 }
 
-export async function startPostgres(): Promise<void> {
-    await connectToPostgres();
+export async function startPostgres(): Promise<TeardownFn> {
+    const teardownFn = await connectToPostgres();
     await setupTables();
     await scheduleTasks();
+
+    return teardownFn;
 }
