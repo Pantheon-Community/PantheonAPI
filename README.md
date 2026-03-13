@@ -25,3 +25,5 @@ If you need help using or developing the API, feel free to message NachoToast on
 ### Licensing
 
 This API and its source code is licensed under the MIT license. [Read more here](https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE).
+
+![Cutout side view of a panther](static/logo.png)
