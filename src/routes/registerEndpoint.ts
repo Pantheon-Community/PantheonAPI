@@ -1,9 +1,12 @@
+import { getUserRoleInfo } from "@/databases/roles/getUserRoleInfo";
 import { updateUserAnalytics } from "@/databases/users/updateUserAnalytics";
 import { getMySession } from "@/databases/userSessions/self/getMySession";
 import { updateMySessionAnalytics } from "@/databases/userSessions/self/updateMySessionAnalytics";
+import { MissingPermissionError } from "@/errors/ForbiddenError";
 import { MissingTokenError } from "@/errors/UnauthorizedError";
 import { app } from "@/global/app";
 import type { UserToken } from "@/shared/types/Common";
+import { hasPermission } from "@/shared/utils/PermissionHelpers";
 import { Color } from "@/types/Color";
 import type { AnyRequest } from "@/types/Express/AnyRequest";
 import { AuthScope } from "@/types/Express/AuthScope";
@@ -11,6 +14,7 @@ import type {
     AnyEndpoint,
     Endpoint,
     NoAuthEndpoint,
+    PermissionAuthEndpoint,
     SessionAuthEndpoint,
 } from "@/types/Express/Endpoint";
 import { colorize } from "@/utils/colorize";
@@ -96,6 +100,42 @@ function registerSessionAuthEndpoint(endpoint: SessionAuthEndpoint): void {
     });
 }
 
+function registerPermissionAuthEndpoint(endpoint: PermissionAuthEndpoint): void {
+    registerBaseEndpoint(endpoint, async function (req, res, timer) {
+        const token = getToken(req);
+
+        if (token === null) {
+            throw new MissingTokenError();
+        }
+
+        const session = await getMySession(token, timer);
+
+        const analytics = getAnalytics(req);
+
+        updateUserAnalytics(session.userId, analytics).catch((error) => {
+            log(
+                `Background update of user analytics for ${colorize(session.userId, Color.FgCyan)} errored!`,
+            );
+            console.error(error);
+        });
+
+        updateMySessionAnalytics(token, analytics).catch((error) => {
+            log(
+                `Background update of session analytics for ${colorize(session.userId, Color.FgCyan)} errored!`,
+            );
+            console.error(error);
+        });
+
+        const perms = await getUserRoleInfo(session.userId, timer);
+
+        if (!hasPermission(perms, endpoint.permissions)) {
+            throw new MissingPermissionError(endpoint.permissions);
+        }
+
+        return await endpoint.handleRequest({ req, res, timer, session, analytics, perms });
+    });
+}
+
 export function registerEndpoint(provider: AnyEndpoint): void {
     switch (provider.auth) {
         case AuthScope.None:
@@ -103,5 +143,8 @@ export function registerEndpoint(provider: AnyEndpoint): void {
 
         case AuthScope.Session:
             return registerSessionAuthEndpoint(provider);
+
+        case AuthScope.Permission:
+            return registerPermissionAuthEndpoint(provider);
     }
 }

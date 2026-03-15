@@ -103,36 +103,6 @@
                 }
             }
         },
-        "/roles": {
-            "get": {
-                "tags": [
-                    "Miscellaneous"
-                ],
-                "operationId": "getRoles",
-                "description": "Retrieves information about all roles.",
-                "responses": {
-                    "200": {
-                        "description": "List of roles.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Role"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequestError400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/RateLimited429"
-                    }
-                }
-            }
-        },
         "/login": {
             "post": {
                 "tags": [
@@ -340,7 +310,7 @@
         "/users/@me": {
             "get": {
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "operationId": "getMe",
                 "security": [
@@ -378,7 +348,7 @@
         "/users/@me/sessions": {
             "get": {
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "operationId": "getMeSessions",
                 "security": [
@@ -426,7 +396,7 @@
             ],
             "delete": {
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "operationId": "deleteMeSession",
                 "security": [
@@ -460,7 +430,7 @@
         "/users/@me/steam-users": {
             "get": {
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "operationId": "getMeSteamUsers",
                 "security": [
@@ -501,7 +471,7 @@
         "/users/@me/steam-users/primary": {
             "delete": {
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "operationId": "deleteMeSteamUsersPrimary",
                 "security": [
@@ -539,7 +509,7 @@
             ],
             "put": {
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "operationId": "putMeSteamUsersPrimary",
                 "security": [
@@ -573,7 +543,7 @@
         "/users/@me/roles": {
             "get": {
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "operationId": "getMeRoles",
                 "security": [
@@ -601,6 +571,82 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/roles": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "operationId": "getRoles",
+                "description": "Retrieves information about all roles.",
+                "responses": {
+                    "200": {
+                        "description": "List of roles.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Role"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Roles"
+                ],
+                "operationId": "putRoles",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Creates a new role.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoleWithoutId"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The ID of the created role.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoleId"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
@@ -665,15 +711,18 @@
                                 }
                             ],
                             "properties": {
-                                "missingPermissions": {
+                                "requiredPermissions": {
                                     "$ref": "#/components/schemas/PermissionsObject"
+                                },
+                                "minimumLevel": {
+                                    "$ref": "#/components/schemas/RoleLevel"
                                 }
                             }
                         },
                         "example": {
                             "title": "Missing Permissions",
                             "description": "You do not have the required permissions to do this action.",
-                            "missingPermissions": {
+                            "requiredPermissions": {
                                 "generalPermissions": 3
                             }
                         }
@@ -974,12 +1023,9 @@
                     "description": "types/Common.ts"
                 }
             },
-            "Role": {
+            "RoleWithoutId": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "$ref": "#/components/schemas/RoleId"
-                    },
                     "name": {
                         "type": "string"
                     },
@@ -1009,12 +1055,32 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "id",
                     "name",
                     "icon",
                     "category",
                     "level",
                     "permissions"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
+                    "description": "types/Role.ts"
+                }
+            },
+            "Role": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/RoleWithoutId"
+                    }
+                ],
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/RoleId"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
@@ -1303,8 +1369,12 @@
             "description": "Logging in, logging out, and refreshing."
         },
         {
-            "name": "User",
+            "name": "Users",
             "description": "User-related functionality."
+        },
+        {
+            "name": "Role",
+            "description": "Role-related functionality."
         },
         {
             "name": "Lookups",

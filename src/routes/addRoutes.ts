@@ -8,6 +8,7 @@ import { authRoutes } from "./auth/authRoutes";
 import { lookupRoutes } from "./lookup/lookupRoutes";
 import { miscRoutes } from "./miscellaneous/miscRoutes";
 import { registerEndpoint } from "./registerEndpoint";
+import { roleRoutes } from "./role/roleRoutes";
 import { userRoutes } from "./user/userRoutes";
 
 /** Adds the `/api-spec` and `/spec` routes to the app. */
@@ -45,7 +46,13 @@ export function addStaticRoutes(): void {
 
 /** Adds normal routes to the app. */
 export function addRoutes(): void {
-    for (const provider of [...authRoutes, ...miscRoutes, ...userRoutes, ...lookupRoutes]) {
+    for (const provider of [
+        ...authRoutes,
+        ...miscRoutes,
+        ...userRoutes,
+        ...lookupRoutes,
+        ...roleRoutes,
+    ]) {
         registerEndpoint(provider);
     }
 }

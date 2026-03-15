@@ -1,3 +1,4 @@
+import type { FlattenedPermissions } from "@/shared/utils/PermissionHelpers";
 import type { ServerTimer } from "@/utils/serverTimer";
 import type { Request, Response } from "express";
 import type { InternalSession } from "../Internal";
@@ -19,4 +20,12 @@ export interface SessionAuthHandlerArgs<
     session: InternalSession;
 
     analytics: RequestAnalytics;
+}
+
+export interface PermissionAuthHandlerArgs<
+    RequestBody,
+    PathParams,
+    QueryParams,
+> extends SessionAuthHandlerArgs<RequestBody, PathParams, QueryParams> {
+    perms: FlattenedPermissions;
 }

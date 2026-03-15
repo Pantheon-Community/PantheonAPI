@@ -1,6 +1,11 @@
+import type { PermissionsObject } from "@/shared/types/Permissions/PermissionsObject";
 import type { RequestMethod } from "../RequestMethod";
 import type { AuthScope } from "./AuthScope";
-import type { NoAuthHandlerArgs, SessionAuthHandlerArgs } from "./HandlerArgs";
+import type {
+    NoAuthHandlerArgs,
+    PermissionAuthHandlerArgs,
+    SessionAuthHandlerArgs,
+} from "./HandlerArgs";
 
 interface EndpointBase<Auth extends AuthScope> {
     method: RequestMethod;
@@ -62,6 +67,26 @@ export interface SessionAuthEndpoint<
         | ResponseBody;
 }
 
+export interface PermissionAuthEndpoint<
+    RequestBody = any,
+    ResponseBody = any,
+    PathParams = any,
+    QueryParams = any,
+> extends EndpointBase<AuthScope.Permission> {
+    permissions: Partial<PermissionsObject>;
+
+    handleRequest({
+        req,
+        res,
+        timer,
+        session,
+        analytics,
+        perms,
+    }: PermissionAuthHandlerArgs<RequestBody, PathParams, QueryParams>):
+        | Promise<ResponseBody>
+        | ResponseBody;
+}
+
 export type Endpoint<
     RequestBody = void,
     ResponseBody = void,
@@ -69,6 +94,7 @@ export type Endpoint<
     QueryParams = unknown,
 > =
     | NoAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
-    | SessionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>;
+    | SessionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
+    | PermissionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>;
 
 export type AnyEndpoint = Endpoint<any, any, any, any>;
