@@ -4,6 +4,8 @@
 
 !generator
 !src
+!shared/types
+!shared/utils
 !static
 
 !bun.lock
