@@ -1,3 +1,4 @@
+import { getUserRoleIds } from "@/databases/userRoles/getUserRoleIds";
 import { createMySession } from "@/databases/userSessions/self/createMySession";
 import { requestAccessToken } from "@/other/discord/auth/requestAccessToken";
 import { userService } from "@/services/userService";
@@ -28,12 +29,15 @@ export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
 
         // 3. create new session
 
-        const sessionId = await createMySession(authData, user.id, analytics, timer);
+        const [sessionId, roleIds] = await Promise.all([
+            createMySession(authData, user.id, analytics, timer),
+            getUserRoleIds(user.id, timer),
+        ]);
 
         // 4. done!
 
         const expiresAt = authData.expiresAt.toISOString();
 
-        return { user, steamUsers, expiresAt, token, sessionId };
+        return { user, steamUsers, expiresAt, token, sessionId, roleIds };
     },
 };

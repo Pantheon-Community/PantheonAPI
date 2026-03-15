@@ -2,6 +2,7 @@ import { pg } from "@/global/pg";
 import type { DiscordId, UserSessionId } from "@/shared/types/Common";
 import type { DiscordAuthData } from "@/types/Discord";
 import type { RequestAnalytics } from "@/types/RequestAnalytics";
+import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { wrapPgError } from "../../utils/handlePgError";
 import type { UserSessionModel } from "../userSessionModel";
@@ -40,7 +41,7 @@ export async function createMySession(
             ) RETURNING id
         `;
 
-        return Number(createdSession.id) as UserSessionId;
+        return castNumber(createdSession.id);
     } catch (error) {
         throw wrapPgError(error);
     }

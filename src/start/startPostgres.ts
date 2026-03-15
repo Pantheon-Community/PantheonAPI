@@ -1,4 +1,6 @@
+import { createRolesTable } from "@/databases/roles/roleModel";
 import { createSteamUsersTable } from "@/databases/steamUsers/steamUserModel";
+import { createUserRolesTable } from "@/databases/userRoles/userRoleModel";
 import { createUsersTable } from "@/databases/users/userModel";
 import { createUserSessionsTable } from "@/databases/userSessions/userSessionModel";
 import { config } from "@/global/config";
@@ -88,7 +90,9 @@ async function setupTables(): Promise<void> {
 
     await createUsersTable();
 
-    await createUserSessionsTable();
+    await Promise.all([createUserSessionsTable(), createRolesTable()]);
+
+    await createUserRolesTable();
 
     logWithTimeTaken("Setup Database Tables", startedAt);
 }

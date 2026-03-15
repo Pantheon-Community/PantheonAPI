@@ -1,3 +1,4 @@
+import { getUserRoleIds } from "@/databases/userRoles/getUserRoleIds";
 import { replaceMySession } from "@/databases/userSessions/self/replaceMySession";
 import { refreshAccessToken } from "@/other/discord/auth/refreshAccessToken";
 import { userService } from "@/services/userService";
@@ -23,12 +24,15 @@ export const postRefresh: Endpoint<void, AuthResponse> = {
 
         // 3. replace existing session
 
-        const sessionId = await replaceMySession(session.accessToken, authData, analytics, timer);
+        const [sessionId, roleIds] = await Promise.all([
+            replaceMySession(session.accessToken, authData, analytics, timer),
+            getUserRoleIds(user.id, timer),
+        ]);
 
         // 4. done!
 
         const expiresAt = authData.expiresAt.toISOString();
 
-        return { user, steamUsers, expiresAt, token, sessionId };
+        return { user, steamUsers, expiresAt, token, sessionId, roleIds };
     },
 };

@@ -103,6 +103,36 @@
                 }
             }
         },
+        "/roles": {
+            "get": {
+                "tags": [
+                    "Miscellaneous"
+                ],
+                "operationId": "getRoles",
+                "description": "Retrieves information about all roles.",
+                "responses": {
+                    "200": {
+                        "description": "List of roles.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Role"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "tags": [
@@ -359,7 +389,7 @@
                 "description": "Endpoint for getting all the current sessions of the currently logged-in user.",
                 "responses": {
                     "200": {
-                        "description": "User sessions",
+                        "description": "User sessions.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -539,6 +569,44 @@
                     }
                 }
             }
+        },
+        "/users/@me/roles": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "operationId": "getMeRoles",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Endpoint for getting all the current role IDs of the currently logged-in user.",
+                "responses": {
+                    "200": {
+                        "description": "User role IDs.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RoleId"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -704,22 +772,22 @@
             }
         },
         "schemas": {
-            "EconomyPermissions": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 0,
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/EconomyPermissions.ts",
-                    "description": "types/Permissions/EconomyPermissions.ts"
-                }
-            },
             "GeneralPermissions": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 0,
+                "maximum": 1,
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/GeneralPermissions.ts",
                     "description": "types/Permissions/GeneralPermissions.ts"
+                }
+            },
+            "UserPermissions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 127,
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/UserPermissions.ts",
+                    "description": "types/Permissions/UserPermissions.ts"
                 }
             },
             "PermissionsObject": {
@@ -728,8 +796,8 @@
                     "generalPermissions": {
                         "$ref": "#/components/schemas/GeneralPermissions"
                     },
-                    "economyPermissions": {
-                        "$ref": "#/components/schemas/EconomyPermissions"
+                    "userPermissions": {
+                        "$ref": "#/components/schemas/UserPermissions"
                     }
                 },
                 "externalDocs": {
@@ -772,6 +840,12 @@
                     },
                     "sessionId": {
                         "$ref": "#/components/schemas/UserSessionId"
+                    },
+                    "roleIds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoleId"
+                        }
                     }
                 },
                 "required": [
@@ -884,6 +958,67 @@
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
                     "description": "types/Common.ts"
+                }
+            },
+            "RoleId": {
+                "type": "integer",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "RoleLevel": {
+                "type": "integer",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
+                    "description": "types/Common.ts"
+                }
+            },
+            "Role": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/RoleId"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "category": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "level": {
+                        "$ref": "#/components/schemas/RoleLevel"
+                    },
+                    "permissions": {
+                        "type": "object",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PermissionsObject"
+                            }
+                        ],
+                        "required": [
+                            "generalPermissions",
+                            "userPermissions"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "name",
+                    "icon",
+                    "category",
+                    "level",
+                    "permissions"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
+                    "description": "types/Role.ts"
                 }
             },
             "SiteErrorObject": {
@@ -1037,6 +1172,29 @@
                 },
                 "required": [
                     "steam"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
+                    "description": "types/User.ts"
+                }
+            },
+            "UserBasicWithRoles": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/UserBasic"
+                    }
+                ],
+                "properties": {
+                    "roleIds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoleId"
+                        }
+                    }
+                },
+                "required": [
+                    "roleIds"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",

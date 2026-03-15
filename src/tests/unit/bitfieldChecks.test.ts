@@ -1,5 +1,5 @@
-import { EconomyPermissions } from "@/shared/types/Permissions/EconomyPermissions";
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
+import { UserPermissions } from "@/shared/types/Permissions/UserPermissions";
 import { test } from "bun:test";
 
 function checkBitfield(obj: object, name: string): void {
@@ -33,6 +33,6 @@ function checkBitfield(obj: object, name: string): void {
 }
 
 test("Permissions", () => {
-    checkBitfield(EconomyPermissions, "EconomyPermissions");
     checkBitfield(GeneralPermissions, "GeneralPermissions");
+    checkBitfield(UserPermissions, "UserPermissions");
 });
