@@ -33,11 +33,4 @@ export async function createSteamUsersTable(): Promise<void> {
             times_seen INT NOT NULL DEFAULT 0
         )
     `);
-
-    // migrations
-    await Promise.all([
-        pg`ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS avatar VARCHAR(128)`,
-        pg`ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS location VARCHAR(32)`,
-        pg`ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS member_since TIMESTAMP`,
-    ]);
 }
