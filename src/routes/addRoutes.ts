@@ -4,12 +4,24 @@ import { static as serveStatic } from "express";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { serve, setup } from "swagger-ui-express";
-import { authRoutes } from "./auth/authRoutes";
-import { lookupRoutes } from "./lookup/lookupRoutes";
-import { miscRoutes } from "./miscellaneous/miscRoutes";
+import { postLogin } from "./auth/postLogin";
+import { postLogout } from "./auth/postLogout";
+import { postRefresh } from "./auth/postRefresh";
+import { getDiscordToSteam } from "./lookup/getDiscordToSteam";
+import { getSteamToDiscord } from "./lookup/getSteamToDiscord";
+import { getIp } from "./miscellaneous/getIp";
 import { registerEndpoint } from "./registerEndpoint";
-import { roleRoutes } from "./role/roleRoutes";
-import { userRoutes } from "./user/userRoutes";
+import { getRoles } from "./roles/getRoles";
+import { postRoles } from "./roles/postRoles";
+import { deleteRole } from "./roles/singular/deleteRole";
+import { patchRole } from "./roles/singular/patchRole";
+import { deleteMeSession } from "./user/deleteMeSession";
+import { deleteMeSteamUsersPrimary } from "./user/deleteMeSteamUsersPrimary";
+import { getMe } from "./user/getMe";
+import { getMeRoles } from "./user/getMeRoles";
+import { getMeSessions } from "./user/getMeSessions";
+import { getMeSteamUsers } from "./user/getMeSteamUsers";
+import { putMeSteamUsersPrimary } from "./user/putMeSteamUsersPrimary";
 
 /** Adds the `/api-spec` and `/spec` routes to the app. */
 function addApiSpecRoutes(): void {
@@ -47,11 +59,28 @@ export function addStaticRoutes(): void {
 /** Adds normal routes to the app. */
 export function addRoutes(): void {
     for (const provider of [
-        ...authRoutes,
-        ...miscRoutes,
-        ...userRoutes,
-        ...lookupRoutes,
-        ...roleRoutes,
+        // auth
+        postLogin,
+        postLogout,
+        postRefresh,
+        // lookup
+        getDiscordToSteam,
+        getSteamToDiscord,
+        // miscellaneous
+        getIp,
+        // roles
+        deleteRole,
+        patchRole,
+        getRoles,
+        postRoles,
+        // user
+        deleteMeSession,
+        deleteMeSteamUsersPrimary,
+        getMe,
+        getMeRoles,
+        getMeSessions,
+        getMeSteamUsers,
+        putMeSteamUsersPrimary,
     ]) {
         registerEndpoint(provider);
     }

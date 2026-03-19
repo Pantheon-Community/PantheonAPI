@@ -1,6 +1,6 @@
-import { deleteOneOfMySessions } from "@/databases/userSessions/self/deleteOneOfMySessions";
+import { userSessionsDb } from "@/databases/userSessions";
 import { ForbiddenError } from "@/errors/ForbiddenError";
-import type { UserSessionId } from "@/shared/types/Common";
+import type { UserSessionId } from "@/shared/types/UserSession";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
@@ -8,6 +8,7 @@ interface PathParams {
     id: UserSessionId;
 }
 
+/** Deletes a specific sessions of the currently logged-in user. */
 export const deleteMeSession: Endpoint<void, void, PathParams> = {
     auth: AuthScope.Session,
     method: "delete",
@@ -20,6 +21,6 @@ export const deleteMeSession: Endpoint<void, void, PathParams> = {
             });
         }
 
-        await deleteOneOfMySessions(session.userId, req.params.id, timer);
+        await userSessionsDb.deleteOwnSession(req.params.id, session.userId, timer);
     },
 };

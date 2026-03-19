@@ -75,7 +75,7 @@
                     "Miscellaneous"
                 ],
                 "operationId": "getIp",
-                "description": "IP address information endpoint, useful for debugging proxies.",
+                "description": "Returns IP address information, useful for debugging proxies.",
                 "responses": {
                     "200": {
                         "description": "IP address of request, may be `::` if viewing from the same network.",
@@ -109,7 +109,7 @@
                     "Auth"
                 ],
                 "operationId": "postLogin",
-                "description": "Endpoint for completing the Discord OAuth2 login flow.",
+                "description": "Completes the Discord OAuth2 login flow.",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -154,7 +154,7 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for ending an existing OAuth2 session.",
+                "description": "Ends an existing Discord OAuth2 session.",
                 "responses": {
                     "200": {
                         "description": "No data."
@@ -164,6 +164,9 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
@@ -185,7 +188,7 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for refreshing an existing OAuth2 session.",
+                "description": "Refreshes an existing Discord OAuth2 session.",
                 "responses": {
                     "200": {
                         "description": "User data and a token for making elevated requests to the API.",
@@ -202,6 +205,9 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
@@ -235,10 +241,10 @@
                 ],
                 "operationId": "getDiscordToSteam",
                 "security": [],
-                "description": "Endpoint for looking up Steam user info from Discord IDs.",
+                "description": "Returns Steam user info from Discord IDs.",
                 "responses": {
                     "200": {
-                        "description": "Array of the relevant Steam users for each of the the given Steam IDs.\n\nNote that this does map 1:1 with the given Discord ID array, since a Discord ID may not be associated with any steam users.",
+                        "description": "Array of the relevant Steam users for each of the the given Steam IDs.\n\nNote that this does **not** map 1:1 with the input array, since a Discord ID may not be associated with any steam users.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -283,10 +289,10 @@
                 ],
                 "operationId": "getSteamToDiscord",
                 "security": [],
-                "description": "Endpoint for looking up Discord user info from Steam IDs.",
+                "description": "Returns Discord user info from Steam IDs.",
                 "responses": {
                     "200": {
-                        "description": "Array of the relevant Discord user(s) for the given Steam IDs.\n\nNote that this does map 1:1 with the given Steam ID array, since a Steam ID can be associated with any number of users.",
+                        "description": "Array of the relevant Discord user(s) for the given Steam IDs.\n\nNote that this does **not** map 1:1 with the input array, since a Steam ID can be associated with any number of users.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -318,7 +324,7 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for getting information about the currently logged-in user.\n\nNote that the `/login` endpoint returns a superset of this information, so you do not need to call this after logging in.",
+                "description": "Gets information about the currently logged-in user.",
                 "responses": {
                     "200": {
                         "description": "User information.",
@@ -356,7 +362,7 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for getting all the current sessions of the currently logged-in user.",
+                "description": "Returns all non-expired sessions of the currently logged-in user.",
                 "responses": {
                     "200": {
                         "description": "User sessions.",
@@ -404,10 +410,10 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for deleting specific user sessions.",
+                "description": "Deletes a specific sessions of the currently logged-in user.",
                 "responses": {
                     "200": {
-                        "description": "Success."
+                        "description": "Success, no content."
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequestError400"
@@ -438,7 +444,7 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for getting specifically the Discord Steam connections for the currently logged-in user.",
+                "description": "Gets the Discord Steam connections of the currently logged-in user.",
                 "responses": {
                     "200": {
                         "description": "User Steam connections.",
@@ -479,10 +485,10 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for clearing the primary Steam connection of the logged-in user's account.",
+                "description": "Clears the primary Steam connection of the currently logged-in user's account.",
                 "responses": {
                     "200": {
-                        "description": "Success."
+                        "description": "Success, no content."
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequestError400"
@@ -503,7 +509,7 @@
                     "in": "path",
                     "name": "id",
                     "schema": {
-                        "$ref": "#/components/schemas/DiscordId"
+                        "$ref": "#/components/schemas/SteamId64"
                     }
                 }
             ],
@@ -517,10 +523,10 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for setting the primary Steam connection of the logged-in user's account.",
+                "description": "Sets the primary Steam connection of the logged-in user's account.",
                 "responses": {
                     "200": {
-                        "description": "Success."
+                        "description": "Success, no content."
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequestError400"
@@ -551,7 +557,7 @@
                         "userToken": []
                     }
                 ],
-                "description": "Endpoint for getting all the current role IDs of the currently logged-in user.",
+                "description": "Gets all the role IDs of the currently logged-in user.",
                 "responses": {
                     "200": {
                         "description": "User role IDs.",
@@ -584,10 +590,10 @@
                     "Roles"
                 ],
                 "operationId": "getRoles",
-                "description": "Retrieves information about all roles.",
+                "description": "Gets all roles.",
                 "responses": {
                     "200": {
-                        "description": "List of roles.",
+                        "description": "List of all roles.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -607,11 +613,11 @@
                     }
                 }
             },
-            "put": {
+            "post": {
                 "tags": [
                     "Roles"
                 ],
-                "operationId": "putRoles",
+                "operationId": "postRoles",
                 "security": [
                     {
                         "userToken": []
@@ -647,6 +653,92 @@
                     },
                     "403": {
                         "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/roles/{id}": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "id",
+                    "schema": {
+                        "$ref": "#/components/schemas/RoleId"
+                    }
+                }
+            ],
+            "delete": {
+                "tags": [
+                    "Roles"
+                ],
+                "operationId": "deleteRole",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Deletes an existing role.",
+                "responses": {
+                    "200": {
+                        "description": "Success, no content."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Roles"
+                ],
+                "operationId": "patchRole",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Updates an existing role.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoleWithoutId"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success, no content."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
                     },
                     "429": {
                         "$ref": "#/components/responses/RateLimited429"
@@ -1005,22 +1097,22 @@
                 "type": "integer",
                 "description": "Way of uniquely referring to a user session.\n\nAlthough the **accessToken** field of a user session is also unique, using it to externally identify user sessions has obvious security drawbacks.",
                 "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
-                    "description": "types/Common.ts"
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserSession.ts",
+                    "description": "types/UserSession.ts"
                 }
             },
             "RoleId": {
                 "type": "integer",
                 "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
-                    "description": "types/Common.ts"
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
+                    "description": "types/Role.ts"
                 }
             },
             "RoleLevel": {
                 "type": "integer",
                 "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
-                    "description": "types/Common.ts"
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
+                    "description": "types/Role.ts"
                 }
             },
             "RoleWithoutId": {
@@ -1053,7 +1145,6 @@
                         ]
                     }
                 },
-                "additionalProperties": false,
                 "required": [
                     "name",
                     "icon",
@@ -1078,7 +1169,6 @@
                         "$ref": "#/components/schemas/RoleId"
                     }
                 },
-                "additionalProperties": false,
                 "required": [
                     "id"
                 ],

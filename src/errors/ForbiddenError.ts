@@ -1,5 +1,5 @@
-import type { RoleLevel } from "@/shared/types/Common";
 import type { PermissionsObject } from "@/shared/types/Permissions/PermissionsObject";
+import type { RoleLevel } from "@/shared/types/Role";
 import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 import { SiteError } from "./SiteError";
 
@@ -34,7 +34,7 @@ export class InsufficientLevelError extends ForbiddenError {
         super({
             title: "Insufficient Permission Level",
             description: "Your highest permission level is not sufficient to do this action.",
-            minimumLevel: level,
+            minimumLevel: (level + 1) as RoleLevel,
         });
     }
 }

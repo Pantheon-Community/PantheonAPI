@@ -1,5 +1,5 @@
-import { getUserRoleIds } from "@/databases/userRoles/getUserRoleIds";
-import { createMySession } from "@/databases/userSessions/self/createMySession";
+import { userRolesDb } from "@/databases/userRoles";
+import { userSessionsDb } from "@/databases/userSessions";
 import { requestAccessToken } from "@/other/discord/auth/requestAccessToken";
 import { userService } from "@/services/userService";
 import type { LoginRequest } from "@/shared/types/Requests/LoginRequest";
@@ -8,6 +8,7 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { getAnalytics } from "@/utils/getAnalytics";
 
+/** Completes the Discord OAuth2 login flow. */
 export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
     method: "post",
     path: "/login",
@@ -30,8 +31,8 @@ export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
         // 3. create new session
 
         const [sessionId, roleIds] = await Promise.all([
-            createMySession(authData, user.id, analytics, timer),
-            getUserRoleIds(user.id, timer),
+            userSessionsDb.createSession(authData, user.id, analytics, timer),
+            userRolesDb.getUserRoleIds(user.id, timer),
         ]);
 
         // 4. done!

@@ -1,8 +1,8 @@
-import { createRolesTable } from "@/databases/roles/roleModel";
-import { createSteamUsersTable } from "@/databases/steamUsers/steamUserModel";
-import { createUserRolesTable } from "@/databases/userRoles/userRoleModel";
-import { createUsersTable } from "@/databases/users/userModel";
-import { createUserSessionsTable } from "@/databases/userSessions/userSessionModel";
+import { rolesDb } from "@/databases/roles";
+import { steamUsersDb } from "@/databases/steamUsers";
+import { userRolesDb } from "@/databases/userRoles";
+import { usersDb } from "@/databases/users";
+import { userSessionsDb } from "@/databases/userSessions";
 import { config } from "@/global/config";
 import { setPg } from "@/global/pg";
 import { userSessionExpirationTask } from "@/tasks/userSessionExpirationTask";
@@ -86,13 +86,13 @@ async function connectToPostgres(): Promise<TeardownFn> {
 async function setupTables(): Promise<void> {
     const startedAt = Date.now();
 
-    await createSteamUsersTable();
+    await steamUsersDb.setup();
 
-    await createUsersTable();
+    await usersDb.setup();
 
-    await Promise.all([createUserSessionsTable(), createRolesTable()]);
+    await Promise.all([userSessionsDb.setup(), rolesDb.setup()]);
 
-    await createUserRolesTable();
+    await userRolesDb.setup();
 
     logWithTimeTaken("Setup Database Tables", startedAt);
 }

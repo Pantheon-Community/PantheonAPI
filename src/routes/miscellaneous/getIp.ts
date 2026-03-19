@@ -3,6 +3,7 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { getAnalytics } from "@/utils/getAnalytics";
 
+/** Returns IP address information, useful for debugging proxies. */
 export const getIp: Endpoint<void, Ip | null> = {
     method: "get",
     path: "/ip",

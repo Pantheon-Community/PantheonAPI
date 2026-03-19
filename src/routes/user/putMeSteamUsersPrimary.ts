@@ -1,4 +1,4 @@
-import { setUserSteam } from "@/databases/users/setUserSteam";
+import { usersDb } from "@/databases/users";
 import { NotFoundError } from "@/errors/NotFoundError";
 import { steamConnectionService } from "@/services/steamConnectionService";
 import type { SteamId64 } from "@/shared/types/Common";
@@ -9,6 +9,7 @@ interface PathParams {
     id: SteamId64;
 }
 
+/** Sets the primary Steam connection of the logged-in user's account. */
 export const putMeSteamUsersPrimary: Endpoint<void, void, PathParams> = {
     auth: AuthScope.Session,
     method: "put",
@@ -21,10 +22,11 @@ export const putMeSteamUsersPrimary: Endpoint<void, void, PathParams> = {
         if (matchedUser === undefined) {
             throw new NotFoundError({
                 title: "Steam User Not Found",
-                description: "The given Steam connection is not linked to your Discord account.",
+                description:
+                    "The given Steam user does not exist or is not connect to you Discord account.",
             });
         }
 
-        await setUserSteam(session.userId, matchedUser.id, timer);
+        await usersDb.setUserSteam(session.userId, matchedUser.id, timer);
     },
 };

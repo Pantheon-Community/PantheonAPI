@@ -1,4 +1,4 @@
-import { getSteamUsersFromDiscord } from "@/databases/steamUsers/getSteamUsersFromDiscord";
+import { getSteamUsersFromDiscord } from "@/databases/joins/getSteamUsersFromDiscord";
 import type { DiscordId } from "@/shared/types/Common";
 import type { SteamUserFromDiscord } from "@/shared/types/SteamUserFromDiscord";
 import { AuthScope } from "@/types/Express/AuthScope";
@@ -8,6 +8,7 @@ interface QueryParams {
     ids: DiscordId[];
 }
 
+/** Returns Steam user info from Discord IDs. */
 export const getDiscordToSteam: Endpoint<void, SteamUserFromDiscord[], void, QueryParams> = {
     method: "get",
     path: "/lookup/discord-to-steam",

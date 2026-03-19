@@ -7,7 +7,7 @@ import { SiteError } from "./SiteError";
  *
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401 MDN Reference}
  */
-abstract class UnauthorizedError extends SiteError {
+export abstract class UnauthorizedError extends SiteError {
     protected override statusCode = 401; // unauthorized
 
     public override makeResponse(res: Response): void {
@@ -21,25 +21,6 @@ export class MissingTokenError extends UnauthorizedError {
         super({
             title: "Missing Token",
             description: 'A token was not provided in the "Authorization" header.',
-        });
-    }
-}
-
-export class InvalidTokenError extends UnauthorizedError {
-    public constructor() {
-        super({
-            title: "Invalid Token",
-            description:
-                "The provided authorization token was invalid, it may have expired or been deleted.",
-        });
-    }
-}
-
-export class ExpiredTokenError extends UnauthorizedError {
-    public constructor() {
-        super({
-            title: "Expired Token",
-            description: "The provided authorization token has expired, please log back in.",
         });
     }
 }

@@ -1,4 +1,4 @@
-import { upsertUser } from "@/databases/users/upsertUser";
+import { usersDb } from "@/databases/users";
 import { fetchMe } from "@/other/discord/main/fetchMe";
 import type { UserToken } from "@/shared/types/Common";
 import type { GetMeResponse } from "@/shared/types/Responses/GetMeResponse";
@@ -17,9 +17,9 @@ export async function userService(
         steamConnectionService(token, timer),
     ]);
 
-    const { upsertedUser, steamId } = await upsertUser(
+    const { upsertedUser, steamId } = await usersDb.addOrUpdateUser(
         discordUser,
-        steamUsers[0]?.id ?? null,
+        steamUsers[0]?.id,
         analytics,
         timer,
     );

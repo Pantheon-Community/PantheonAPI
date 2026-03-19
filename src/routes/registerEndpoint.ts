@@ -1,7 +1,6 @@
-import { getUserRoleInfo } from "@/databases/roles/getUserRoleInfo";
-import { updateUserAnalytics } from "@/databases/users/updateUserAnalytics";
-import { getMySession } from "@/databases/userSessions/self/getMySession";
-import { updateMySessionAnalytics } from "@/databases/userSessions/self/updateMySessionAnalytics";
+import { getUserRoleInfo } from "@/databases/joins/getUserRoleInfo";
+import { usersDb } from "@/databases/users";
+import { userSessionsDb } from "@/databases/userSessions";
 import { MissingPermissionError } from "@/errors/ForbiddenError";
 import { MissingTokenError } from "@/errors/UnauthorizedError";
 import { app } from "@/global/app";
@@ -69,7 +68,7 @@ function registerNoAuthEndpoint(endpoint: NoAuthEndpoint): void {
 function registerSessionAuthEndpoint(endpoint: SessionAuthEndpoint): void {
     const finalUpateSessionAnalytics = endpoint.skipSessionUpdates
         ? async (): Promise<void> => {}
-        : updateMySessionAnalytics;
+        : userSessionsDb.updateSessionAnalytics.bind(userSessionsDb);
 
     registerBaseEndpoint(endpoint, async function (req, res, timer) {
         const token = getToken(req);
@@ -78,18 +77,18 @@ function registerSessionAuthEndpoint(endpoint: SessionAuthEndpoint): void {
             throw new MissingTokenError();
         }
 
-        const session = await getMySession(token, timer);
+        const session = await userSessionsDb.getSession(token, timer);
 
         const analytics = getAnalytics(req);
 
-        updateUserAnalytics(session.userId, analytics).catch((error) => {
+        usersDb.updateUserAnalytics(session.userId, analytics).catch((error) => {
             log(
                 `Background update of user analytics for ${colorize(session.userId, Color.FgCyan)} errored!`,
             );
             console.error(error);
         });
 
-        finalUpateSessionAnalytics(token, analytics).catch((error) => {
+        finalUpateSessionAnalytics(session.id, analytics).catch((error) => {
             log(
                 `Background update of session analytics for ${colorize(session.userId, Color.FgCyan)} errored!`,
             );
@@ -108,18 +107,18 @@ function registerPermissionAuthEndpoint(endpoint: PermissionAuthEndpoint): void 
             throw new MissingTokenError();
         }
 
-        const session = await getMySession(token, timer);
+        const session = await userSessionsDb.getSession(token, timer);
 
         const analytics = getAnalytics(req);
 
-        updateUserAnalytics(session.userId, analytics).catch((error) => {
+        usersDb.updateUserAnalytics(session.userId, analytics).catch((error) => {
             log(
                 `Background update of user analytics for ${colorize(session.userId, Color.FgCyan)} errored!`,
             );
             console.error(error);
         });
 
-        updateMySessionAnalytics(token, analytics).catch((error) => {
+        userSessionsDb.updateSessionAnalytics(session.id, analytics).catch((error) => {
             log(
                 `Background update of session analytics for ${colorize(session.userId, Color.FgCyan)} errored!`,
             );

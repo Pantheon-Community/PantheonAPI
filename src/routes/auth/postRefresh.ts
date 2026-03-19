@@ -1,11 +1,12 @@
-import { getUserRoleIds } from "@/databases/userRoles/getUserRoleIds";
-import { replaceMySession } from "@/databases/userSessions/self/replaceMySession";
+import { userRolesDb } from "@/databases/userRoles";
+import { userSessionsDb } from "@/databases/userSessions";
 import { refreshAccessToken } from "@/other/discord/auth/refreshAccessToken";
 import { userService } from "@/services/userService";
 import type { AuthResponse } from "@/shared/types/Responses/AuthResponse";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
+/** Refreshes an existing Discord OAuth2 session. */
 export const postRefresh: Endpoint<void, AuthResponse> = {
     method: "post",
     path: "/refresh",
@@ -25,8 +26,8 @@ export const postRefresh: Endpoint<void, AuthResponse> = {
         // 3. replace existing session
 
         const [sessionId, roleIds] = await Promise.all([
-            replaceMySession(session.accessToken, authData, analytics, timer),
-            getUserRoleIds(user.id, timer),
+            userSessionsDb.replaceSession(session.id, authData, analytics, timer),
+            userRolesDb.getUserRoleIds(user.id, timer),
         ]);
 
         // 4. done!

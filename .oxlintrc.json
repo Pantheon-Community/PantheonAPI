@@ -14,7 +14,12 @@
         "node": true
     },
     "rules": {
-        "typescript/explicit-function-return-type": "error",
+        "typescript/explicit-function-return-type": [
+            "error",
+            {
+                "allowHigherOrderFunctions": false
+            }
+        ],
         "typescript/no-unsafe-type-assertion": "allow",
         "unicorn/no-new-array": "allow"
     }

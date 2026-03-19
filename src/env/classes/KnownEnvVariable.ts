@@ -21,4 +21,8 @@ export class KnownEnvVariable<T> extends BaseEnvVariable {
 
         return this;
     }
+
+    public cast<T2>(): KnownEnvVariable<T2> {
+        return this as KnownEnvVariable<any> as KnownEnvVariable<T2>;
+    }
 }

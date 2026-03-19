@@ -1,4 +1,4 @@
-import { upsertSteamUserFromDiscord } from "@/databases/steamUsers/upsertSteamUserFromDiscord";
+import { steamUsersDb } from "@/databases/steamUsers";
 import { fetchMySteamConnections } from "@/other/discord/main/fetchMeSteamConnections";
 import { getSteamUserInfo } from "@/other/steam/getSteamUserInfo";
 import type { UserToken } from "@/shared/types/Common";
@@ -18,7 +18,7 @@ async function createSteamUser(
         info = { avatar: null, location: null, memberSince: null };
     }
 
-    return await upsertSteamUserFromDiscord(connection, info);
+    return await steamUsersDb.addFromDiscordConnection(connection, info);
 }
 
 /** Fetches the Steam connections of the given Discord user and updates them in the database. */
@@ -30,5 +30,5 @@ export async function steamConnectionService(
 
     using _ = timer.create("createSteamUsers");
 
-    return await Promise.all(steamConnections.slice(0, 10).map(createSteamUser));
+    return await Promise.all(steamConnections.slice(0, 5).map(createSteamUser));
 }

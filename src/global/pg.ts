@@ -1,4 +1,4 @@
-import type { SQL } from "bun";
+import { SQL } from "bun";
 
 export let pg: SQL;
 

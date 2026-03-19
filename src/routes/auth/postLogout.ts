@@ -1,8 +1,9 @@
-import { deleteMySession } from "@/databases/userSessions/self/deleteMySession";
+import { userSessionsDb } from "@/databases/userSessions";
 import { revokeAccessToken } from "@/other/discord/auth/revokeAccessToken";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
+/** Ends an existing Discord OAuth2 session. */
 export const postLogout: Endpoint = {
     method: "post",
     path: "/logout",
@@ -15,6 +16,6 @@ export const postLogout: Endpoint = {
 
         await revokeAccessToken(session.accessToken, timer);
 
-        await deleteMySession(session.accessToken, timer);
+        await userSessionsDb.deleteSession(session.id, timer);
     },
 };

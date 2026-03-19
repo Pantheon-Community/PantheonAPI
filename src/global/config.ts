@@ -1,5 +1,6 @@
 import { getCommitHash } from "@/env/getCommitHash";
 import { readFromEnv } from "@/env/readFromEnv";
+import type { DiscordId } from "@/shared/types/Common";
 
 export const config = {
     /** Auto-generated. */
@@ -73,6 +74,11 @@ export const config = {
         password: readFromEnv("DB_PASSWORD", (password) => password.isRequired()),
 
         port: readFromEnv("DB_PORT", (port) => port.isRequired().isPort()),
+
+        /** This user is automatically inserted into the users and roles databases on startup. */
+        rootUserId: readFromEnv("DB_ROOT_USER_ID", (id) =>
+            id.hasDefaultValueOf("240312568273436674").cast<DiscordId>(),
+        ),
     },
 
     /** Development-related flags. */
