@@ -1,9 +1,9 @@
 /* Checks that the contents of README.md matches the API spec description of openapi.json */
 
+import { Color } from "@/types/Color";
+import { colorize } from "@/utils/colorize";
 import { readFileSync } from "node:fs";
 import process from "node:process";
-import { Color } from "../src/types/Color";
-import { colorize } from "../src/utils/colorize";
 
 const inReadme = readFileSync("README.md", "utf-8")
     .trim()
