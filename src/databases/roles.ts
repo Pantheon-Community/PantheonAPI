@@ -2,7 +2,7 @@ import { NotFoundError } from "@/errors/NotFoundError";
 import { pg } from "@/global/pg";
 import type { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
 import type { UserPermissions } from "@/shared/types/Permissions/UserPermissions";
-import type { Role, RoleId, RoleLevel, RoleWithoutId } from "@/shared/types/Role";
+import type { Role, RoleId, RoleInput, RoleLevel } from "@/shared/types/Role";
 import { ALL_GENERAL_PERMISSIONS, ALL_USER_PERMISSIONS } from "@/shared/utils/PermissionHelpers";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
@@ -88,7 +88,7 @@ class RolesDatabase extends Database<RoleModel, "id", "roles"> {
 
     //#region Basic
 
-    public async createRole(input: RoleWithoutId, timer: ServerTimer): Promise<RoleId> {
+    public async createRole(input: RoleInput, timer: ServerTimer): Promise<RoleId> {
         using _ = timer.create("createRole");
 
         const insertPayload: InsertPayloadFor<RoleModel, "id"> = {
@@ -118,7 +118,7 @@ class RolesDatabase extends Database<RoleModel, "id", "roles"> {
         return formatWithoutId(id, role);
     }
 
-    public async updateRole(id: RoleId, input: RoleWithoutId, timer: ServerTimer): Promise<void> {
+    public async updateRole(id: RoleId, input: RoleInput, timer: ServerTimer): Promise<void> {
         using _ = timer.create("updateRole");
 
         const updatePayload: UpdatePayloadFor<RoleModel, "id"> = {

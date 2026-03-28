@@ -1,12 +1,12 @@
 import { rolesDb } from "@/databases/roles";
 import { InsufficientLevelError } from "@/errors/ForbiddenError";
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
-import type { RoleId, RoleWithoutId } from "@/shared/types/Role";
+import type { RoleId, RoleInput } from "@/shared/types/Role";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
 /** Creates a new role. */
-export const postRoles: Endpoint<RoleWithoutId, RoleId> = {
+export const postRoles: Endpoint<RoleInput, RoleId> = {
     method: "post",
     path: "/roles",
     auth: AuthScope.Permission,

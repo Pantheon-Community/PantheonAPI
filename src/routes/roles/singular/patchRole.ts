@@ -1,7 +1,7 @@
 import { rolesDb } from "@/databases/roles";
 import { InsufficientLevelError } from "@/errors/ForbiddenError";
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
-import type { RoleId, RoleWithoutId } from "@/shared/types/Role";
+import type { RoleId, RoleInput } from "@/shared/types/Role";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
@@ -10,7 +10,7 @@ interface PathParams {
 }
 
 /** Updates an existing role. */
-export const patchRole: Endpoint<RoleWithoutId, void, PathParams> = {
+export const patchRole: Endpoint<RoleInput, void, PathParams> = {
     method: "patch",
     path: "/roles/:id",
     auth: AuthScope.Permission,
