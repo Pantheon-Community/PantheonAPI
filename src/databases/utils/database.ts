@@ -214,6 +214,22 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
         }
     }
 
+    /** Selects the given keys on all matching rows. */
+    protected async selectMultiple<K extends keyof T>(
+        ids: T[PrimaryKey][],
+        keys: K[],
+    ): Promise<Pick<T, K>[]> {
+        try {
+            return await pg`
+                SELECT ${sql.unsafe(keys.join(", "))}
+                FROM ${this.tableName}
+                WHERE ${this.primaryKey} = ANY(${sql.array(ids, "TEXT")})
+            `;
+        } catch (error) {
+            throw wrapPgError(error);
+        }
+    }
+
     /** Selects the given keys on matching rows. */
     protected async selectWhere<K extends keyof T>(
         where: SQL.Query<T>,
