@@ -258,6 +258,36 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
         }
     }
 
+    protected async search<K extends keyof T>(
+        where: SQL.Query<T>,
+        keys: K[],
+        page: number,
+        perPage: number,
+        orderBy: keyof T,
+        order: "asc" | "desc",
+    ): Promise<WithPagination<Pick<T, K>>> {
+        try {
+            const items = await pg<(Pick<T, K> & { total_count: string })[]>`
+                SELECT
+                    ${sql.unsafe(keys.join(", "))},
+                    COUNT(*) OVER() AS total_count
+                FROM ${this.tableName}
+                ${where}
+                ORDER BY ${sql(orderBy)} ${sql.unsafe(order)}
+                LIMIT ${perPage}
+                OFFSET ${page * perPage}
+            `;
+
+            if (items.length === 0) {
+                return { items: [], totalItemCount: 0 };
+            }
+
+            return { items, totalItemCount: Number(items[0]!.total_count) };
+        } catch (error) {
+            throw wrapPgError(error);
+        }
+    }
+
     //#endregion
 
     //#region Update
