@@ -1,4 +1,5 @@
 import { pg } from "@/global/pg";
+import type { WithPagination } from "@/shared/types/Pagination";
 import type { Brand } from "@/shared/types/Util";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
