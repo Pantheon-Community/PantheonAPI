@@ -7,7 +7,7 @@ import { rolesDb } from "../roles";
 import { userRolesDb } from "../userRoles";
 import { Database } from "../utils/database";
 
-export async function getUserRoleInfo(
+export async function joinUserRoleInfo(
     userId: DiscordId,
     timer: ServerTimer,
 ): Promise<FlattenedPermissions> {

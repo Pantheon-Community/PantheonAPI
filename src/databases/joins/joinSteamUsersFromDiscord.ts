@@ -6,7 +6,7 @@ import { steamUsersDb } from "../steamUsers";
 import { usersDb } from "../users";
 import { Database } from "../utils/database";
 
-export async function getSteamUsersFromDiscord(
+export async function joinSteamUsersFromDiscord(
     ids: DiscordId[],
     timer: ServerTimer,
 ): Promise<SteamUserFromDiscord[]> {
