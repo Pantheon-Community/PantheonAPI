@@ -1,8 +1,4 @@
-import type {
-    SteamId64,
-    SteamUserAnalytics,
-    SteamUserBasicWithTimes,
-} from "@/shared/types/SteamUser";
+import type { SteamId64, SteamUserAnalytics, SteamUserWithTimes } from "@/shared/types/SteamUser";
 import type { DiscordSteamConnection } from "@/types/Discord";
 import type { SteamUserInfo } from "@/types/SteamUserInfo";
 import type { ServerTimer } from "@/utils/serverTimer";
@@ -40,7 +36,7 @@ const BASIC_WITH_TIMES_KEYS = [
 
 function formatBasicWithTimes(
     row: Pick<SteamUserModel, (typeof BASIC_WITH_TIMES_KEYS)[number]>,
-): SteamUserBasicWithTimes {
+): SteamUserWithTimes {
     let analytics: SteamUserAnalytics | null;
 
     if (row.first_seen_at && row.last_seen_at) {
@@ -80,7 +76,7 @@ class SteamUsersDatabase extends Database<SteamUserModel, "id", "steam_users"> {
     public async addFromDiscordConnection(
         connection: DiscordSteamConnection,
         info: SteamUserInfo,
-    ): Promise<SteamUserBasicWithTimes> {
+    ): Promise<SteamUserWithTimes> {
         const { id, username } = connection;
         const { avatar, location, memberSince: member_since } = info;
 
@@ -106,7 +102,7 @@ class SteamUsersDatabase extends Database<SteamUserModel, "id", "steam_users"> {
     public async getSteamUsersDirect(
         ids: SteamId64[],
         timer: ServerTimer,
-    ): Promise<SteamUserBasicWithTimes[]> {
+    ): Promise<SteamUserWithTimes[]> {
         using _ = timer.create("getSteamUsersDirect");
 
         const users = await this.selectMultiple(ids, BASIC_WITH_TIMES_KEYS);

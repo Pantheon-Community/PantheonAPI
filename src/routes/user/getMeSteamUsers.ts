@@ -1,10 +1,10 @@
 import { steamConnectionService } from "@/services/steamConnectionService";
-import type { SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
+import type { SteamUserWithTimes } from "@/shared/types/SteamUser";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
 /** Gets the Discord Steam connections of the currently logged-in user. */
-export const getMeSteamUsers: Endpoint<void, SteamUserBasicWithTimes[]> = {
+export const getMeSteamUsers: Endpoint<void, SteamUserWithTimes[]> = {
     method: "get",
     path: "/users/@me/steam-users",
     auth: AuthScope.Session,

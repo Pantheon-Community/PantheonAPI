@@ -9,7 +9,7 @@ import type {
     UserFromGetAll,
 } from "@/shared/types/Responses/GetAllUsersResponse";
 import type { RoleId } from "@/shared/types/Role";
-import { type SteamId64, type SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
+import { type SteamId64, type SteamUserWithTimes } from "@/shared/types/SteamUser";
 import { hasPermission } from "@/shared/utils/PermissionHelpers";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
@@ -21,7 +21,7 @@ type BuildingFn = (source: SearchedUser, output: UserFromGetAll) => Partial<User
 async function addSteamUsers(steamIds: SteamId64[], timer: ServerTimer): Promise<BuildingFn> {
     const steamUsers = await steamUsersDb.getSteamUsersDirect(steamIds, timer);
 
-    const steamUserMap = new Map<SteamId64, SteamUserBasicWithTimes>();
+    const steamUserMap = new Map<SteamId64, SteamUserWithTimes>();
 
     for (const steamUser of steamUsers) {
         steamUserMap.set(steamUser.id, steamUser);

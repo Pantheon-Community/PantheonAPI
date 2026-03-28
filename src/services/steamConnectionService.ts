@@ -2,14 +2,12 @@ import { steamUsersDb } from "@/databases/steamUsers";
 import { fetchMySteamConnections } from "@/other/discord/main/fetchMeSteamConnections";
 import { getSteamUserInfo } from "@/other/steam/getSteamUserInfo";
 import type { UserToken } from "@/shared/types/Common";
-import type { SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
+import type { SteamUserWithTimes } from "@/shared/types/SteamUser";
 import type { DiscordSteamConnection } from "@/types/Discord";
 import type { SteamUserInfo } from "@/types/SteamUserInfo";
 import type { ServerTimer } from "@/utils/serverTimer";
 
-async function createSteamUser(
-    connection: DiscordSteamConnection,
-): Promise<SteamUserBasicWithTimes> {
+async function createSteamUser(connection: DiscordSteamConnection): Promise<SteamUserWithTimes> {
     let info: SteamUserInfo;
 
     try {
@@ -25,7 +23,7 @@ async function createSteamUser(
 export async function steamConnectionService(
     token: UserToken,
     timer: ServerTimer,
-): Promise<SteamUserBasicWithTimes[]> {
+): Promise<SteamUserWithTimes[]> {
     const steamConnections = await fetchMySteamConnections(token, timer);
 
     using _ = timer.create("createSteamUsers");

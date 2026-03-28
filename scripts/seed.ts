@@ -1,7 +1,7 @@
 import { steamUsersDb } from "@/databases/steamUsers";
 import { usersDb } from "@/databases/users";
 import type { DiscordId, Ip } from "@/shared/types/Common";
-import type { SteamId64, SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
+import type { SteamId64, SteamUserWithTimes } from "@/shared/types/SteamUser";
 import type { UserBasic } from "@/shared/types/User";
 import { startPostgres } from "@/start/startPostgres";
 import { Color } from "@/types/Color";
@@ -13,7 +13,7 @@ await startPostgres();
 
 const steamStartTime = Date.now();
 
-const steamUserPromises = new Array<Promise<SteamUserBasicWithTimes>>(100);
+const steamUserPromises = new Array<Promise<SteamUserWithTimes>>(100);
 
 function generateId<T extends SteamId64 | DiscordId>(x: number): T {
     return `seed-${x.toString().padStart(13, "0")}` as T;

@@ -453,7 +453,7 @@
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                                        "$ref": "#/components/schemas/SteamUserWithTimes"
                                     }
                                 }
                             }
@@ -1164,7 +1164,7 @@
                     "steam": {
                         "anyOf": [
                             {
-                                "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                                "$ref": "#/components/schemas/SteamUserWithTimes"
                             },
                             {
                                 "$ref": "#/components/schemas/Null"
@@ -1217,7 +1217,7 @@
                     "steamUsers": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                            "$ref": "#/components/schemas/SteamUserWithTimes"
                         }
                     }
                 },
@@ -1556,7 +1556,7 @@
                     "description": "types/SteamUser.ts"
                 }
             },
-            "SteamUserBasicWithTimes": {
+            "SteamUserWithTimes": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -1654,7 +1654,7 @@
                     "steam": {
                         "anyOf": [
                             {
-                                "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                                "$ref": "#/components/schemas/SteamUserWithTimes"
                             },
                             {
                                 "$ref": "#/components/schemas/Null"
@@ -1746,7 +1746,7 @@
                     "steam": {
                         "anyOf": [
                             {
-                                "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                                "$ref": "#/components/schemas/SteamUserWithTimes"
                             },
                             {
                                 "$ref": "#/components/schemas/Null"
