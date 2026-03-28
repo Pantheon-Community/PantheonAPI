@@ -1,13 +1,16 @@
 import { NotFoundError } from "@/errors/NotFoundError";
 import { config } from "@/global/config";
 import { pg } from "@/global/pg";
-import type { DiscordId, Ip, Origin, SteamId64, UserAgent } from "@/shared/types/Common";
+import type { DiscordId, Ip, Origin, UserAgent } from "@/shared/types/Common";
+import type { WithPagination } from "@/shared/types/Pagination";
+import type { SteamId64 } from "@/shared/types/SteamUser";
 import type { UserBasic } from "@/shared/types/User";
 import type { UserFromSteam } from "@/shared/types/UserFromSteam";
 import type { DiscordUser } from "@/types/Discord";
+import type { SearchedUser } from "@/types/Internal";
 import type { RequestAnalytics } from "@/types/RequestAnalytics";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { sql } from "bun";
+import { SQL, sql } from "bun";
 import { steamUsersDb, type SteamUserModel } from "./steamUsers";
 import { Column } from "./utils/column";
 import {
@@ -45,6 +48,22 @@ interface AddOrUpdateUserResult {
     readonly steamId: SteamId64 | null;
 }
 
+interface SearchUserArgs {
+    readonly page: number;
+
+    readonly perPage: number;
+
+    readonly usernameSearch: string | null;
+
+    readonly ipSearch: string | null;
+
+    readonly orderBy: "id" | "username" | "firstSeenAt" | "lastSeenAt" | "lifetimeActionCount";
+
+    readonly order: "asc" | "desc";
+
+    readonly timer: ServerTimer;
+}
+
 class UserNotFoundError extends NotFoundError {
     public constructor() {
         super({
@@ -57,26 +76,31 @@ class UserNotFoundError extends NotFoundError {
 
 class UsersDatabase extends Database<UserModel, "id", "users"> {
     public constructor() {
-        super("users", "id", {
-            id: { type: Column.Snowflake, extra: ["PRIMARY KEY"] },
-            username: { type: "VARCHAR(32)" },
-            avatar: { type: "VARCHAR(32)", nullable: true },
-            steam_id: {
-                type: Column.SteamId64,
-                nullable: true,
-                references: {
-                    db: steamUsersDb,
-                    key: "id",
-                    onDelete: "SET NULL",
-                } satisfies ExternalReference<SteamUserModel>,
+        super(
+            "users",
+            "id",
+            {
+                id: { type: Column.Snowflake, extra: ["PRIMARY KEY"] },
+                username: { type: "VARCHAR(32)" },
+                avatar: { type: "VARCHAR(32)", nullable: true },
+                steam_id: {
+                    type: Column.SteamId64,
+                    nullable: true,
+                    references: {
+                        db: steamUsersDb,
+                        key: "id",
+                        onDelete: "SET NULL",
+                    } satisfies ExternalReference<SteamUserModel>,
+                },
+                first_seen_at: { type: "TIMESTAMP" },
+                last_seen_at: { type: "TIMESTAMP" },
+                lifetime_action_count: { type: "INT" },
+                ip: { type: Column.Ip, nullable: true },
+                user_agent: { type: Column.UserAgent, nullable: true },
+                origin: { type: Column.OriginUrl, nullable: true },
             },
-            first_seen_at: { type: "TIMESTAMP" },
-            last_seen_at: { type: "TIMESTAMP" },
-            lifetime_action_count: { type: "INT" },
-            ip: { type: Column.Ip, nullable: true },
-            user_agent: { type: Column.UserAgent, nullable: true },
-            origin: { type: Column.OriginUrl, nullable: true },
-        });
+            { indexes: ["username", "first_seen_at", "last_seen_at", "lifetime_action_count"] },
+        );
     }
 
     public override async setup(): Promise<void> {
@@ -194,6 +218,84 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
             discordUsername: x.username,
             discordAvatar: x.avatar ?? null,
         }));
+    }
+
+    public async searchUsers(args: SearchUserArgs): Promise<WithPagination<SearchedUser>> {
+        const { page, perPage, usernameSearch, ipSearch, orderBy, order, timer } = args;
+
+        using _ = timer.create("searchUsers");
+
+        let where: SQL.Query<UserModel>;
+
+        if (usernameSearch && ipSearch) {
+            where = sql`
+                WHERE username ILIKE ${`%${usernameSearch}%`}
+                AND ip ILIKE ${`%${ipSearch}%`}
+            `;
+        } else if (usernameSearch) {
+            where = sql`WHERE username ILIKE ${`%${usernameSearch}%`}`;
+        } else if (ipSearch) {
+            where = sql`WHERE ip ILIKE ${`%${ipSearch}%`}`;
+        } else {
+            where = sql``;
+        }
+
+        let finalOrderBy: keyof UserModel;
+
+        switch (orderBy) {
+            case "id":
+            case "username":
+                finalOrderBy = orderBy;
+                break;
+
+            case "firstSeenAt":
+                finalOrderBy = "first_seen_at";
+                break;
+
+            case "lastSeenAt":
+                finalOrderBy = "last_seen_at";
+                break;
+
+            case "lifetimeActionCount":
+                finalOrderBy = "lifetime_action_count";
+                break;
+        }
+
+        const { items, totalItemCount } = await this.search(
+            where,
+            [
+                "id",
+                "username",
+                "avatar",
+                "steam_id",
+                "first_seen_at",
+                "last_seen_at",
+                "lifetime_action_count",
+                "ip",
+                "user_agent",
+                "origin",
+            ],
+            page,
+            perPage,
+            finalOrderBy,
+            order,
+        );
+
+        return {
+            items: items.map<SearchedUser>((x) => ({
+                id: x.id,
+                username: x.username,
+                avatar: x.avatar ?? null,
+                steamId: x.steam_id ?? null,
+                firstSeenAt: x.first_seen_at.toISOString(),
+                lastSeenAt: x.last_seen_at.toISOString(),
+                lifetimeActionCount: x.lifetime_action_count,
+                ip: x.ip ?? null,
+                userAgent: x.user_agent ?? null,
+                origin: x.origin ?? null,
+            })),
+            totalItemCount,
+        };
     }
 
     //#endregion

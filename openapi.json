@@ -3,7 +3,7 @@
     "openapi": "3.0.3",
     "info": {
         "title": "Pantheon API",
-        "description": "# PantheonAPI [![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml) [![Deploy](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml) [![codecov](https://codecov.io/gh/Pantheon-Community/PantheonAPI/graph/badge.svg?token=46UQNVJ8S3)](https://codecov.io/gh/Pantheon-Community/PantheonAPI)\n\nCentralised API for the Pantheon Community server network.\n\n[![Bun](https://img.shields.io/badge/Bun-000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.com/)\n[![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)\n[![Express.js](https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=fff&style=for-the-badge)](https://expressjs.com/)\n[![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)\n[![Docker](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)\n\n### Links\n\n- [Github Repository](https://github.com/Pantheon-Community/PantheonAPI)\n- [Live Build](https://api.pantheoncommunity.org)\n- [Dev Client](https://github.com/Pantheon-Community/PantheonAPI-Client)\n\n### Installation\n\nIf you want to set up your own instance, see the [install guide](https://github.com/Pantheon-Community/PantheonAPI/blob/main/docs/INSTALL_GUIDE.md).\n\n### Contact\n\nIf you need help using or developing the API, feel free to message NachoToast on Discord.\n\n### Licensing\n\nThis API and its source code is licensed under the MIT license. [Read more here](https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE).\n\n![Cutout side view of a panther](./logo.png)",
+        "description": "# PantheonAPI [![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml) [![Deploy](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml) [![codecov](https://codecov.io/gh/Pantheon-Community/PantheonAPI/graph/badge.svg?token=46UQNVJ8S3)](https://codecov.io/gh/Pantheon-Community/PantheonAPI)\n\nCentralised API for the Pantheon Community server network.\n\n[![Bun](https://img.shields.io/badge/Bun-000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.com/)\n[![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)\n[![Express.js](https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=fff&style=for-the-badge)](https://expressjs.com/)\n[![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)\n[![Docker](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)\n\n### Links\n\n- [Github Repository](https://github.com/Pantheon-Community/PantheonAPI)\n- [Live Build](https://api.pantheoncommunity.org)\n- [Dev Client](https://github.com/Pantheon-Community/PantheonAPI-Client)\n\n### Installation\n\nIf you want to set up your own instance, see the [install guide](https://github.com/Pantheon-Community/PantheonAPI/blob/main/docs/INSTALL_GUIDE.md).\n\n### Contact\n\nIf you need help using or developing the API, feel free to message NachoToast on Discord.\n\n### Licensing\n\nThis API and its source code is licensed under the MIT license. [Read more here](https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE).\n\n![Stylised Roman centurion helmet with blue highlights](./logo.png)",
         "version": "1.0.0"
     },
     "servers": [
@@ -584,6 +584,100 @@
                 }
             }
         },
+        "/users/@all": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "operationId": "getAllUsers",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/PageNumber"
+                    },
+                    {
+                        "$ref": "#/components/parameters/PerPage"
+                    },
+                    {
+                        "in": "query",
+                        "name": "usernameSearch",
+                        "description": "Discord username search.\n\nWill also search Steam usernames if the user has the **ViewUserConnections** permission.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "ipSearch",
+                        "description": " IP address search.\n\nOnly applicable if the user has the **ViewUserSessions** permission.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/Ip"
+                                }
+                            ],
+                            "example": ""
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "orderBy",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "username",
+                                "firstSeenAt",
+                                "lastSeenAt",
+                                "lifetimeActionCount"
+                            ],
+                            "default": "id"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "order",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "default": "asc"
+                        }
+                    }
+                ],
+                "description": "Gets all users, returned data depends on permissions.",
+                "responses": {
+                    "200": {
+                        "description": "List of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetAllUsersResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
         "/roles": {
             "get": {
                 "tags": [
@@ -629,7 +723,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RoleWithoutId"
+                                "$ref": "#/components/schemas/RoleInput"
                             }
                         }
                     }
@@ -719,7 +813,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RoleWithoutId"
+                                "$ref": "#/components/schemas/RoleInput"
                             }
                         }
                     }
@@ -912,6 +1006,37 @@
                 "scheme": "bearer"
             }
         },
+        "parameters": {
+            "PageNumber": {
+                "in": "query",
+                "name": "page",
+                "description": "Page number, starts at 0.",
+                "schema": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0,
+                    "externalDocs": {
+                        "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Pagination.ts",
+                        "description": "types/Pagination.ts"
+                    }
+                }
+            },
+            "PerPage": {
+                "in": "query",
+                "name": "perPage",
+                "description": "Maximum number of results to show per page.",
+                "schema": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 20,
+                    "externalDocs": {
+                        "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Pagination.ts",
+                        "description": "types/Pagination.ts"
+                    }
+                }
+            }
+        },
         "schemas": {
             "GeneralPermissions": {
                 "type": "integer",
@@ -922,16 +1047,7 @@
                     "description": "types/Permissions/GeneralPermissions.ts"
                 }
             },
-            "UserPermissions": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 127,
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/UserPermissions.ts",
-                    "description": "types/Permissions/UserPermissions.ts"
-                }
-            },
-            "PermissionsObject": {
+            "PartialPermissionsObject": {
                 "type": "object",
                 "properties": {
                     "generalPermissions": {
@@ -946,6 +1062,31 @@
                     "description": "types/Permissions/PermissionsObject.ts"
                 }
             },
+            "PermissionsObject": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/PartialPermissionsObject"
+                    }
+                ],
+                "required": [
+                    "generalPermissions",
+                    "userPermissions"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/PermissionsObject.ts",
+                    "description": "types/Permissions/PermissionsObject.ts"
+                }
+            },
+            "UserPermissions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 127,
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/UserPermissions.ts",
+                    "description": "types/Permissions/UserPermissions.ts"
+                }
+            },
             "LoginRequest": {
                 "type": "object",
                 "properties": {
@@ -956,6 +1097,7 @@
                         "type": "string"
                     }
                 },
+                "additionalProperties": false,
                 "required": [
                     "code",
                     "redirectUri"
@@ -992,18 +1134,85 @@
                 "required": [
                     "expiresAt",
                     "token",
-                    "sessionId"
+                    "sessionId",
+                    "roleIds"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Responses/AuthResponse.ts",
                     "description": "types/Responses/AuthResponse.ts"
                 }
             },
+            "UserFromGetAll": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "roleIds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoleId"
+                        }
+                    },
+                    "steam": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "username",
+                    "avatar",
+                    "roleIds"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
+                    "description": "types/User.ts"
+                }
+            },
+            "GetAllUsersResponse": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/WithPagination"
+                    }
+                ],
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/UserFromGetAll"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Responses/GetAllUsersResponse.ts",
+                    "description": "types/Responses/GetAllUsersResponse.ts"
+                }
+            },
             "GetMeResponse": {
                 "type": "object",
                 "properties": {
                     "user": {
-                        "$ref": "#/components/schemas/UserBasicWithSteam"
+                        "$ref": "#/components/schemas/UserWithSteam"
                     },
                     "steamUsers": {
                         "type": "array",
@@ -1034,15 +1243,6 @@
                 "type": "string",
                 "description": "A Discord ID snowflake.\n\nhttps://discord.com/developers/docs/reference#snowflakes",
                 "example": "240312568273436674",
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
-                    "description": "types/Common.ts"
-                }
-            },
-            "SteamId64": {
-                "type": "string",
-                "description": "A SteamID64 account identifier.\n\nhttps://steamid.io/",
-                "example": "76561198200316171",
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Common.ts",
                     "description": "types/Common.ts"
@@ -1093,12 +1293,25 @@
                     "description": "types/Common.ts"
                 }
             },
-            "UserSessionId": {
-                "type": "integer",
-                "description": "Way of uniquely referring to a user session.\n\nAlthough the **accessToken** field of a user session is also unique, using it to externally identify user sessions has obvious security drawbacks.",
+            "WithPagination": {
+                "type": "object",
+                "properties": {
+                    "totalItemCount": {
+                        "type": "integer",
+                        "description": "Total number of relevant items across all pages.",
+                        "minimum": 0
+                    },
+                    "items": {
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "totalItemCount",
+                    "items"
+                ],
                 "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserSession.ts",
-                    "description": "types/UserSession.ts"
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Pagination.ts",
+                    "description": "types/Pagination.ts"
                 }
             },
             "RoleId": {
@@ -1115,7 +1328,55 @@
                     "description": "types/Role.ts"
                 }
             },
-            "RoleWithoutId": {
+            "Role": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/RoleId"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "level": {
+                        "$ref": "#/components/schemas/RoleLevel"
+                    },
+                    "permissions": {
+                        "$ref": "#/components/schemas/PermissionsObject"
+                    },
+                    "category": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
+                    "description": "types/Role.ts"
+                }
+            },
+            "RoleBasic": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "$ref": "#/components/schemas/RoleLevel"
+                    },
+                    "permissions": {
+                        "$ref": "#/components/schemas/PermissionsObject"
+                    }
+                },
+                "required": [
+                    "level",
+                    "permissions"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
+                    "description": "types/Role.ts"
+                }
+            },
+            "RoleInput": {
                 "type": "object",
                 "properties": {
                     "name": {
@@ -1125,52 +1386,24 @@
                         "type": "string",
                         "nullable": true
                     },
-                    "category": {
-                        "type": "string",
-                        "nullable": true
-                    },
                     "level": {
                         "$ref": "#/components/schemas/RoleLevel"
                     },
                     "permissions": {
-                        "type": "object",
-                        "allOf": [
-                            {
-                                "$ref": "#/components/schemas/PermissionsObject"
-                            }
-                        ],
-                        "required": [
-                            "generalPermissions",
-                            "userPermissions"
-                        ]
+                        "$ref": "#/components/schemas/PermissionsObject"
+                    },
+                    "category": {
+                        "type": "string",
+                        "nullable": true
                     }
                 },
+                "additionalProperties": false,
                 "required": [
                     "name",
                     "icon",
-                    "category",
                     "level",
-                    "permissions"
-                ],
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
-                    "description": "types/Role.ts"
-                }
-            },
-            "Role": {
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/RoleWithoutId"
-                    }
-                ],
-                "properties": {
-                    "id": {
-                        "$ref": "#/components/schemas/RoleId"
-                    }
-                },
-                "required": [
-                    "id"
+                    "permissions",
+                    "category"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Role.ts",
@@ -1200,6 +1433,86 @@
                     "description": "types/SiteErrorObject.ts"
                 }
             },
+            "SteamId64": {
+                "type": "string",
+                "description": "A SteamID64 account identifier.\n\nhttps://steamid.io/",
+                "example": "76561198200316171",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
+                    "description": "types/SteamUser.ts"
+                }
+            },
+            "SteamUserAnalytics": {
+                "type": "object",
+                "description": "Information about a Steam user's in-game activity.",
+                "properties": {
+                    "firstSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "lastSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "timesSeen": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "firstSeenAt",
+                    "lastSeenAt",
+                    "timesSeen"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
+                    "description": "types/SteamUser.ts"
+                }
+            },
+            "SteamUser": {
+                "type": "object",
+                "description": "Steam user information, sourced from either in-game player info or Discord user connections.",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/SteamId64"
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "Latest username associated with this Steam ID.\n\nThis may come from in-game player info or a Discord user connection."
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "https://avatars.fastly.steamstatic.com/d789a47289ccb8c36eea2055a9b700e7718c6fac_full.jpg"
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "New Zealand"
+                    },
+                    "memberSince": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/IsoString"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "analytics": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SteamUserAnalytics"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
+                    "description": "types/SteamUser.ts"
+                }
+            },
             "SteamUserBasic": {
                 "type": "object",
                 "properties": {
@@ -1209,11 +1522,34 @@
                     "username": {
                         "type": "string",
                         "description": "Latest username associated with this Steam ID.\n\nThis may come from in-game player info or a Discord user connection."
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "https://avatars.fastly.steamstatic.com/d789a47289ccb8c36eea2055a9b700e7718c6fac_full.jpg"
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "New Zealand"
+                    },
+                    "memberSince": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/IsoString"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
                     }
                 },
                 "required": [
                     "id",
-                    "username"
+                    "username",
+                    "avatar",
+                    "location",
+                    "memberSince"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
@@ -1222,24 +1558,25 @@
             },
             "SteamUserBasicWithTimes": {
                 "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/SteamUserBasic"
-                    }
-                ],
                 "properties": {
-                    "firstSeenAt": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/IsoString"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Null"
-                            }
-                        ],
-                        "description": "When this Steam ID was first seen in-game."
+                    "id": {
+                        "$ref": "#/components/schemas/SteamId64"
                     },
-                    "lastSeenAt": {
+                    "username": {
+                        "type": "string",
+                        "description": "Latest username associated with this Steam ID.\n\nThis may come from in-game player info or a Discord user connection."
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "https://avatars.fastly.steamstatic.com/d789a47289ccb8c36eea2055a9b700e7718c6fac_full.jpg"
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "New Zealand"
+                    },
+                    "memberSince": {
                         "anyOf": [
                             {
                                 "$ref": "#/components/schemas/IsoString"
@@ -1247,13 +1584,26 @@
                             {
                                 "$ref": "#/components/schemas/Null"
                             }
-                        ],
-                        "description": "When this Steam ID was last seen in-game."
+                        ]
+                    },
+                    "analytics": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SteamUserAnalytics"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
                     }
                 },
                 "required": [
-                    "firstSeenAt",
-                    "lastSeenAt"
+                    "id",
+                    "username",
+                    "avatar",
+                    "location",
+                    "memberSince",
+                    "analytics"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
@@ -1271,16 +1621,89 @@
                     },
                     "steamUsername": {
                         "type": "string"
+                    },
+                    "steamAvatar": {
+                        "type": "string",
+                        "nullable": true
                     }
                 },
                 "required": [
                     "discordId",
                     "steamId",
-                    "steamUsername"
+                    "steamUsername",
+                    "steamAvatar"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUserFromDiscord.ts",
                     "description": "types/SteamUserFromDiscord.ts"
+                }
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "steam": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SteamUserBasicWithTimes"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "firstSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "lastSeenAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "ip": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/Ip"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "userAgent": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/UserAgent"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "origin": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/Origin"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "lifetimeActionCount": {
+                        "type": "integer"
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
+                    "description": "types/User.ts"
                 }
             },
             "UserBasic": {
@@ -1307,14 +1730,19 @@
                     "description": "types/User.ts"
                 }
             },
-            "UserBasicWithSteam": {
+            "UserWithSteam": {
                 "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/UserBasic"
-                    }
-                ],
                 "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "steam": {
                         "anyOf": [
                             {
@@ -1327,30 +1755,10 @@
                     }
                 },
                 "required": [
+                    "id",
+                    "username",
+                    "avatar",
                     "steam"
-                ],
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
-                    "description": "types/User.ts"
-                }
-            },
-            "UserBasicWithRoles": {
-                "type": "object",
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/UserBasic"
-                    }
-                ],
-                "properties": {
-                    "roleIds": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/RoleId"
-                        }
-                    }
-                },
-                "required": [
-                    "roleIds"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
@@ -1383,6 +1791,14 @@
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserFromSteam.ts",
                     "description": "types/UserFromSteam.ts"
+                }
+            },
+            "UserSessionId": {
+                "type": "integer",
+                "description": "Way of uniquely referring to a user session.\n\nAlthough the **accessToken** field of a user session is also unique, using it to externally identify user sessions has obvious security drawbacks.",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/UserSession.ts",
+                    "description": "types/UserSession.ts"
                 }
             },
             "UserSessionBasic": {
@@ -1463,7 +1879,7 @@
             "description": "User-related functionality."
         },
         {
-            "name": "Role",
+            "name": "Roles",
             "description": "Role-related functionality."
         },
         {

@@ -1,7 +1,11 @@
-import type { SteamId64 } from "@/shared/types/Common";
-import type { SteamUserBasicWithTimes } from "@/shared/types/SteamUser";
+import type {
+    SteamId64,
+    SteamUserAnalytics,
+    SteamUserBasicWithTimes,
+} from "@/shared/types/SteamUser";
 import type { DiscordSteamConnection } from "@/types/Discord";
 import type { SteamUserInfo } from "@/types/SteamUserInfo";
+import type { ServerTimer } from "@/utils/serverTimer";
 import { Column } from "./utils/column";
 import { Database, type InsertPayloadFor, type UpdatePayloadFor } from "./utils/database";
 
@@ -31,19 +35,31 @@ const BASIC_WITH_TIMES_KEYS = [
     "member_since",
     "first_seen_at",
     "last_seen_at",
+    "times_seen",
 ] as const satisfies (keyof SteamUserModel)[];
 
 function formatBasicWithTimes(
     row: Pick<SteamUserModel, (typeof BASIC_WITH_TIMES_KEYS)[number]>,
 ): SteamUserBasicWithTimes {
+    let analytics: SteamUserAnalytics | null;
+
+    if (row.first_seen_at && row.last_seen_at) {
+        analytics = {
+            firstSeenAt: row.first_seen_at.toISOString(),
+            lastSeenAt: row.last_seen_at.toISOString(),
+            timesSeen: row.times_seen,
+        };
+    } else {
+        analytics = null;
+    }
+
     return {
         id: row.id,
         username: row.username,
         avatar: row.avatar ?? null,
         location: row.location ?? null,
         memberSince: row.member_since?.toISOString() ?? null,
-        firstSeenAt: row.first_seen_at?.toISOString() ?? null,
-        lastSeenAt: row.last_seen_at?.toISOString() ?? null,
+        analytics,
     };
 }
 
@@ -74,7 +90,9 @@ class SteamUsersDatabase extends Database<SteamUserModel, "id", "steam_users"> {
             times_seen: 0,
         };
 
-        const updatePayload: UpdatePayloadFor<SteamUserModel, "id"> = { username };
+        const updatePayload: UpdatePayloadFor<SteamUserModel, "id"> = {
+            username,
+        };
 
         if (avatar) insertPayload.avatar = updatePayload.avatar = avatar;
         if (location) insertPayload.location = updatePayload.location = location;
@@ -83,6 +101,17 @@ class SteamUsersDatabase extends Database<SteamUserModel, "id", "steam_users"> {
         const upsertedUser = await this.upsert(insertPayload, updatePayload, BASIC_WITH_TIMES_KEYS);
 
         return formatBasicWithTimes(upsertedUser);
+    }
+
+    public async getSteamUsersDirect(
+        ids: SteamId64[],
+        timer: ServerTimer,
+    ): Promise<SteamUserBasicWithTimes[]> {
+        using _ = timer.create("getSteamUsersDirect");
+
+        const users = await this.selectMultiple(ids, BASIC_WITH_TIMES_KEYS);
+
+        return users.map(formatBasicWithTimes);
     }
 }
 

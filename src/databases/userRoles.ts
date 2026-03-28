@@ -2,6 +2,7 @@ import { config } from "@/global/config";
 import { pg } from "@/global/pg";
 import type { DiscordId } from "@/shared/types/Common";
 import type { RoleId } from "@/shared/types/Role";
+import type { UserRole } from "@/types/Internal";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { sql } from "bun";
@@ -16,20 +17,12 @@ export interface UserRoleModel {
     readonly user_id: UserModel["id"];
 }
 
-class UserRolesDb extends Database<UserRoleModel, "role_id", "user_roles"> {
+class UserRolesDb extends Database<UserRoleModel, "user_id", "user_roles"> {
     public constructor() {
         super(
             "user_roles",
-            "role_id",
+            "user_id",
             {
-                role_id: {
-                    type: "BIGINT",
-                    references: {
-                        db: rolesDb,
-                        key: "id",
-                        onDelete: "CASCADE",
-                    } satisfies ExternalReference<RoleModel>,
-                },
                 user_id: {
                     type: Column.Snowflake,
                     references: {
@@ -38,8 +31,16 @@ class UserRolesDb extends Database<UserRoleModel, "role_id", "user_roles"> {
                         onDelete: "CASCADE",
                     } satisfies ExternalReference<UserModel>,
                 },
+                role_id: {
+                    type: "BIGINT",
+                    references: {
+                        db: rolesDb,
+                        key: "id",
+                        onDelete: "CASCADE",
+                    } satisfies ExternalReference<RoleModel>,
+                },
             },
-            { constraints: [`PRIMARY KEY (role_id, user_id)`] },
+            { constraints: [`PRIMARY KEY (user_id, role_id)`] },
         );
     }
 
@@ -53,16 +54,24 @@ class UserRolesDb extends Database<UserRoleModel, "role_id", "user_roles"> {
 
         await pg`
             INSERT INTO ${this.tableName} ${sql(seedUserRole)}
-            ON CONFLICT (role_id, user_id) DO NOTHING
+            ON CONFLICT (user_id, role_id) DO NOTHING
         `;
     }
 
     public async getUserRoleIds(userId: DiscordId, timer: ServerTimer): Promise<RoleId[]> {
         using _ = timer.create("getUserRoleIds");
 
-        const userRoles = await this.selectWhere(sql`user_id = ${userId}`, ["role_id"]);
+        const userRoles = await this.selectMultiple([userId], ["role_id"]);
 
         return userRoles.map((x) => castNumber(x.role_id));
+    }
+
+    public async getAllUserRoleIds(userIds: DiscordId[], timer: ServerTimer): Promise<UserRole[]> {
+        using _ = timer.create("getAllUserRoleIds");
+
+        const userRoles = await this.selectMultiple(userIds, ["user_id", "role_id"]);
+
+        return userRoles.map((x) => ({ userId: x.user_id, roleId: castNumber(x.role_id) }));
     }
 }
 

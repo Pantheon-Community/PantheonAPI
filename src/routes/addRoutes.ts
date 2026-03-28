@@ -17,6 +17,7 @@ import { deleteRole } from "./roles/singular/deleteRole";
 import { patchRole } from "./roles/singular/patchRole";
 import { deleteMeSession } from "./user/deleteMeSession";
 import { deleteMeSteamUsersPrimary } from "./user/deleteMeSteamUsersPrimary";
+import { getAllUsers } from "./user/getAllUsers";
 import { getMe } from "./user/getMe";
 import { getMeRoles } from "./user/getMeRoles";
 import { getMeSessions } from "./user/getMeSessions";
@@ -76,6 +77,7 @@ export function addRoutes(): void {
         // user
         deleteMeSession,
         deleteMeSteamUsersPrimary,
+        getAllUsers,
         getMe,
         getMeRoles,
         getMeSessions,
