@@ -21,6 +21,7 @@
             }
         ],
         "typescript/no-unsafe-type-assertion": "allow",
-        "unicorn/no-new-array": "allow"
+        "unicorn/no-new-array": "allow",
+        "unicorn/prefer-node-protocol": "error"
     }
 }

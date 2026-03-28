@@ -26,4 +26,4 @@ If you need help using or developing the API, feel free to message NachoToast on
 
 This API and its source code is licensed under the MIT license. [Read more here](https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE).
 
-![Cutout side view of a panther](static/logo.png)
+![Stylised Roman centurion helmet with blue highlights](static/logo.png)

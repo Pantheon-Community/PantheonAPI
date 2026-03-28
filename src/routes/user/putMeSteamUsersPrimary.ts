@@ -1,16 +1,12 @@
 import { usersDb } from "@/databases/users";
 import { NotFoundError } from "@/errors/NotFoundError";
 import { steamConnectionService } from "@/services/steamConnectionService";
-import type { SteamId64 } from "@/shared/types/Common";
+import type { SteamId64 } from "@/shared/types/SteamUser";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 
-interface PathParams {
-    id: SteamId64;
-}
-
 /** Sets the primary Steam connection of the logged-in user's account. */
-export const putMeSteamUsersPrimary: Endpoint<void, void, PathParams> = {
+export const putMeSteamUsersPrimary: Endpoint<void, void, { id: SteamId64 }> = {
     auth: AuthScope.Session,
     method: "put",
     path: "/users/@me/steam-users/primary/:id",
