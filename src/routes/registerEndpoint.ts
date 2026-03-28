@@ -1,4 +1,4 @@
-import { getUserRoleInfo } from "@/databases/joins/getUserRoleInfo";
+import { joinUserRoleInfo } from "@/databases/joins/joinUserRoleInfo";
 import { usersDb } from "@/databases/users";
 import { userSessionsDb } from "@/databases/userSessions";
 import { MissingPermissionError } from "@/errors/ForbiddenError";
@@ -125,7 +125,7 @@ function registerPermissionAuthEndpoint(endpoint: PermissionAuthEndpoint): void 
             console.error(error);
         });
 
-        const perms = await getUserRoleInfo(session.userId, timer);
+        const perms = await joinUserRoleInfo(session.userId, timer);
 
         if (!hasPermission(perms, endpoint.permissions)) {
             throw new MissingPermissionError(endpoint.permissions);

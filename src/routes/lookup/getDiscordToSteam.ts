@@ -1,4 +1,4 @@
-import { getSteamUsersFromDiscord } from "@/databases/joins/getSteamUsersFromDiscord";
+import { joinSteamUsersFromDiscord } from "@/databases/joins/joinSteamUsersFromDiscord";
 import type { DiscordId } from "@/shared/types/Common";
 import type { SteamUserFromDiscord } from "@/shared/types/SteamUserFromDiscord";
 import { AuthScope } from "@/types/Express/AuthScope";
@@ -14,6 +14,6 @@ export const getDiscordToSteam: Endpoint<void, SteamUserFromDiscord[], void, Que
     path: "/lookup/discord-to-steam",
     auth: AuthScope.None,
     async handleRequest({ req, timer }) {
-        return await getSteamUsersFromDiscord(req.query.ids, timer);
+        return await joinSteamUsersFromDiscord(req.query.ids, timer);
     },
 };

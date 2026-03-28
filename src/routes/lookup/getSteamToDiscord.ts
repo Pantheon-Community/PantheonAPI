@@ -1,5 +1,5 @@
 import { usersDb } from "@/databases/users";
-import type { SteamId64 } from "@/shared/types/Common";
+import type { SteamId64 } from "@/shared/types/SteamUser";
 import type { UserFromSteam } from "@/shared/types/UserFromSteam";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";

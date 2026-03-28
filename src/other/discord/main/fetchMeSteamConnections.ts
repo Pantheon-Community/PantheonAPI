@@ -1,5 +1,6 @@
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
-import type { SteamId64, UserToken } from "@/shared/types/Common";
+import type { UserToken } from "@/shared/types/Common";
+import type { SteamId64 } from "@/shared/types/SteamUser";
 import type { DiscordSteamConnection } from "@/types/Discord";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { type APIConnection, ConnectionService, RouteBases } from "discord-api-types/v10";

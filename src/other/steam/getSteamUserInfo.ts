@@ -1,4 +1,4 @@
-import type { SteamId64 } from "@/shared/types/Common";
+import type { SteamId64 } from "@/shared/types/SteamUser";
 import type { SteamUserInfo } from "@/types/SteamUserInfo";
 
 function getXmlTagContents(source: string, tagName: string): string | null {
