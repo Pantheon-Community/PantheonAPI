@@ -945,7 +945,7 @@
                             ],
                             "properties": {
                                 "requiredPermissions": {
-                                    "$ref": "#/components/schemas/PermissionsObject"
+                                    "$ref": "#/components/schemas/PartialPermissionsObject"
                                 },
                                 "minimumLevel": {
                                     "$ref": "#/components/schemas/RoleLevel"
