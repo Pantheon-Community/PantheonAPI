@@ -24,6 +24,7 @@ export async function joinSteamUsersFromDiscord(
             join: "steam_id",
         },
         sql`users.id = ANY(${sql.array(ids, "TEXT")})`,
+        "inner",
     );
 
     return steamUsers.map<SteamUserFromDiscord>((x) => ({

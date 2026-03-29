@@ -26,6 +26,7 @@ export async function joinUserRoleInfo(
             joinOn: sql`user_roles.user_id = ${userId}`,
             where: sql`roles.id = user_roles.role_id`,
         },
+        "inner",
     );
 
     return flattenPermissions(

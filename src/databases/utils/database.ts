@@ -99,8 +99,15 @@ interface SimpleJoinSource<Model, Name extends string, Keys extends keyof Model>
     join: keyof Model;
 }
 
-type Namespaced<Model, TableName extends string, Keys extends keyof Model> = {
-    [K in Keys as `${TableName}_${K extends string ? K : never}`]: Model[K];
+type Namespaced<
+    Model,
+    TableName extends string,
+    Keys extends keyof Model,
+    Outer extends boolean,
+> = {
+    [K in Keys as `${TableName}_${K extends string ? K : never}`]: Outer extends true
+        ? Model[K] | null
+        : Model[K];
 };
 
 type Joined<
@@ -110,7 +117,8 @@ type Joined<
     ModelB,
     TableNameB extends string,
     KeysB extends keyof ModelB,
-> = Namespaced<ModelA, TableNameA, KeysA> & Namespaced<ModelB, TableNameB, KeysB>;
+    Outer extends boolean,
+> = Namespaced<ModelA, TableNameA, KeysA, false> & Namespaced<ModelB, TableNameB, KeysB, Outer>;
 
 // database database just living in the database wow wow
 export abstract class Database<T, PrimaryKey extends keyof T, Name extends string> {
@@ -449,12 +457,22 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
         OtherTableName extends string,
         MainKeys extends keyof MainModel,
         OtherKeys extends keyof OtherModel,
+        Type extends "inner" | "left" = "inner",
     >(
         main: JoinSource<MainModel, MainTableName, MainKeys>,
         other: JoinSource<OtherModel, OtherTableName, OtherKeys>,
         params: JoinParams<MainModel, OtherModel>,
+        type: Type,
     ): Promise<
-        Joined<MainModel, MainTableName, MainKeys, OtherModel, OtherTableName, OtherKeys>[]
+        Joined<
+            MainModel,
+            MainTableName,
+            MainKeys,
+            OtherModel,
+            OtherTableName,
+            OtherKeys,
+            Type extends "left" ? true : false
+        >[]
     > {
         const { joinOn, where } = params;
 
@@ -474,12 +492,10 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
         }
 
         try {
-            return await pg<
-                Joined<MainModel, MainTableName, MainKeys, OtherModel, OtherTableName, OtherKeys>[]
-            >`
+            return await pg`
                 SELECT ${sql.unsafe(select.join(", "))}
                 FROM ${main.from.tableName}
-                JOIN ${other.from.tableName}
+                ${sql.unsafe(type)} JOIN ${other.from.tableName}
                 ON ${joinOn}
                 WHERE ${where}
             `;
@@ -495,19 +511,29 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
         OtherTableName extends string,
         MainKeys extends keyof MainModel,
         OtherKeys extends keyof OtherModel,
+        Type extends "inner" | "left" = "inner",
     >(
         main: SimpleJoinSource<MainModel, MainTableName, MainKeys>,
         other: SimpleJoinSource<OtherModel, OtherTableName, OtherKeys>,
         where: SQL.Query<MainModel | OtherModel>,
+        type: Type,
     ): Promise<
-        Joined<MainModel, MainTableName, MainKeys, OtherModel, OtherTableName, OtherKeys>[]
+        Joined<
+            MainModel,
+            MainTableName,
+            MainKeys,
+            OtherModel,
+            OtherTableName,
+            OtherKeys,
+            Type extends "left" ? true : false
+        >[]
     > {
         const joinA = `${main.from.tableNameText}.${main.join.toString()}`;
         const joinB = `${other.from.tableNameText}.${other.join.toString()}`;
 
         const joinOn = sql.unsafe(`${joinA} = ${joinB}`);
 
-        return await this.join(main, other, { joinOn, where });
+        return await this.join(main, other, { joinOn, where }, type);
     }
 
     //#endregion
