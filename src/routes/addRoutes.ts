@@ -8,6 +8,7 @@ import { postLogin } from "./auth/postLogin";
 import { postLogout } from "./auth/postLogout";
 import { postRefresh } from "./auth/postRefresh";
 import { getDiscordToSteam } from "./lookup/getDiscordToSteam";
+import { getSteamDirect } from "./lookup/getSteamDirect";
 import { getSteamToDiscord } from "./lookup/getSteamToDiscord";
 import { getIp } from "./miscellaneous/getIp";
 import { registerEndpoint } from "./registerEndpoint";
@@ -67,6 +68,7 @@ export function addRoutes(): void {
         // lookup
         getDiscordToSteam,
         getSteamToDiscord,
+        getSteamDirect,
         // miscellaneous
         getIp,
         // roles
