@@ -345,7 +345,7 @@
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/SteamUserWithTimes"
+                                        "$ref": "#/components/schemas/SteamUserWithTimesAndDiscord"
                                     }
                                 }
                             }
@@ -1637,6 +1637,70 @@
                         "anyOf": [
                             {
                                 "$ref": "#/components/schemas/SteamUserAnalytics"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "username",
+                    "avatar",
+                    "location",
+                    "memberSince",
+                    "analytics"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/SteamUser.ts",
+                    "description": "types/SteamUser.ts"
+                }
+            },
+            "SteamUserWithTimesAndDiscord": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/SteamId64"
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "Latest username associated with this Steam ID.\n\nThis may come from in-game player info or a Discord user connection."
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "https://avatars.fastly.steamstatic.com/d789a47289ccb8c36eea2055a9b700e7718c6fac_full.jpg"
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "New Zealand"
+                    },
+                    "memberSince": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/IsoString"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "analytics": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/SteamUserAnalytics"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "discord": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/UserBasic"
                             },
                             {
                                 "$ref": "#/components/schemas/Null"
