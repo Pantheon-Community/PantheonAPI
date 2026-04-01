@@ -1220,7 +1220,7 @@
             "GeneralPermissions": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 1,
+                "maximum": 3,
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/GeneralPermissions.ts",
                     "description": "types/Permissions/GeneralPermissions.ts"
