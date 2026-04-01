@@ -7,23 +7,23 @@ import { serve, setup } from "swagger-ui-express";
 import { postLogin } from "./auth/postLogin";
 import { postLogout } from "./auth/postLogout";
 import { postRefresh } from "./auth/postRefresh";
-import { getDiscordToSteam } from "./lookup/getDiscordToSteam";
-import { getSteamDirect } from "./lookup/getSteamDirect";
-import { getSteamToDiscord } from "./lookup/getSteamToDiscord";
+import { getDiscordToSteam } from "./lookups/getDiscordToSteam";
+import { getSteamDirect } from "./lookups/getSteamDirect";
+import { getSteamToDiscord } from "./lookups/getSteamToDiscord";
 import { getIp } from "./miscellaneous/getIp";
 import { registerEndpoint } from "./registerEndpoint";
 import { getRoles } from "./roles/getRoles";
 import { postRoles } from "./roles/postRoles";
 import { deleteRole } from "./roles/singular/deleteRole";
 import { patchRole } from "./roles/singular/patchRole";
-import { deleteMeSession } from "./user/deleteMeSession";
-import { deleteMeSteamUsersPrimary } from "./user/deleteMeSteamUsersPrimary";
-import { getAllUsers } from "./user/getAllUsers";
-import { getMe } from "./user/getMe";
-import { getMeRoles } from "./user/getMeRoles";
-import { getMeSessions } from "./user/getMeSessions";
-import { getMeSteamUsers } from "./user/getMeSteamUsers";
-import { putMeSteamUsersPrimary } from "./user/putMeSteamUsersPrimary";
+import { deleteMeSession } from "./users/deleteMeSession";
+import { deleteMeSteamUsersPrimary } from "./users/deleteMeSteamUsersPrimary";
+import { getAllUsers } from "./users/getAllUsers";
+import { getMe } from "./users/getMe";
+import { getMeRoles } from "./users/getMeRoles";
+import { getMeSessions } from "./users/getMeSessions";
+import { getMeSteamUsers } from "./users/getMeSteamUsers";
+import { putMeSteamUsersPrimary } from "./users/putMeSteamUsersPrimary";
 
 /** Adds the `/api-spec` and `/spec` routes to the app. */
 function addApiSpecRoutes(): void {
