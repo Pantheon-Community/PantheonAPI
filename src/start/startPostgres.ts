@@ -1,5 +1,6 @@
 import { rolesDb } from "@/databases/roles";
 import { steamUsersDb } from "@/databases/steamUsers";
+import { tokensDb } from "@/databases/tokens";
 import { userRolesDb } from "@/databases/userRoles";
 import { usersDb } from "@/databases/users";
 import { userSessionsDb } from "@/databases/userSessions";
@@ -90,7 +91,7 @@ async function setupTables(): Promise<void> {
 
     await usersDb.setup();
 
-    await Promise.all([userSessionsDb.setup(), rolesDb.setup()]);
+    await Promise.all([userSessionsDb.setup(), rolesDb.setup(), tokensDb.setup()]);
 
     await userRolesDb.setup();
 

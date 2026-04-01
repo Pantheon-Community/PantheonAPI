@@ -14,7 +14,9 @@ export enum Column {
 
     Ip = "VARCHAR(64)",
 
-    UserAgent = "VARCHAR(255)",
+    UserAgent = "VARCHAR(256)",
 
     OriginUrl = "VARCHAR(64)",
+
+    Hash = "VARCHAR(256)",
 }
