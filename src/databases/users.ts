@@ -159,6 +159,39 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
         return { upsertedUser: { id, username, avatar }, steamId: upsertedUser.steam_id ?? null };
     }
 
+    public async getUser(id: DiscordId, timer: ServerTimer): Promise<SearchedUser> {
+        using _ = timer.create("getUser");
+
+        const user = await this.select(id, [
+            "username",
+            "avatar",
+            "steam_id",
+            "first_seen_at",
+            "last_seen_at",
+            "lifetime_action_count",
+            "ip",
+            "user_agent",
+            "origin",
+        ]);
+
+        if (user === undefined) {
+            throw new UserNotFoundError();
+        }
+
+        return {
+            id,
+            username: user.username,
+            avatar: user.avatar ?? null,
+            steamId: user.steam_id ?? null,
+            firstSeenAt: user.first_seen_at.toISOString(),
+            lastSeenAt: user.last_seen_at.toISOString(),
+            lifetimeActionCount: user.lifetime_action_count,
+            ip: user.ip ?? null,
+            userAgent: user.user_agent ?? null,
+            origin: user.origin ?? null,
+        };
+    }
+
     //#endregion
 
     //#region Other

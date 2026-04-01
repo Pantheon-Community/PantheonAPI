@@ -24,6 +24,9 @@ import { getMeRoles } from "./users/me/getMeRoles";
 import { getMeSessions } from "./users/me/getMeSessions";
 import { getMeSteamUsers } from "./users/me/getMeSteamUsers";
 import { putMeSteamUsersPrimary } from "./users/me/putMeSteamUsersPrimary";
+import { deleteUserRole } from "./users/singular/deleteUserRole";
+import { getUser } from "./users/singular/getUser";
+import { putUserRole } from "./users/singular/putUserRole";
 
 /** Adds the `/api-spec` and `/spec` routes to the app. */
 function addApiSpecRoutes(): void {
@@ -85,6 +88,9 @@ export function addRoutes(): void {
         getMeSessions,
         getMeSteamUsers,
         putMeSteamUsersPrimary,
+        getUser,
+        putUserRole,
+        deleteUserRole,
     ]) {
         registerEndpoint(provider);
     }

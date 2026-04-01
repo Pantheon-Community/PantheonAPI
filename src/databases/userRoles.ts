@@ -10,6 +10,7 @@ import { rolesDb, type RoleModel } from "./roles";
 import { usersDb, type UserModel } from "./users";
 import { Column } from "./utils/column";
 import { Database, type ExternalReference, type InsertPayloadFor } from "./utils/database";
+import { wrapPgError } from "./utils/handlePgError";
 
 export interface UserRoleModel {
     readonly role_id: RoleModel["id"];
@@ -72,6 +73,30 @@ class UserRolesDb extends Database<UserRoleModel, "user_id", "user_roles"> {
         const userRoles = await this.selectMultiple(userIds, ["user_id", "role_id"]);
 
         return userRoles.map((x) => ({ userId: x.user_id, roleId: castNumber(x.role_id) }));
+    }
+
+    public async addUserRole(userId: DiscordId, roleId: RoleId, timer: ServerTimer): Promise<void> {
+        using _ = timer.create("addUserRole");
+
+        try {
+            await pg`
+                INSERT INTO ${this.tableName} (user_id, role_id)
+                VALUES (${userId}, ${roleId})
+                ON CONFLICT (user_id, role_id) DO NOTHING
+            `;
+        } catch (error) {
+            throw wrapPgError(error);
+        }
+    }
+
+    public async removeUserRole(
+        userId: DiscordId,
+        roleId: RoleId,
+        timer: ServerTimer,
+    ): Promise<void> {
+        using _ = timer.create("removeUserRole");
+
+        await this.deleteWhere(sql`user_id = ${userId} AND role_id = ${roleId}`);
     }
 }
 

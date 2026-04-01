@@ -631,6 +631,138 @@
                 }
             }
         },
+        "/users/{id}": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "id",
+                    "schema": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    }
+                }
+            ],
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "operationId": "getUser",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Gets a user, returned data depends on permissions.",
+                "responses": {
+                    "200": {
+                        "description": "User object.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserFromGetAll"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/users/{userId}/roles/{roleId}": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "userId",
+                    "schema": {
+                        "$ref": "#/components/schemas/DiscordId"
+                    }
+                },
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "roleId",
+                    "schema": {
+                        "$ref": "#/components/schemas/RoleId"
+                    }
+                }
+            ],
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "operationId": "putUserRole",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Gives a user a role.",
+                "responses": {
+                    "200": {
+                        "description": "Success, no content."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "operationId": "deleteUserRole",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Removes a role from a user.",
+                "responses": {
+                    "200": {
+                        "description": "Success, no content."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
         "/users/@all": {
             "get": {
                 "tags": [
