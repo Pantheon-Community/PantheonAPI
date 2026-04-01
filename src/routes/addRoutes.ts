@@ -16,14 +16,14 @@ import { getRoles } from "./roles/getRoles";
 import { postRoles } from "./roles/postRoles";
 import { deleteRole } from "./roles/singular/deleteRole";
 import { patchRole } from "./roles/singular/patchRole";
-import { deleteMeSession } from "./users/deleteMeSession";
-import { deleteMeSteamUsersPrimary } from "./users/deleteMeSteamUsersPrimary";
 import { getAllUsers } from "./users/getAllUsers";
-import { getMe } from "./users/getMe";
-import { getMeRoles } from "./users/getMeRoles";
-import { getMeSessions } from "./users/getMeSessions";
-import { getMeSteamUsers } from "./users/getMeSteamUsers";
-import { putMeSteamUsersPrimary } from "./users/putMeSteamUsersPrimary";
+import { deleteMeSession } from "./users/me/deleteMeSession";
+import { deleteMeSteamUsersPrimary } from "./users/me/deleteMeSteamUsersPrimary";
+import { getMe } from "./users/me/getMe";
+import { getMeRoles } from "./users/me/getMeRoles";
+import { getMeSessions } from "./users/me/getMeSessions";
+import { getMeSteamUsers } from "./users/me/getMeSteamUsers";
+import { putMeSteamUsersPrimary } from "./users/me/putMeSteamUsersPrimary";
 
 /** Adds the `/api-spec` and `/spec` routes to the app. */
 function addApiSpecRoutes(): void {
