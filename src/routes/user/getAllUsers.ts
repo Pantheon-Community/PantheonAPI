@@ -65,7 +65,7 @@ export const getAllUsers: Endpoint<void, GetAllUsersResponse, void, GetAllUsersR
     method: "get",
     path: "/users/@all",
     auth: AuthScope.Permission,
-    permissions: { userPermissions: UserPermissions.ViewAllUsers },
+    permissions: { userPermissions: UserPermissions.ViewAll },
     async handleRequest({ req, timer, perms }) {
         const {
             page = 0,
@@ -80,7 +80,7 @@ export const getAllUsers: Endpoint<void, GetAllUsersResponse, void, GetAllUsersR
         let ipSearch: Ip | null;
 
         // if can view user sessions, include relevant info in output, and allow ip searching
-        if (hasPermission(perms, { userPermissions: UserPermissions.ViewUserSessions })) {
+        if (hasPermission(perms, { userPermissions: UserPermissions.ViewSessions })) {
             ipSearch = req.query.ipSearch ?? null;
 
             buildingFns.push(({ ip, userAgent, origin }) => ({ ip, userAgent, origin }));
@@ -89,7 +89,7 @@ export const getAllUsers: Endpoint<void, GetAllUsersResponse, void, GetAllUsersR
         }
 
         // if can view user analytics, include relevant info in output
-        if (hasPermission(perms, { userPermissions: UserPermissions.ViewUserAnalytics })) {
+        if (hasPermission(perms, { userPermissions: UserPermissions.ViewAnalytics })) {
             buildingFns.push(({ firstSeenAt, lastSeenAt, lifetimeActionCount }) => ({
                 firstSeenAt,
                 lastSeenAt,
@@ -116,7 +116,7 @@ export const getAllUsers: Endpoint<void, GetAllUsersResponse, void, GetAllUsersR
             extraOutputBuilders.push(addUserRoleIds(userIds, timer));
         }
 
-        if (hasPermission(perms, { userPermissions: UserPermissions.ViewUserConnections })) {
+        if (hasPermission(perms, { userPermissions: UserPermissions.ViewConnections })) {
             // if can view user connections, fetch steam users to add to output
             const steamIds = users.map((x) => x.steamId).filter((x) => x !== null);
 
