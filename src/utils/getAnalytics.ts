@@ -11,8 +11,8 @@ function getAsString<T extends Brand<string, string>>(
 
 export function getAnalytics(req: AnyRequest): RequestAnalytics {
     return {
-        ip: getAsString(req.ip, 64),
-        userAgent: getAsString(req.get("user-agent"), 255),
-        origin: getAsString(req.get("origin"), 64) || getAsString(req.get("host"), 64),
+        ip: getAsString(req.ip, 256),
+        userAgent: getAsString(req.get("user-agent"), 512),
+        origin: getAsString(req.get("origin"), 128) || getAsString(req.get("host"), 128),
     };
 }
