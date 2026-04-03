@@ -1,10 +1,11 @@
 import { NotFoundError } from "@/errors/NotFoundError";
+import { pg } from "@/global/pg";
 import type { DiscordId } from "@/shared/types/Common";
 import type { EconomyReward, EconomyRewardInput, RewardId } from "@/shared/types/EconomyReward";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
+import { sql } from "bun";
 import { usersDb, type UserModel } from "./users";
-import { Column } from "./utils/column";
 import {
     Database,
     type ExternalReference,
@@ -14,6 +15,12 @@ import {
 
 export interface RewardModel {
     readonly id: string;
+
+    readonly title: string;
+
+    readonly subtitle: string;
+
+    readonly description: string;
 
     readonly image: string;
 
@@ -34,6 +41,9 @@ export interface RewardModel {
 
 const ALL_KEYS = [
     "id",
+    "title",
+    "subtitle",
+    "description",
     "image",
     "cost",
     "normal_cost",
@@ -57,14 +67,17 @@ class RewardNotFoundError extends NotFoundError {
 class RewardsDatabase extends Database<RewardModel, "id", "economy_rewards"> {
     public constructor() {
         super("economy_rewards", "id", {
-            id: { type: "BIGINT GENERATED ALWAYS AS IDENTITY" },
-            image: { type: "VARCHAR(64)" },
+            id: { type: "BIGINT GENERATED ALWAYS AS IDENTITY", extra: ["PRIMARY KEY"] },
+            title: { type: "TEXT" },
+            subtitle: { type: "TEXT" },
+            description: { type: "TEXT" },
+            image: { type: "TEXT" },
             cost: { type: "INT" },
             normal_cost: { type: "INT" },
             item_id: { type: "SMALLINT", nullable: true },
             item_count: { type: "SMALLINT" },
             posted_by: {
-                type: Column.Snowflake,
+                type: "TEXT",
                 nullable: true,
                 references: {
                     db: usersDb,
@@ -77,6 +90,17 @@ class RewardsDatabase extends Database<RewardModel, "id", "economy_rewards"> {
         });
     }
 
+    public override async setup(): Promise<void> {
+        await Promise.all([
+            pg`ALTER TABLE ${this.tableName} ADD PRIMARY KEY (id)`.catch(() => null),
+            pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS title TEXT NOT NULL DEFAULT ''`,
+            pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS subtitle TEXT NOT NULL DEFAULT ''`,
+            pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''`,
+        ]);
+
+        await super.setup();
+    }
+
     public async getAllRewards(timer: ServerTimer): Promise<EconomyReward[]> {
         using _ = timer.create("getAllRewards");
 
@@ -84,6 +108,9 @@ class RewardsDatabase extends Database<RewardModel, "id", "economy_rewards"> {
 
         return results.map<EconomyReward>((x) => ({
             id: castNumber(x.id),
+            title: x.title,
+            subtitle: x.subtitle,
+            description: x.description,
             image: x.image,
             cost: x.cost,
             normalCost: x.normal_cost,
@@ -95,6 +122,20 @@ class RewardsDatabase extends Database<RewardModel, "id", "economy_rewards"> {
         }));
     }
 
+    public async getSpecificRewards(
+        ids: RewardId[],
+        timer: ServerTimer,
+    ): Promise<Pick<EconomyReward, "id" | "cost">[]> {
+        using _ = timer.create("getSpecificRewards");
+
+        const results = await this.selectBy("id", sql`ANY(${sql.array(ids, "BIGINT")})`, [
+            "id",
+            "cost",
+        ]);
+
+        return results.map((x) => ({ id: castNumber(x.id), cost: x.cost }));
+    }
+
     public async createReward(
         input: EconomyRewardInput,
         user: DiscordId,
@@ -103,6 +144,9 @@ class RewardsDatabase extends Database<RewardModel, "id", "economy_rewards"> {
         using _ = timer.create("createReward");
 
         const insertPayload: InsertPayloadFor<RewardModel, "id"> = {
+            title: input.title,
+            subtitle: input.subtitle,
+            description: input.description,
             image: input.image,
             cost: input.cost,
             normal_cost: input.normalCost,
