@@ -1,7 +1,11 @@
+import type { Brand } from "@/shared/types/Util";
 import type { AnyRequest } from "@/types/Express/AnyRequest";
 import type { RequestAnalytics } from "@/types/RequestAnalytics";
 
-function getAsString<T>(rawValue: string | undefined, maxLength: number): T | null {
+function getAsString<T extends Brand<string, string>>(
+    rawValue: string | undefined,
+    maxLength: number,
+): T | null {
     return (rawValue?.slice(0, maxLength).trim() as T | undefined) || null;
 }
 
