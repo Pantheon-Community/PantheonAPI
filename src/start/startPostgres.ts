@@ -1,3 +1,4 @@
+import { pendingTransactionsDb } from "@/databases/pendingTransactions";
 import { rewardsDb } from "@/databases/rewards";
 import { rolesDb } from "@/databases/roles";
 import { steamUsersDb } from "@/databases/steamUsers";
@@ -99,7 +100,7 @@ async function setupTables(): Promise<void> {
         rewardsDb.setup(),
     ]);
 
-    await userRolesDb.setup();
+    await Promise.all([userRolesDb.setup(), pendingTransactionsDb.setup()]);
 
     logWithTimeTaken("Setup Database Tables", startedAt);
 }

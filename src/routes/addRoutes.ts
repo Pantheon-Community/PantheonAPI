@@ -24,9 +24,11 @@ import { getAllUsers } from "./users/getAllUsers";
 import { deleteMeSession } from "./users/me/deleteMeSession";
 import { deleteMeSteamUsersPrimary } from "./users/me/deleteMeSteamUsersPrimary";
 import { getMe } from "./users/me/getMe";
+import { getMePendingTransactions } from "./users/me/getMePendingTransactions";
 import { getMeRoles } from "./users/me/getMeRoles";
 import { getMeSessions } from "./users/me/getMeSessions";
 import { getMeSteamUsers } from "./users/me/getMeSteamUsers";
+import { postMePendingTransactions } from "./users/me/postMePendingTransactions";
 import { putMeSteamUsersPrimary } from "./users/me/putMeSteamUsersPrimary";
 import { deleteUserRole } from "./users/singular/deleteUserRole";
 import { getUser } from "./users/singular/getUser";
@@ -95,6 +97,8 @@ export function addRoutes(): void {
         getUser,
         putUserRole,
         deleteUserRole,
+        getMePendingTransactions,
+        postMePendingTransactions,
         // economy
         getRewards,
         postRewards,

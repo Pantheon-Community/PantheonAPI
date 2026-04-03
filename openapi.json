@@ -791,6 +791,89 @@
                 }
             }
         },
+        "/users/@me/pending-transactions": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "operationId": "getMePendingTransactions",
+                "description": "Gets all pending transactions of the current user.",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of pending transactions.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/EconomyTransaction"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "operationId": "postMePendingTransactions",
+                "description": "Creates new economy transactions for the current user.",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/MakeTransactionRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success, no content."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
         "/users/{id}": {
             "parameters": [
                 {
@@ -1436,7 +1519,6 @@
                         "type": "string"
                     }
                 },
-                "additionalProperties": false,
                 "required": [
                     "code",
                     "redirectUri"
@@ -1444,6 +1526,25 @@
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Requests/LoginRequest.ts",
                     "description": "types/Requests/LoginRequest.ts"
+                }
+            },
+            "MakeTransactionRequest": {
+                "type": "object",
+                "properties": {
+                    "rewardId": {
+                        "$ref": "#/components/schemas/RewardId"
+                    },
+                    "expectedPrice": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "rewardId",
+                    "expectedPrice"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Requests/MakeTransactionRequest.ts",
+                    "description": "types/Requests/MakeTransactionRequest.ts"
                 }
             },
             "AuthResponse": {
@@ -1621,6 +1722,15 @@
                     "id": {
                         "$ref": "#/components/schemas/RewardId"
                     },
+                    "title": {
+                        "type": "string"
+                    },
+                    "subtitle": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
                     "image": {
                         "type": "string"
                     },
@@ -1662,6 +1772,15 @@
             "EconomyRewardInput": {
                 "type": "object",
                 "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "subtitle": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
                     "image": {
                         "type": "string"
                     },
@@ -1680,16 +1799,76 @@
                     }
                 },
                 "required": [
+                    "title",
+                    "subtitle",
+                    "description",
                     "image",
                     "cost",
                     "normalCost",
                     "itemId",
                     "itemCount"
                 ],
-                "additionalProperties": false,
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/EconomyReward.ts",
                     "description": "types/EconomyReward.ts"
+                }
+            },
+            "TransactionId": {
+                "type": "integer",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/EconomyTransaction.ts",
+                    "description": "types/EconomyTransaction.ts"
+                }
+            },
+            "EconomyTransaction": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/TransactionId"
+                    },
+                    "rewardId": {
+                        "$ref": "#/components/schemas/RewardId"
+                    },
+                    "cost": {
+                        "type": "integer"
+                    },
+                    "madeAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "purchaser": {
+                        "$ref": "#/components/schemas/SteamId64"
+                    }
+                },
+                "required": [
+                    "id",
+                    "rewardId",
+                    "cost",
+                    "madeAt",
+                    "purchaser"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/EconomyTransaction.ts",
+                    "description": "types/EconomyTransaction.ts"
+                }
+            },
+            "CompletedEconomyTransaction": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/EconomyTransaction"
+                    }
+                ],
+                "properties": {
+                    "completedAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    }
+                },
+                "required": [
+                    "completedAt"
+                ],
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/EconomyTransaction.ts",
+                    "description": "types/EconomyTransaction.ts"
                 }
             },
             "IsoString": {
@@ -1859,7 +2038,6 @@
                         "nullable": true
                     }
                 },
-                "additionalProperties": false,
                 "required": [
                     "name",
                     "icon",

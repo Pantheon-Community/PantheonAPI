@@ -48,7 +48,7 @@ type ColumnType<T> =
                 ? `TIMESTAMP`
                 : never;
 
-type ColumnExtra = "PRIMARY KEY" | "UNIQUE";
+type ColumnExtra = "PRIMARY KEY" | "UNIQUE" | `CHECK (${string})`;
 
 export interface ExternalReference<T = any> {
     db: Database<T, any, string>;
@@ -255,6 +255,22 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
         }
     }
 
+    protected async selectBy<TargetKey extends keyof T, ReturnedKeys extends keyof T>(
+        key: TargetKey,
+        value: SQL.Query<T>,
+        keys: ReturnedKeys[],
+    ): Promise<Pick<T, ReturnedKeys>[]> {
+        try {
+            return await pg`
+                SELECT ${sql.unsafe(keys.join(", "))}
+                FROM ${this.tableName}
+                WHERE ${sql.unsafe(key.toString())} = ${value}
+            `;
+        } catch (error) {
+            throw wrapPgError(error);
+        }
+    }
+
     /** Selects the given keys on **all** rows. */
     protected async selectAll<K extends keyof T>(keys: K[]): Promise<Pick<T, K>[]> {
         try {
@@ -364,9 +380,12 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
     //#region Insert
 
     /** Inserts a new row, returning its ID. */
-    protected async insert(value: InsertPayloadFor<T, PrimaryKey>): Promise<T[PrimaryKey]> {
+    protected async insert(
+        value: InsertPayloadFor<T, PrimaryKey>,
+        postgres: SQL = pg,
+    ): Promise<T[PrimaryKey]> {
         try {
-            const [insertedRow] = await pg<[Pick<T, PrimaryKey>]>`
+            const [insertedRow] = await postgres<[Pick<T, PrimaryKey>]>`
                 INSERT INTO ${this.tableName} ${sql(value)}
                 RETURNING ${this.primaryKey}
             `;
@@ -401,9 +420,9 @@ export abstract class Database<T, PrimaryKey extends keyof T, Name extends strin
     //#region Delete
 
     /** Deletes an existing row, returns `true` if it was found and deleted. */
-    protected async delete(id: T[PrimaryKey]): Promise<boolean> {
+    protected async delete(id: T[PrimaryKey], postgres: SQL = pg): Promise<boolean> {
         try {
-            const deletedRows = await pg`
+            const deletedRows = await postgres`
                 DELETE FROM ${this.tableName}
                 WHERE ${this.primaryKey} = ${id}
             `;
