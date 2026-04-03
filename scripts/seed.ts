@@ -59,7 +59,7 @@ for (let i = 0; i < 100; i++) {
                     global_name: null,
                     username: `Discord User #${i + 1}`,
                 },
-                i % 2 === 0 ? steamUsers[i]!.id : undefined,
+                i % 2 === 0 ? [steamUsers[i]!] : [],
                 {
                     ip: i % 3 === 0 ? null : ("123.123.123.123" as Ip),
                     origin: null,
@@ -67,7 +67,7 @@ for (let i = 0; i < 100; i++) {
                 },
                 new ServerTimer(),
             )
-            .then((x) => resolve(x.upsertedUser))
+            .then(resolve)
             .catch(console.error);
     });
 }

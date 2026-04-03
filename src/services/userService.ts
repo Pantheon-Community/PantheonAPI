@@ -17,17 +17,7 @@ export async function userService(
         steamConnectionService(token, timer),
     ]);
 
-    const { upsertedUser, steamId } = await usersDb.addOrUpdateUser(
-        discordUser,
-        steamUsers[0]?.id,
-        analytics,
-        timer,
-    );
+    const user = await usersDb.addOrUpdateUser(discordUser, steamUsers, analytics, timer);
 
-    // the below .find() can return null if the user removed the primary steam connection from
-    // their account, however this edge case is ultimately more effort than it's worth to routinely
-    // check
-    const steam = steamId ? (steamUsers.find((x) => x.id === steamId) ?? null) : null;
-
-    return { user: Object.assign(upsertedUser, { steam }), steamUsers };
+    return { user, steamUsers };
 }

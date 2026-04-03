@@ -1551,7 +1551,46 @@
                 "type": "object",
                 "properties": {
                     "user": {
-                        "$ref": "#/components/schemas/UserWithSteam"
+                        "type": "object",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/UserBasic"
+                            }
+                        ],
+                        "properties": {
+                            "steam": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/SteamUserWithTimes"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/Null"
+                                    }
+                                ]
+                            },
+                            "balance": {
+                                "type": "integer"
+                            },
+                            "lifetimeBalance": {
+                                "type": "integer"
+                            },
+                            "lifetimePurchaseCount": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "username",
+                            "avatar",
+                            "steam",
+                            "balance",
+                            "lifetimeBalance",
+                            "lifetimePurchaseCount"
+                        ],
+                        "externalDocs": {
+                            "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Responses/GetMeResponse.ts",
+                            "description": "types/Responses/GetMeResponse.ts"
+                        }
                     },
                     "steamUsers": {
                         "type": "array",
@@ -2154,6 +2193,9 @@
                     "lastSeenAt": {
                         "$ref": "#/components/schemas/IsoString"
                     },
+                    "lifetimeActionCount": {
+                        "type": "integer"
+                    },
                     "ip": {
                         "anyOf": [
                             {
@@ -2184,7 +2226,13 @@
                             }
                         ]
                     },
-                    "lifetimeActionCount": {
+                    "balance": {
+                        "type": "integer"
+                    },
+                    "lifetimeBalance": {
+                        "type": "integer"
+                    },
+                    "lifetimePurchaseCount": {
                         "type": "integer"
                     }
                 },
@@ -2211,41 +2259,6 @@
                     "id",
                     "username",
                     "avatar"
-                ],
-                "externalDocs": {
-                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",
-                    "description": "types/User.ts"
-                }
-            },
-            "UserWithSteam": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "$ref": "#/components/schemas/DiscordId"
-                    },
-                    "username": {
-                        "type": "string"
-                    },
-                    "avatar": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "steam": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/SteamUserWithTimes"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Null"
-                            }
-                        ]
-                    }
-                },
-                "required": [
-                    "id",
-                    "username",
-                    "avatar",
-                    "steam"
                 ],
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/User.ts",

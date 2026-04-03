@@ -3,8 +3,8 @@ import { config } from "@/global/config";
 import { pg } from "@/global/pg";
 import type { DiscordId, Ip, Origin, UserAgent } from "@/shared/types/Common";
 import type { WithPagination } from "@/shared/types/Pagination";
-import type { SteamId64 } from "@/shared/types/SteamUser";
-import type { UserBasic } from "@/shared/types/User";
+import type { GetMeUser } from "@/shared/types/Responses/GetMeResponse";
+import type { SteamId64, SteamUserWithTimes } from "@/shared/types/SteamUser";
 import type { UserFromSteam } from "@/shared/types/UserFromSteam";
 import type { DiscordUser } from "@/types/Discord";
 import type { SearchedUser } from "@/types/Internal";
@@ -46,12 +46,6 @@ export interface UserModel {
     readonly lifetime_balance: number;
 
     readonly lifetime_purchase_count: number;
-}
-
-interface AddOrUpdateUserResult {
-    readonly upsertedUser: UserBasic;
-
-    readonly steamId: SteamId64 | null;
 }
 
 interface SearchUserArgs {
@@ -152,16 +146,18 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
 
     public async addOrUpdateUser(
         discordUser: DiscordUser,
-        steamId: SteamId64 | undefined,
+        steamUsers: SteamUserWithTimes[],
         analytics: RequestAnalytics,
         timer: ServerTimer,
-    ): Promise<AddOrUpdateUserResult> {
+    ): Promise<GetMeUser> {
         using _ = timer.create("addOrUpdateUser");
 
         const { id, username: fallbackUsername, global_name, avatar } = discordUser;
         const { ip, userAgent, origin } = analytics;
 
         const username = global_name ?? fallbackUsername;
+
+        const firstSteamId = steamUsers[0]?.id;
 
         const insertPayload: InsertPayloadFor<UserModel, "id"> = {
             id,
@@ -180,14 +176,34 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
         };
 
         if (avatar) insertPayload.avatar = updatePayload.avatar = avatar;
-        if (steamId) insertPayload.steam_id = steamId; // only inserted
+        if (firstSteamId) insertPayload.steam_id = firstSteamId; // only inserted
         if (ip) insertPayload.ip = updatePayload.ip = ip;
         if (userAgent) insertPayload.user_agent = updatePayload.user_agent = userAgent;
         if (origin) insertPayload.origin = updatePayload.origin = origin;
 
-        const upsertedUser = await this.upsert(insertPayload, updatePayload, ["steam_id"]);
+        const upsertedUser = await this.upsert(insertPayload, updatePayload, [
+            "steam_id",
+            "balance",
+            "lifetime_balance",
+            "lifetime_purchase_count",
+        ]);
 
-        return { upsertedUser: { id, username, avatar }, steamId: upsertedUser.steam_id ?? null };
+        // the below .find() can return null if the user removed the primary steam connection from
+        // their account, however this edge case is ultimately more effort than it's worth to
+        // routinely check
+        const steam = upsertedUser.steam_id
+            ? (steamUsers.find((x) => x.id === upsertedUser.steam_id) ?? null)
+            : null;
+
+        return {
+            id,
+            username,
+            avatar,
+            steam,
+            balance: upsertedUser.balance,
+            lifetimeBalance: upsertedUser.lifetime_balance,
+            lifetimePurchaseCount: upsertedUser.lifetime_purchase_count,
+        };
     }
 
     public async getUser(id: DiscordId, timer: ServerTimer): Promise<SearchedUser> {
