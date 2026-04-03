@@ -1,3 +1,5 @@
+/** Inserts dummy users and steam users into the database. */
+
 import { steamUsersDb } from "@/databases/steamUsers";
 import { usersDb } from "@/databases/users";
 import type { DiscordId, Ip } from "@/shared/types/Common";
