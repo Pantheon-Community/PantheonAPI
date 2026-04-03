@@ -218,6 +218,166 @@
                 }
             }
         },
+        "/economy/rewards": {
+            "get": {
+                "tags": [
+                    "Economy"
+                ],
+                "operationId": "getRewards",
+                "description": "Gets all economy rewards.",
+                "responses": {
+                    "200": {
+                        "description": "List of rewards.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/EconomyReward"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Economy"
+                ],
+                "operationId": "postRewards",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "description": "Creates a new economy reward.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EconomyRewardInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The ID of the created reward.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardId"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
+        "/economy/rewards/{id}": {
+            "parameters": [
+                {
+                    "required": true,
+                    "in": "path",
+                    "name": "id",
+                    "schema": {
+                        "$ref": "#/components/schemas/RewardId"
+                    }
+                }
+            ],
+            "patch": {
+                "tags": [
+                    "Economy"
+                ],
+                "operationId": "patchReward",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EconomyRewardInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success, no content."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Economy"
+                ],
+                "operationId": "deleteReward",
+                "security": [
+                    {
+                        "userToken": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success, no content."
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequestError400"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError401"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ForbiddenError403"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError404"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited429"
+                    }
+                }
+            }
+        },
         "/lookup/discord-to-steam": {
             "parameters": [
                 {
@@ -1220,7 +1380,7 @@
             "GeneralPermissions": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 3,
+                "maximum": 7,
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Permissions/GeneralPermissions.ts",
                     "description": "types/Permissions/GeneralPermissions.ts"
@@ -1407,6 +1567,90 @@
                 "externalDocs": {
                     "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/Responses/GetMeResponse.ts",
                     "description": "types/Responses/GetMeResponse.ts"
+                }
+            },
+            "RewardId": {
+                "type": "integer",
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/EconomyReward.ts",
+                    "description": "types/EconomyReward.ts"
+                }
+            },
+            "EconomyReward": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/RewardId"
+                    },
+                    "image": {
+                        "type": "string"
+                    },
+                    "cost": {
+                        "type": "integer"
+                    },
+                    "normalCost": {
+                        "type": "integer"
+                    },
+                    "itemId": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "itemCount": {
+                        "type": "integer"
+                    },
+                    "postedBy": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/DiscordId"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Null"
+                            }
+                        ]
+                    },
+                    "postedAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    },
+                    "lastUpdatedAt": {
+                        "$ref": "#/components/schemas/IsoString"
+                    }
+                },
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/EconomyReward.ts",
+                    "description": "types/EconomyReward.ts"
+                }
+            },
+            "EconomyRewardInput": {
+                "type": "object",
+                "properties": {
+                    "image": {
+                        "type": "string"
+                    },
+                    "cost": {
+                        "type": "integer"
+                    },
+                    "normalCost": {
+                        "type": "integer"
+                    },
+                    "itemId": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "itemCount": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "image",
+                    "cost",
+                    "normalCost",
+                    "itemId",
+                    "itemCount"
+                ],
+                "additionalProperties": false,
+                "externalDocs": {
+                    "url": "https://github.com/Pantheon-Community/PantheonAPI-Types/blob/main/types/EconomyReward.ts",
+                    "description": "types/EconomyReward.ts"
                 }
             },
             "IsoString": {
@@ -2128,6 +2372,10 @@
         {
             "name": "Lookups",
             "description": "Endpoints used by our other services for Steam and Discord user lookups."
+        },
+        {
+            "name": "Economy",
+            "description": "Economy system related endpoints."
         }
     ]
 }

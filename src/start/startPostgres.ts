@@ -1,3 +1,4 @@
+import { rewardsDb } from "@/databases/rewards";
 import { rolesDb } from "@/databases/roles";
 import { steamUsersDb } from "@/databases/steamUsers";
 import { tokensDb } from "@/databases/tokens";
@@ -91,7 +92,12 @@ async function setupTables(): Promise<void> {
 
     await usersDb.setup();
 
-    await Promise.all([userSessionsDb.setup(), rolesDb.setup(), tokensDb.setup()]);
+    await Promise.all([
+        userSessionsDb.setup(),
+        rolesDb.setup(),
+        tokensDb.setup(),
+        rewardsDb.setup(),
+    ]);
 
     await userRolesDb.setup();
 

@@ -40,6 +40,12 @@ export interface UserModel {
     readonly user_agent?: UserAgent;
 
     readonly origin?: Origin;
+
+    readonly balance: number;
+
+    readonly lifetime_balance: number;
+
+    readonly lifetime_purchase_count: number;
 }
 
 interface AddOrUpdateUserResult {
@@ -98,12 +104,31 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
                 ip: { type: Column.Ip, nullable: true },
                 user_agent: { type: Column.UserAgent, nullable: true },
                 origin: { type: Column.OriginUrl, nullable: true },
+                balance: { type: "INT" },
+                lifetime_balance: { type: "INT" },
+                lifetime_purchase_count: { type: "INT" },
             },
-            { indexes: ["username", "first_seen_at", "last_seen_at", "lifetime_action_count"] },
+            {
+                indexes: [
+                    "username",
+                    "first_seen_at",
+                    "last_seen_at",
+                    "lifetime_action_count",
+                    "balance",
+                    "lifetime_balance",
+                    "lifetime_purchase_count",
+                ],
+            },
         );
     }
 
     public override async setup(): Promise<void> {
+        await Promise.all([
+            pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS balance INT NOT NULL DEFAULT 0`,
+            pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS lifetime_balance INT NOT NULL DEFAULT 0`,
+            pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS lifetime_purchase_count INT NOT NULL DEFAULT 0`,
+        ]);
+
         await super.setup();
 
         const seedUser: InsertPayloadFor<UserModel, "id"> = {
@@ -112,6 +137,9 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
             first_seen_at: new Date(),
             last_seen_at: new Date(),
             lifetime_action_count: 0,
+            balance: 0,
+            lifetime_balance: 0,
+            lifetime_purchase_count: 0,
         };
 
         await pg`
@@ -141,6 +169,9 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
             first_seen_at: new Date(),
             last_seen_at: new Date(),
             lifetime_action_count: 0,
+            balance: 0,
+            lifetime_balance: 0,
+            lifetime_purchase_count: 0,
         };
 
         const updatePayload: UpdatePayloadFor<UserModel, "id"> = {

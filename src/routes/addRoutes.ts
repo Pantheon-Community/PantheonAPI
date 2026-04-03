@@ -7,6 +7,10 @@ import { serve, setup } from "swagger-ui-express";
 import { postLogin } from "./auth/postLogin";
 import { postLogout } from "./auth/postLogout";
 import { postRefresh } from "./auth/postRefresh";
+import { getRewards } from "./economy/getRewards";
+import { postRewards } from "./economy/postRewards";
+import { deleteReward } from "./economy/singular/deleteReward";
+import { patchReward } from "./economy/singular/patchReward";
 import { getDiscordToSteam } from "./lookups/getDiscordToSteam";
 import { getSteamDirect } from "./lookups/getSteamDirect";
 import { getSteamToDiscord } from "./lookups/getSteamToDiscord";
@@ -91,6 +95,11 @@ export function addRoutes(): void {
         getUser,
         putUserRole,
         deleteUserRole,
+        // economy
+        getRewards,
+        postRewards,
+        patchReward,
+        deleteReward,
     ]) {
         registerEndpoint(provider);
     }
