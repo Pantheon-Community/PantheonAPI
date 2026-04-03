@@ -9,7 +9,6 @@ import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { sql } from "bun";
 import { usersDb, type UserModel } from "./users";
-import { Column } from "./utils/column";
 import {
     Database,
     type ExternalReference,
@@ -78,13 +77,13 @@ class UserSessionsDatabase extends Database<UserSessionModel, "id", "user_sessio
             "id",
             {
                 id: { type: "BIGINT GENERATED ALWAYS AS IDENTITY", extra: ["PRIMARY KEY"] },
-                access_token: { type: Column.Token, extra: ["UNIQUE"] },
-                refresh_token: { type: Column.Token, extra: ["UNIQUE"] },
+                access_token: { type: "TEXT", extra: ["UNIQUE"] },
+                refresh_token: { type: "TEXT", extra: ["UNIQUE"] },
                 started_at: { type: "TIMESTAMP" },
                 expires_at: { type: "TIMESTAMP" },
                 times_refreshed: { type: "INT" },
                 user_id: {
-                    type: Column.Snowflake,
+                    type: "TEXT",
                     references: {
                         db: usersDb,
                         key: "id",
@@ -93,9 +92,9 @@ class UserSessionsDatabase extends Database<UserSessionModel, "id", "user_sessio
                 },
                 action_count: { type: "INT" },
                 last_action_at: { type: "TIMESTAMP" },
-                ip: { type: Column.Ip, nullable: true },
-                user_agent: { type: Column.UserAgent, nullable: true },
-                origin: { type: Column.OriginUrl, nullable: true },
+                ip: { type: "TEXT", nullable: true },
+                user_agent: { type: "TEXT", nullable: true },
+                origin: { type: "TEXT", nullable: true },
             },
             { indexes: ["access_token", "expires_at", "user_id"] },
         );

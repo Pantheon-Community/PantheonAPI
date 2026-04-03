@@ -64,9 +64,9 @@ class RolesDatabase extends Database<RoleModel, "id", "roles"> {
     public constructor() {
         super("roles", "id", {
             id: { type: "BIGINT GENERATED ALWAYS AS IDENTITY", extra: ["PRIMARY KEY"] },
-            name: { type: "VARCHAR(128)" },
-            icon: { type: "VARCHAR(64)", nullable: true },
-            category: { type: "VARCHAR(128)", nullable: true },
+            name: { type: "TEXT" },
+            icon: { type: "TEXT", nullable: true },
+            category: { type: "TEXT", nullable: true },
             level: { type: "SMALLINT" },
             p_general: { type: "INT" },
             p_user: { type: "INT" },

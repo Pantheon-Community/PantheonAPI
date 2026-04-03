@@ -12,13 +12,13 @@ import type { RequestAnalytics } from "@/types/RequestAnalytics";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { SQL, sql } from "bun";
 import { steamUsersDb, type SteamUserModel } from "./steamUsers";
-import { Column } from "./utils/column";
 import {
     Database,
     type ExternalReference,
     type InsertPayloadFor,
     type UpdatePayloadFor,
 } from "./utils/database";
+import { wrapPgError } from "./utils/handlePgError";
 
 export interface UserModel {
     readonly id: DiscordId;
@@ -80,11 +80,11 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
             "users",
             "id",
             {
-                id: { type: Column.Snowflake, extra: ["PRIMARY KEY"] },
-                username: { type: "VARCHAR(32)" },
-                avatar: { type: "VARCHAR(32)", nullable: true },
+                id: { type: "TEXT", extra: ["PRIMARY KEY"] },
+                username: { type: "TEXT" },
+                avatar: { type: "TEXT", nullable: true },
                 steam_id: {
-                    type: Column.SteamId64,
+                    type: "TEXT",
                     nullable: true,
                     references: {
                         db: steamUsersDb,
@@ -95,10 +95,10 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
                 first_seen_at: { type: "TIMESTAMP" },
                 last_seen_at: { type: "TIMESTAMP" },
                 lifetime_action_count: { type: "INT" },
-                ip: { type: Column.Ip, nullable: true },
-                user_agent: { type: Column.UserAgent, nullable: true },
-                origin: { type: Column.OriginUrl, nullable: true },
-                balance: { type: "INT" },
+                ip: { type: "TEXT", nullable: true },
+                user_agent: { type: "TEXT", nullable: true },
+                origin: { type: "TEXT", nullable: true },
+                balance: { type: "INT", extra: ["CHECK (balance >= 0)"] },
                 lifetime_balance: { type: "INT" },
                 lifetime_purchase_count: { type: "INT" },
             },
@@ -121,6 +121,9 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
             pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS balance INT NOT NULL DEFAULT 0`,
             pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS lifetime_balance INT NOT NULL DEFAULT 0`,
             pg`ALTER TABLE ${this.tableName} ADD COLUMN IF NOT EXISTS lifetime_purchase_count INT NOT NULL DEFAULT 0`,
+            pg`ALTER TABLE ${this.tableName} ADD CONSTRAINT users_balance_check check (balance >= 0)`.catch(
+                () => null,
+            ),
         ]);
 
         await super.setup();
@@ -237,6 +240,43 @@ class UsersDatabase extends Database<UserModel, "id", "users"> {
             userAgent: user.user_agent ?? null,
             origin: user.origin ?? null,
         };
+    }
+
+    public async getUserSteamAndBalance(
+        id: DiscordId,
+        timer: ServerTimer,
+    ): Promise<{ steamId: SteamId64 | null; balance: number }> {
+        using _ = timer.create("getUserSteamAndBalance");
+
+        const user = await this.select(id, ["steam_id", "balance"]);
+
+        if (user === undefined) {
+            throw new UserNotFoundError();
+        }
+
+        return { steamId: user.steam_id ?? null, balance: user.balance };
+    }
+
+    public async addTransactionRecords(
+        id: DiscordId,
+        totalCost: number,
+        transactionCount: number,
+        postgres: SQL,
+        timer: ServerTimer,
+    ): Promise<void> {
+        using _ = timer.create("setUserBalance");
+
+        try {
+            await postgres`
+                UPDATE ${this.tableName}
+                SET
+                    balance = balance - ${totalCost},
+                    lifetime_purchase_count = lifetime_purchase_count + ${transactionCount}
+                WHERE id = ${id}
+            `;
+        } catch (error) {
+            throw wrapPgError(error);
+        }
     }
 
     //#endregion

@@ -41,7 +41,7 @@ type ColumnType<T> =
         : T extends Brand<string, infer _>
           ? ColumnType<string>
           : T extends string
-            ? `VARCHAR(${number})` | `BIGINT GENERATED ALWAYS AS IDENTITY` | "BIGINT"
+            ? `TEXT` | `BIGINT GENERATED ALWAYS AS IDENTITY` | "BIGINT"
             : T extends number
               ? `INT` | `SMALLINT`
               : T extends Date

@@ -2,7 +2,6 @@ import type { SteamId64, SteamUserAnalytics, SteamUserWithTimes } from "@/shared
 import type { DiscordSteamConnection } from "@/types/Discord";
 import type { SteamUserInfo } from "@/types/SteamUserInfo";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { Column } from "./utils/column";
 import { Database, type InsertPayloadFor, type UpdatePayloadFor } from "./utils/database";
 
 export interface SteamUserModel {
@@ -62,10 +61,10 @@ function formatBasicWithTimes(
 class SteamUsersDatabase extends Database<SteamUserModel, "id", "steam_users"> {
     public constructor() {
         super("steam_users", "id", {
-            id: { type: Column.SteamId64, extra: ["PRIMARY KEY"] },
-            username: { type: "VARCHAR(32)" },
-            avatar: { type: "VARCHAR(128)", nullable: true },
-            location: { type: "VARCHAR(32)", nullable: true },
+            id: { type: "TEXT", extra: ["PRIMARY KEY"] },
+            username: { type: "TEXT" },
+            avatar: { type: "TEXT", nullable: true },
+            location: { type: "TEXT", nullable: true },
             member_since: { type: "TIMESTAMP", nullable: true },
             first_seen_at: { type: "TIMESTAMP", nullable: true },
             last_seen_at: { type: "TIMESTAMP", nullable: true },

@@ -8,7 +8,6 @@ import type { ServerTimer } from "@/utils/serverTimer";
 import { sql } from "bun";
 import { rolesDb, type RoleModel } from "./roles";
 import { usersDb, type UserModel } from "./users";
-import { Column } from "./utils/column";
 import { Database, type ExternalReference, type InsertPayloadFor } from "./utils/database";
 import { wrapPgError } from "./utils/handlePgError";
 
@@ -25,7 +24,7 @@ class UserRolesDb extends Database<UserRoleModel, "user_id", "user_roles"> {
             "user_id",
             {
                 user_id: {
-                    type: Column.Snowflake,
+                    type: "TEXT",
                     references: {
                         db: usersDb,
                         key: "id",
