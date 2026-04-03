@@ -130,9 +130,9 @@ class RolesDatabase extends Database<RoleModel, "id", "roles"> {
             p_user: input.permissions.userPermissions,
         };
 
-        const updatedRoleId = this.update(id.toString(), updatePayload);
+        const updatedRoleId = await this.update(id.toString(), updatePayload);
 
-        if (updatedRoleId === null) {
+        if (updatedRoleId === undefined) {
             throw new RoleNotFoundError();
         }
     }
