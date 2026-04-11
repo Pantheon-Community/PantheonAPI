@@ -426,6 +426,7 @@ const rewards = HARDCODED_REWARDS.map<Partial<EconomyRewardModel>>((x) => ({
 
 const rewardIds = await pg<Pick<EconomyRewardModel, "id">[]>`
     INSERT INTO economy_rewards ${sql(rewards)}
+    ON CONFLICT (id) DO NOTHING
     RETURNING id
 `;
 
@@ -442,7 +443,7 @@ const rewardItems = HARDCODED_REWARDS.map<EconomyRewardItemModel>((x, i) => ({
     item_count: x.quantity,
 }));
 
-await pg`INSERT INTO economy_reward_items ${sql(rewardItems)} ON CONFLICT (id) DO NOTHING`;
+await pg`INSERT INTO economy_reward_items ${sql(rewardItems)} ON CONFLICT (reward_id, item_id) DO NOTHING`;
 
 logWithTimeTaken(
     `Seeded ${colorize(`${HARDCODED_REWARDS.length} Reward Items`, Color.FgCyan)}`,
