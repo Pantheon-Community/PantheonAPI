@@ -56,6 +56,19 @@ export const config = {
                 )
                 .toSet(),
         ),
+
+        /** If non-default, will be shown as an additional server option in the API spec. */
+        customExampleServerUrl: readFromEnv("API_CUSTOM_EXAMPLE_SERVER_URL", (url) =>
+            url.hasDefaultValueOf("http://example.com").isUrl(),
+        ),
+
+        /**
+         * If non-default, requests with a "X-PantheonClient-T" header value matching this secret
+         * will have their IP and user agents read via custom headers instead of the original ones.
+         */
+        mainWebsiteProxySecret: readFromEnv("API_MAIN_WEBSITE_PROXY_SECRET", (secret) =>
+            secret.hasDefaultValueOf(""),
+        ),
     },
 
     discord: {

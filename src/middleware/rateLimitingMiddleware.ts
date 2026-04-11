@@ -1,7 +1,7 @@
 import { config } from "@/global/config";
 import type { OAS } from "@/shared/global/OAS";
 import type { RequestHandler } from "express";
-import rateLimit from "express-rate-limit";
+import rateLimit, { type ValueDeterminingMiddleware } from "express-rate-limit";
 
 /**
  * Limits number of requests a user can make to the API in a given time window.
@@ -11,10 +11,30 @@ import rateLimit from "express-rate-limit";
 export function rateLimitingMiddleware(): RequestHandler {
     return rateLimit({
         windowMs: 60 * 1000, // 1 minute window
-        limit: config.api.maxRequestsPerMinute,
+        limit: decideLimit(),
         legacyHeaders: false,
         standardHeaders: "draft-8",
     });
+}
+
+function decideLimit(): number | ValueDeterminingMiddleware<number> {
+    const { maxRequestsPerMinute, mainWebsiteProxySecret } = config.api;
+
+    if (maxRequestsPerMinute === Number.POSITIVE_INFINITY || mainWebsiteProxySecret === "") {
+        return maxRequestsPerMinute;
+    }
+
+    const increasedQuota = 10 * maxRequestsPerMinute;
+
+    return (req) => {
+        const token = req.get("x-pantheonclient-t");
+
+        if (token !== undefined && token === mainWebsiteProxySecret) {
+            return increasedQuota;
+        }
+
+        return maxRequestsPerMinute;
+    };
 }
 
 export const RATE_LIMITED_ERROR = {
