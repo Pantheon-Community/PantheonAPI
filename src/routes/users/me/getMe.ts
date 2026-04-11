@@ -16,7 +16,7 @@ export const getMe: Endpoint<void, GetMeResponse> = {
     responseBody: GET_ME_RESPONSE,
     pathParams: null,
     queryParams: null,
-    async handleRequest({ timer, session, fingerprint }) {
+    async handleRequest({ timer, fingerprint, session }) {
         return await userService(session.accessToken, fingerprint, timer);
     },
 };

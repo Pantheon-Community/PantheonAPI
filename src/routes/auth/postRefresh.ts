@@ -28,7 +28,7 @@ export const postRefresh: Endpoint<void, AuthResponse> = {
     responseBody: AUTH_RESPONSE,
     pathParams: null,
     queryParams: null,
-    async handleRequest({ timer, session, fingerprint }) {
+    async handleRequest({ timer, fingerprint, session }) {
         // 1. refresh Discord login
 
         const authData = await refreshAccessToken(session.refreshToken, timer);
