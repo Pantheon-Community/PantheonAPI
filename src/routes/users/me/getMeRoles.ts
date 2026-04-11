@@ -1,14 +1,21 @@
-import { userRolesDb } from "@/databases/userRoles";
-import type { RoleId } from "@/shared/types/Role";
+import { getUserRoleIds } from "@/services/getUserRoleIds";
+import { ROLE_ID, type RoleId } from "@/shared/types/Role";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
+import { makeArray } from "@/utils/specUtils";
 
-/** Gets all the role IDs of the currently logged-in user. */
 export const getMeRoles: Endpoint<void, RoleId[]> = {
     method: "get",
     path: "/users/@me/roles",
     auth: AuthScope.Session,
+    description: "Gets all the role IDs of the current user.",
+    returns: "Array of role IDs.",
+    tags: ["Me", "Roles", "Users"],
+    requestBody: null,
+    responseBody: makeArray(ROLE_ID),
+    pathParams: null,
+    queryParams: null,
     async handleRequest({ timer, session }) {
-        return await userRolesDb.getUserRoleIds(session.userId, timer);
+        return await getUserRoleIds(session.userId, timer);
     },
 };

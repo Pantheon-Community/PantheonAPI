@@ -1,11 +1,14 @@
 import { app } from "@/global/app";
 import { config } from "@/global/config";
 import { attachPostRouteMiddleware, attachPreRouteMiddleware } from "@/middleware/attachMiddleware";
-import { addRoutes, addStaticRoutes } from "@/routes/addRoutes";
+import { allRoutes } from "@/routes/allRoutes";
+import { generateSpec } from "@/routeUtils/generators/generateSpec";
+import { registerEndpoint } from "@/routeUtils/registers/registerEndpoint";
 import { Color } from "@/types/Color";
 import type { TeardownFn } from "@/types/TeardownFn";
 import { colorize } from "@/utils/colorize";
 import { logWithTimeTaken } from "@/utils/logging";
+import { static as serveStatic } from "express";
 import { createServer, Server } from "node:http";
 
 function setupAppEnv(): void {
@@ -53,11 +56,15 @@ export async function startApi(): Promise<TeardownFn> {
 
     setupAppEnv();
 
-    addStaticRoutes();
+    app.use("/", serveStatic("static"));
 
     attachPreRouteMiddleware();
 
-    addRoutes();
+    generateSpec();
+
+    for (const endpoint of allRoutes) {
+        registerEndpoint(endpoint);
+    }
 
     attachPostRouteMiddleware();
 

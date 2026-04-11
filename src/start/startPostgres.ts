@@ -1,20 +1,19 @@
-import { pendingTransactionsDb } from "@/databases/pendingTransactions";
-import { rewardsDb } from "@/databases/rewards";
-import { rolesDb } from "@/databases/roles";
-import { steamUsersDb } from "@/databases/steamUsers";
-import { tokensDb } from "@/databases/tokens";
-import { userRolesDb } from "@/databases/userRoles";
-import { usersDb } from "@/databases/users";
-import { userSessionsDb } from "@/databases/userSessions";
 import { config } from "@/global/config";
 import { setPg } from "@/global/pg";
-import { userSessionExpirationTask } from "@/tasks/userSessionExpirationTask";
+import { createEconomyRewardItemsTable } from "@/models/EconomyRewardItemModel";
+import { createEconomyRewardsTable } from "@/models/EconomyRewardModel";
+import { createPendingTransactionsTable } from "@/models/PendingTransactionModel";
+import { createRolesTable } from "@/models/RoleModel";
+import { createSteamUsersTable } from "@/models/SteamUserModel";
+import { createUsersTable } from "@/models/UserModel";
+import { createUserRolesTable } from "@/models/UserRoleModel";
+import { createUserSessionsTable } from "@/models/UserSessionModel";
+import { deleteExpiredUserSessions } from "@/tasks/deleteExpiredUserSessions";
 import { Color } from "@/types/Color";
 import type { TeardownFn } from "@/types/TeardownFn";
 import { colorize } from "@/utils/colorize";
 import { log, logWithTimeTaken } from "@/utils/logging";
 import { SQL } from "bun";
-import { schedule } from "node-cron";
 import process from "node:process";
 
 enum ConnectionStatus {
@@ -59,11 +58,13 @@ async function connectToPostgres(): Promise<TeardownFn> {
                     log(colorize("Failed to connect to PostgreSQL", Color.FgRed));
                     console.error(error);
                     break;
+
                 case ConnectionStatus.Connected:
                     log(colorize("Disconnected from PostgreSQL", Color.FgRed));
                     console.error(error);
                     break;
-                default:
+
+                case ConnectionStatus.Disconnected:
                     return;
             }
 
@@ -89,32 +90,32 @@ async function connectToPostgres(): Promise<TeardownFn> {
 async function setupTables(): Promise<void> {
     const startedAt = Date.now();
 
-    await steamUsersDb.setup();
+    await createSteamUsersTable();
 
-    await usersDb.setup();
+    await createUsersTable();
 
     await Promise.all([
-        userSessionsDb.setup(),
-        rolesDb.setup(),
-        tokensDb.setup(),
-        rewardsDb.setup(),
+        createUserSessionsTable(),
+        createRolesTable().then(createUserRolesTable),
+        createEconomyRewardsTable().then(() =>
+            Promise.all([createEconomyRewardItemsTable(), createPendingTransactionsTable()]),
+        ),
     ]);
-
-    await Promise.all([userRolesDb.setup(), pendingTransactionsDb.setup()]);
 
     logWithTimeTaken("Setup Database Tables", startedAt);
 }
 
 async function scheduleTasks(): Promise<void> {
-    schedule("0 0 * * *", userSessionExpirationTask);
+    Bun.cron("@daily", deleteExpiredUserSessions);
 
     if (config.dev.immediateSchedules) {
-        await userSessionExpirationTask();
+        await deleteExpiredUserSessions();
     }
 }
 
 export async function startPostgres(): Promise<TeardownFn> {
     const teardownFn = await connectToPostgres();
+
     await setupTables();
     await scheduleTasks();
 

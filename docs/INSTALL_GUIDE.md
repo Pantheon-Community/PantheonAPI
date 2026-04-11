@@ -38,3 +38,7 @@ The app should be ready to start now, which can be done using:
 ```sh
 bun run dev
 ```
+
+## Further Reading
+
+See [CONTRIBUTING.md](../.github/CONTRIBUTING.md)

@@ -1,27 +1,9 @@
 {
     // https://oxc.rs/docs/guide/usage/linter/config.html
     "$schema": "./node_modules/oxlint/configuration_schema.json",
-    "options": {
-        "typeAware": true,
-        "typeCheck": true
-    },
-    "categories": {
-        "perf": "error",
-        "suspicious": "error"
-    },
+    "extends": ["./shared/.oxlintrc.json"],
     "env": {
         "builtin": true,
         "node": true
-    },
-    "rules": {
-        "typescript/explicit-function-return-type": [
-            "error",
-            {
-                "allowHigherOrderFunctions": false
-            }
-        ],
-        "typescript/no-unsafe-type-assertion": "allow",
-        "unicorn/no-new-array": "allow",
-        "unicorn/prefer-node-protocol": "error"
     }
 }

@@ -1,6 +1,6 @@
+import { pluralize } from "@/shared/utils/pluralize";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
-import { pluralize } from "@/utils/pluralize";
 import { KnownEnvVariable } from "./KnownEnvVariable";
 import { ListEnvVariable } from "./ListEnvVariable";
 import { NumericEnvVariable } from "./NumericEnvVariable";

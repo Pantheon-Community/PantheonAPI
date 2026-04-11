@@ -1,6 +1,6 @@
+import { irregularPluralize } from "@/shared/utils/pluralize";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
-import { irregularPluralize } from "@/utils/pluralize";
 import { KnownEnvVariable } from "./KnownEnvVariable";
 
 export class ListEnvVariable<T> extends KnownEnvVariable<T[]> {

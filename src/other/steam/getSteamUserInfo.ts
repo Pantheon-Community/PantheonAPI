@@ -29,15 +29,24 @@ function getXmlTagContents(source: string, tagName: string): string | null {
 }
 
 export async function getSteamUserInfo(id: SteamId64): Promise<SteamUserInfo> {
-    const response = await fetch(`https://steamcommunity.com/profiles/${id}/?xml=1`);
+    try {
+        const response = await fetch(`https://steamcommunity.com/profiles/${id}/?xml=1`);
 
-    const data = await response.text();
+        const data = await response.text();
 
-    const memberSince = getXmlTagContents(data, "memberSince");
+        const memberSince = getXmlTagContents(data, "memberSince");
 
-    return {
-        avatar: getXmlTagContents(data, "avatarFull"),
-        location: getXmlTagContents(data, "location"),
-        memberSince: memberSince !== null ? new Date(memberSince) : null,
-    };
+        return {
+            avatar: getXmlTagContents(data, "avatarFull"),
+            location: getXmlTagContents(data, "location"),
+            memberSince: memberSince !== null ? new Date(memberSince) : null,
+        };
+    } catch {
+        // failed to fetch Steam user info, probably a private account, oh well
+        return {
+            avatar: null,
+            location: null,
+            memberSince: null,
+        };
+    }
 }

@@ -12,7 +12,7 @@ export interface DiscordUser extends Pick<APIUser, "username" | "global_name" | 
 }
 
 export interface DiscordSteamConnection {
-    readonly id: SteamId64;
+    id: SteamId64;
 
-    readonly username: string;
+    username: string;
 }

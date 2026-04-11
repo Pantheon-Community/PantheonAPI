@@ -1,20 +1,28 @@
 /** Inserts template economy rewards into the database. */
 
-import { rewardsDb } from "@/databases/rewards";
 import { config } from "@/global/config";
+import { pg } from "@/global/pg";
+import type { EconomyRewardItemModel } from "@/models/EconomyRewardItemModel";
+import type { EconomyRewardModel } from "@/models/EconomyRewardModel";
 import { startPostgres } from "@/start/startPostgres";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
 import { logWithTimeTaken } from "@/utils/logging";
-import { ServerTimer } from "@/utils/serverTimer";
+import { sql } from "bun";
 
 interface HardcodedReward {
     title: string;
+
     subtitle: string;
+
     description: string;
+
     cost: number;
+
     quantity: number;
+
     image: string;
+
     itemId: number;
 }
 
@@ -403,28 +411,40 @@ const HARDCODED_REWARDS: HardcodedReward[] = [
 
 await startPostgres();
 
-const startTime = Date.now();
+const startTimeRewards = Date.now();
 
-const rewardCreationPromises = HARDCODED_REWARDS.map((x) => {
-    return rewardsDb.createReward(
-        {
-            title: x.title,
-            subtitle: x.subtitle,
-            description: x.description,
-            image: x.image,
-            cost: x.cost,
-            normalCost: x.cost,
-            itemId: x.itemId,
-            itemCount: x.quantity,
-        },
-        config.db.rootUserId,
-        new ServerTimer(),
-    );
-});
+const rewards = HARDCODED_REWARDS.map<Partial<EconomyRewardModel>>((x) => ({
+    title: x.title,
+    subtitle: x.subtitle,
+    description: x.description,
+    image: x.image,
+    cost: x.cost,
+    normal_cost: x.cost,
+    posted_by: config.db.rootUserId,
+    last_updated_by: config.db.rootUserId,
+}));
 
-await Promise.all(rewardCreationPromises);
+const rewardIds = await pg<Pick<EconomyRewardModel, "id">[]>`
+    INSERT INTO economy_rewards ${sql(rewards)}
+    RETURNING id
+`;
 
 logWithTimeTaken(
-    `Seeded ${colorize(`${rewardCreationPromises.length} Rewards`, Color.FgCyan)}`,
-    startTime,
+    `Seeded ${colorize(`${HARDCODED_REWARDS.length} Rewards`, Color.FgCyan)}`,
+    startTimeRewards,
+);
+
+const startTimeItems = Date.now();
+
+const rewardItems = HARDCODED_REWARDS.map<EconomyRewardItemModel>((x, i) => ({
+    reward_id: rewardIds[i]!.id,
+    item_id: x.itemId,
+    item_count: x.quantity,
+}));
+
+await pg`INSERT INTO economy_reward_items ${sql(rewardItems)} ON CONFLICT (id) DO NOTHING`;
+
+logWithTimeTaken(
+    `Seeded ${colorize(`${HARDCODED_REWARDS.length} Reward Items`, Color.FgCyan)}`,
+    startTimeItems,
 );

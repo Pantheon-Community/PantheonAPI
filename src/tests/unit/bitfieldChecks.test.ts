@@ -1,5 +1,6 @@
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
 import { UserPermissions } from "@/shared/types/Permissions/UserPermissions";
+import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { test } from "bun:test";
 
 function checkBitfield(obj: object, name: string): void {
@@ -35,4 +36,5 @@ function checkBitfield(obj: object, name: string): void {
 test("Permissions", () => {
     checkBitfield(GeneralPermissions, "GeneralPermissions");
     checkBitfield(UserPermissions, "UserPermissions");
+    checkBitfield(EndpointFlags, "EndpointFlags");
 });

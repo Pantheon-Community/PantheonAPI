@@ -3,6 +3,7 @@
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file",
     "oxc.typeAware": true,
+    "json.validate.enable": true,
     "editor.codeActionsOnSave": {
         "source.fixAll.oxc": "explicit",
         "source.organizeImports": "explicit"
@@ -12,16 +13,5 @@
     },
     "[javascript]": {
         "editor.rulers": [100]
-    },
-    "[json]": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "vscode.json-language-features"
-    },
-    "json.validate.enable": true,
-    "json.format.enable": true,
-    "[html]": {
-        "editor.defaultFormatter": "vscode.html-language-features"
-    },
-    "html.format.wrapLineLength": 0,
-    "html.format.wrapAttributes": "preserve-aligned"
+    }
 }

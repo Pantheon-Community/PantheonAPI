@@ -21,6 +21,9 @@ jobs:
             - name: Install Dependencies
               run: bun install --frozen-lockfile
 
+            - name: Format
+              run: bunx oxfmt --check
+
             - name: Typecheck
               run: bun run typecheck
 
@@ -28,15 +31,4 @@ jobs:
               run: bunx oxlint --config .oxlintrc.json --format=github
 
             - name: Test
-              run: bun run test --coverage --coverage-reporter=lcov
-
-            - name: Check Spec
-              run: bun run check-spec
-
-            - name: Check README
-              run: bun run check-readme
-
-            - name: Upload Coverage to Codecov
-              uses: codecov/codecov-action@v5
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
+              run: bun run test

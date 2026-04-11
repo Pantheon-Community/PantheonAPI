@@ -1,13 +1,30 @@
-import { usersDb } from "@/databases/users";
+import { pg } from "@/global/pg";
+import { UserPermissions } from "@/shared/types/Permissions/UserPermissions";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
+import { EndpointFlags } from "@/types/Express/EndpointFlags";
+import { wrapPgError } from "@/utils/wrapPgError";
 
-/** Clears the primary Steam connection of the currently logged-in user's account. */
 export const deleteMeSteamUsersPrimary: Endpoint = {
-    auth: AuthScope.Session,
+    auth: AuthScope.Permission,
     method: "delete",
     path: "/users/@me/steam-users/primary",
+    description: "Clears the primary Steam connection of the current user.",
+    returns: "Success, no content.",
+    tags: ["Me", "Users"],
+    flags: EndpointFlags.NoContent,
+    requestBody: null,
+    responseBody: null,
+    pathParams: null,
+    queryParams: null,
+    permissions: { userPermissions: UserPermissions.DeletePrimaryConnection },
     async handleRequest({ timer, session }) {
-        await usersDb.setUserSteam(session.userId, null, timer);
+        using _ = timer.create("deleteMeSteamUsersPrimary");
+
+        try {
+            await pg`UPDATE users SET steam_id = NULL WHERE id = ${session.userId}`;
+        } catch (error) {
+            throw wrapPgError(error);
+        }
     },
 };

@@ -7,7 +7,7 @@ import { makeAuthRequestBody } from "../utils/makeAuthRequestBody";
 import { makeAuthRequestHeaders } from "../utils/makeAuthRequestHeaders";
 
 /**
- * Makes a POST request to the Discord token URL to upgrade an authorization code into an access
+ * Makes a POST request to the Discord token URL to upgrade an authorisation code into an access
  * token.
  */
 export async function requestAccessToken(
@@ -15,7 +15,7 @@ export async function requestAccessToken(
     redirectUri: string,
     timer: ServerTimer,
 ): Promise<DiscordAuthData> {
-    using _ = timer.create("DIS_requestAccessToken");
+    using _ = timer.create("requestAccessToken");
 
     const body = makeAuthRequestBody();
 
@@ -30,13 +30,13 @@ export async function requestAccessToken(
             method: "post",
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw await response.json();
+            throw data;
         }
 
-        const data = (await response.json()) as RESTPostOAuth2AccessTokenResult;
-
-        return convertToDiscordAuthSession(data);
+        return convertToDiscordAuthSession(data as RESTPostOAuth2AccessTokenResult);
     } catch (error) {
         throw new SecondaryRequestError(
             {

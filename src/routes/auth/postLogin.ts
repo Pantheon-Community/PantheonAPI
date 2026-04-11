@@ -1,18 +1,36 @@
-import { userRolesDb } from "@/databases/userRoles";
-import { userSessionsDb } from "@/databases/userSessions";
+import { config } from "@/global/config";
+import { pg } from "@/global/pg";
+import type { UserSessionModel } from "@/models/UserSessionModel";
 import { requestAccessToken } from "@/other/discord/auth/requestAccessToken";
+import { getUserRoleIds } from "@/services/getUserRoleIds";
 import { userService } from "@/services/userService";
-import type { LoginRequest } from "@/shared/types/Requests/LoginRequest";
-import type { AuthResponse } from "@/shared/types/Responses/AuthResponse";
+import type { DiscordId } from "@/shared/types/Common";
+import type { Fingerprint } from "@/shared/types/Fingerprint";
+import { LOGIN_REQUEST, type LoginRequest } from "@/shared/types/Requests/LoginRequest";
+import { AUTH_RESPONSE, type AuthResponse } from "@/shared/types/Responses/AuthResponse";
+import type { UserSessionId } from "@/shared/types/UserSession";
+import type { DiscordAuthData } from "@/types/Discord";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
-import { getAnalytics } from "@/utils/getAnalytics";
+import { EndpointFlags } from "@/types/Express/EndpointFlags";
+import { castNumber } from "@/utils/castNumber";
+import { getFingerprint } from "@/utils/getFingerprint";
+import type { ServerTimer } from "@/utils/serverTimer";
+import { wrapPgError } from "@/utils/wrapPgError";
+import { sql } from "bun";
 
-/** Completes the Discord OAuth2 login flow. */
 export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
     method: "post",
     path: "/login",
     auth: AuthScope.None,
+    description: "Completes the Discord OAuth2 login flow.",
+    returns: "User data and a token for making elevated requests to the API.",
+    tags: ["Auth"],
+    flags: EndpointFlags.MakesSecondaryRequests,
+    requestBody: LOGIN_REQUEST,
+    responseBody: AUTH_RESPONSE,
+    pathParams: null,
+    queryParams: null,
     async handleRequest({ req, timer }) {
         const { code, redirectUri } = req.body;
 
@@ -24,15 +42,15 @@ export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
 
         // 2. fetch Discord and Steam data
 
-        const analytics = getAnalytics(req);
+        const fingerprint = getFingerprint(req);
 
-        const { user, steamUsers } = await userService(token, analytics, timer);
+        const { user, steamUsers } = await userService(token, fingerprint, timer);
 
-        // 3. create new session
+        // 3. create new session and get roles
 
         const [sessionId, roleIds] = await Promise.all([
-            userSessionsDb.createSession(authData, user.id, analytics, timer),
-            userRolesDb.getUserRoleIds(user.id, timer),
+            createNewSession(user.id, authData, fingerprint, timer),
+            getUserRoleIds(user.id, timer),
         ]);
 
         // 4. done!
@@ -42,3 +60,46 @@ export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
         return { user, steamUsers, expiresAt, token, sessionId, roleIds };
     },
 };
+
+async function createNewSession(
+    userId: DiscordId,
+    authData: DiscordAuthData,
+    fingerprint: Fingerprint,
+    timer: ServerTimer,
+): Promise<UserSessionId> {
+    using _ = timer.create("createNewSession");
+
+    const { accessToken, refreshToken, expiresAt } = authData;
+
+    const insert: Partial<UserSessionModel> = {
+        user_id: userId,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_at: expiresAt,
+    };
+
+    const { ip, userAgent, origin } = fingerprint;
+
+    if (ip) insert.ip = ip;
+    if (userAgent) insert.user_agent = userAgent;
+    if (origin) insert.origin = origin;
+
+    try {
+        const [session] = await pg<[Pick<UserSessionModel, "id">]>`
+            INSERT INTO user_sessions ${sql(insert)}
+            RETURNING id
+        `;
+
+        return castNumber(session.id);
+    } catch (error) {
+        throw wrapPgError(error);
+    }
+}
+
+if (config.environment === "development") {
+    // developer QoL
+
+    Object.assign(LOGIN_REQUEST.schema.properties.redirectUri, {
+        example: `http://localhost:${config.api.port || 5000}`,
+    });
+}

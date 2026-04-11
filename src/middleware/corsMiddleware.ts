@@ -1,4 +1,4 @@
-import { InvalidOriginError } from "@/errors/BadRequestError";
+import { BadRequestError } from "@/errors/BadRequestError";
 import { config } from "@/global/config";
 import cors, { type CorsOptions } from "cors";
 import type { RequestHandler } from "express";
@@ -17,7 +17,12 @@ function makeOriginFunction(): CorsOptions["origin"] {
         if (origin === undefined || clientUrls.has(origin)) {
             callback(null, true);
         } else {
-            callback(new InvalidOriginError(origin));
+            callback(
+                new BadRequestError({
+                    title: "Invalid Origin",
+                    description: `The origin header of your request ("${origin}") isn't in the approved client URLs list.`,
+                }),
+            );
         }
     };
 }

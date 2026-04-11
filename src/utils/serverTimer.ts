@@ -4,29 +4,33 @@ import { colorize } from "@/utils/colorize";
 import { log, logWithTimeTaken } from "@/utils/logging";
 import type { Response } from "express";
 
+interface TimeEntry {
+    name: string;
+
+    /** In milliseconds, `-1` represents a task that has not yet finished. */
+    duration: number;
+}
+
 export class ServerTimer {
-    public readonly times: [name: string, duration: number][] = [];
-
-    private latestStartTime: number = 0;
-
-    private curIndex: number = 0;
+    private readonly times: TimeEntry[] = [];
 
     public create(name: string): Disposable {
+        const entry: TimeEntry = { name, duration: -1 };
+
+        this.times.push(entry);
+
         const startTime = Date.now();
 
-        if (startTime > this.latestStartTime) {
-            this.latestStartTime = startTime;
-            this.curIndex++;
-        }
-
-        name = `${this.curIndex}_${name}`;
-
-        return { [Symbol.dispose]: () => this.times.push([name, Date.now() - startTime]) };
+        return { [Symbol.dispose]: () => (entry.duration = Date.now() - startTime) };
     }
 
     public addTo(res: Response): void {
         if (res.headersSent) {
-            log(`Timer.addTo was called but headers were already sent!`);
+            const { method, path } = res.req;
+
+            const reqName = colorize(`${method} ${path}`, Color.FgRed);
+
+            log(`Timer.addTo was called but headers were already sent! (${reqName})`);
             return;
         }
 
@@ -39,7 +43,8 @@ export class ServerTimer {
         const output = new Array<string>(len);
 
         for (let i = 0; i < len; i++) {
-            const [name, duration] = this.times[i]!;
+            const { name, duration } = this.times[i]!;
+
             output[i] = `${name};dur=${duration}`;
         }
 
@@ -48,11 +53,9 @@ export class ServerTimer {
 }
 
 if (config.dev.logTimers) {
-    // oxlint-disable-next-line typescript/unbound-method
-    const originalCreate = ServerTimer.prototype.create;
+    const originalCreate = ServerTimer.prototype.create.bind(ServerTimer.prototype);
 
-    // oxlint-disable-next-line typescript/unbound-method
-    const originalAddTo = ServerTimer.prototype.addTo;
+    const originalAddTo = ServerTimer.prototype.addTo.bind(ServerTimer.prototype);
 
     ServerTimer.prototype.create = function create(name): Disposable {
         const startedAt = Date.now();

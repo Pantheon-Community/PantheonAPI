@@ -10,7 +10,7 @@ import { makeAuthRequestHeaders } from "../utils/makeAuthRequestHeaders";
  * token.
  */
 export async function revokeAccessToken(accessToken: UserToken, timer: ServerTimer): Promise<void> {
-    using _ = timer.create("DIS_revokeAccessToken");
+    using _ = timer.create("revokeAccessToken");
 
     const body = makeAuthRequestBody();
 

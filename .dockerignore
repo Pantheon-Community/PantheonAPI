@@ -4,11 +4,15 @@
 
 !generator
 !src
+!shared/constants
+!shared/global
+!shared/spec
 !shared/types
 !shared/utils
 !static
+static/spec.json
 
 !bun.lock
-!openapi.json
+!README.md
 !package.json
 !tsconfig.json

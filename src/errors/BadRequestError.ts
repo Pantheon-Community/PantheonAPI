@@ -1,15 +1,6 @@
-import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
-import type {
-    HttpError,
-    ValidationErrorItem,
-} from "express-openapi-validator/dist/framework/types";
+import type { OAS } from "@/shared/global/OAS";
+import { SITE_ERROR_OBJECT } from "@/shared/types/SiteErrorObject";
 import { SiteError } from "./SiteError";
-
-interface BadRequestErrorObject extends SiteErrorObject {
-    message?: string;
-
-    extra?: ValidationErrorItem[];
-}
 
 /**
  * Error thrown when an invalid request is made, such as missing required body fields or passing in
@@ -19,26 +10,22 @@ interface BadRequestErrorObject extends SiteErrorObject {
  *
  * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/400 MDN Reference}
  */
-abstract class BadRequestError extends SiteError<BadRequestErrorObject> {
+export class BadRequestError extends SiteError {
     protected override statusCode = 400; // bad request
 }
 
-export class InvalidOriginError extends BadRequestError {
-    public constructor(origin: string) {
-        super({
-            title: "Invalid Origin",
-            description: `The origin header of your request ("${origin}") isn't in the approved client URLs list.`,
-        });
-    }
-}
-
-export class InvalidRequestError extends BadRequestError {
-    public constructor(error: HttpError) {
-        super({
-            title: "Invalid Request",
-            description: "Your client made an invalid request to the API.",
-            message: error.message,
-            extra: error.errors,
-        });
-    }
-}
+export const BAD_REQUEST_ERROR = {
+    description:
+        "Error thrown when an invalid request is made, such as missing required body fields or passing in a string where a number was expected.\n\nNote this does not include errors around the validity of the authorization header.\n\n[MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/400)",
+    content: {
+        "application/json": {
+            schema: {
+                ...SITE_ERROR_OBJECT,
+                example: {
+                    title: "Invalid Request",
+                    description: "You are too stinky to complete this request.",
+                },
+            },
+        },
+    },
+} as const satisfies OAS.Response;

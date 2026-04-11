@@ -15,6 +15,7 @@ RUN cd /temp && bun install --frozen-lockfile --production
 FROM base AS release
 COPY --from=install /temp/node_modules node_modules
 COPY . .
+RUN chown -R bun:bun /usr/src/app
 
 # Run app
 USER bun

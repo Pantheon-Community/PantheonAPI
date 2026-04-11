@@ -6,11 +6,11 @@ import type { ServerTimer } from "@/utils/serverTimer";
 import { type APIConnection, ConnectionService, RouteBases } from "discord-api-types/v10";
 import { makeElevatedRequestHeaders } from "../utils/makeElevatedRequestHeaders";
 
-export async function fetchMySteamConnections(
+export async function fetchMeSteamConnections(
     token: UserToken,
     timer: ServerTimer,
 ): Promise<DiscordSteamConnection[]> {
-    using _ = timer.create("DIS_fetchMySteamConnections");
+    using _ = timer.create("fetchMeSteamConnections");
 
     try {
         const response = await fetch(`${RouteBases.api}/users/@me/connections`, {

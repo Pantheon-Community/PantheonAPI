@@ -1,32 +1,80 @@
-import { steamUsersDb } from "@/databases/steamUsers";
-import { fetchMySteamConnections } from "@/other/discord/main/fetchMeSteamConnections";
+import { pg } from "@/global/pg";
+import { type SteamUserModel } from "@/models/SteamUserModel";
+import { fetchMeSteamConnections } from "@/other/discord/main/fetchMeSteamConnections";
 import { getSteamUserInfo } from "@/other/steam/getSteamUserInfo";
 import type { UserToken } from "@/shared/types/Common";
-import type { SteamUserWithTimes } from "@/shared/types/SteamUser";
+import type { SteamUser } from "@/shared/types/SteamUser";
 import type { DiscordSteamConnection } from "@/types/Discord";
-import type { SteamUserInfo } from "@/types/SteamUserInfo";
 import type { ServerTimer } from "@/utils/serverTimer";
+import { wrapPgError } from "@/utils/wrapPgError";
+import { sql } from "bun";
 
-async function createSteamUser(connection: DiscordSteamConnection): Promise<SteamUserWithTimes> {
-    let info: SteamUserInfo;
-
-    try {
-        info = await getSteamUserInfo(connection.id);
-    } catch {
-        info = { avatar: null, location: null, memberSince: null };
-    }
-
-    return await steamUsersDb.addFromDiscordConnection(connection, info);
-}
-
-/** Fetches the Steam connections of the given Discord user and updates them in the database. */
+/** Fetches the Steam connections of the given Discord user and upserts them in the database. */
 export async function steamConnectionService(
     token: UserToken,
     timer: ServerTimer,
-): Promise<SteamUserWithTimes[]> {
-    const steamConnections = await fetchMySteamConnections(token, timer);
+): Promise<SteamUser[]> {
+    const steamConnections = await fetchMeSteamConnections(token, timer);
 
-    using _ = timer.create("createSteamUsers");
+    if (steamConnections.length === 0) {
+        return [];
+    }
 
-    return await Promise.all(steamConnections.slice(0, 5).map(createSteamUser));
+    using _ = timer.create("registerConnections");
+
+    return await Promise.all(steamConnections.slice(0, 5).map(registerConnection));
+}
+
+type UpsertedSteamUser = Pick<
+    SteamUserModel,
+    "avatar" | "location" | "member_since" | "first_seen_at" | "last_seen_at" | "times_seen"
+>;
+
+async function registerConnection(connection: DiscordSteamConnection): Promise<SteamUser> {
+    const { id, username } = connection;
+
+    const insert: Partial<SteamUserModel> = {
+        id,
+        username,
+    };
+
+    const update: Partial<SteamUserModel> = {
+        username,
+    };
+
+    const { avatar, location, memberSince } = await getSteamUserInfo(connection.id);
+
+    // by never including null values in the update payload, we effectively "remember"
+    // previously-public data (although avatar links will likely not work)
+
+    if (avatar) insert.avatar = update.avatar = avatar;
+    if (location) insert.location = update.location = location;
+    if (memberSince) insert.member_since = update.member_since = memberSince;
+
+    try {
+        const [steamUser] = await pg<[UpsertedSteamUser]>`
+            INSERT INTO steam_users ${sql(insert)}
+            ON CONFLICT (id) DO UPDATE
+            SET ${sql(update)}
+            RETURNING avatar, location, member_since, first_seen_at, last_seen_at, times_seen
+        `;
+
+        return {
+            id,
+            username,
+            avatar: steamUser.avatar,
+            location: steamUser.location,
+            memberSince: steamUser.member_since?.toISOString() ?? null,
+            analytics:
+                steamUser.first_seen_at && steamUser.last_seen_at
+                    ? {
+                          firstSeenAt: steamUser.first_seen_at.toISOString(),
+                          lastSeenAt: steamUser.last_seen_at.toISOString(),
+                          timesSeen: steamUser.times_seen,
+                      }
+                    : null,
+        };
+    } catch (error) {
+        throw wrapPgError(error);
+    }
 }

@@ -1,8 +1,8 @@
-import type { FlattenedPermissions } from "@/shared/utils/PermissionHelpers";
+import type { Fingerprint } from "@/shared/types/Fingerprint";
+import type { FlattenedPermissions } from "@/shared/utils/permissions";
 import type { ServerTimer } from "@/utils/serverTimer";
 import type { Request, Response } from "express";
 import type { InternalSession } from "../Internal";
-import type { RequestAnalytics } from "../RequestAnalytics";
 
 export interface NoAuthHandlerArgs<RequestBody, PathParams, QueryParams> {
     req: Request<PathParams, void, RequestBody, QueryParams>;
@@ -19,7 +19,7 @@ export interface SessionAuthHandlerArgs<
 > extends NoAuthHandlerArgs<RequestBody, PathParams, QueryParams> {
     session: InternalSession;
 
-    analytics: RequestAnalytics;
+    fingerprint: Fingerprint;
 }
 
 export interface PermissionAuthHandlerArgs<
