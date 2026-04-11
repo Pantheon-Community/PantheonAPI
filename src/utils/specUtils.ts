@@ -1,6 +1,7 @@
 import type { OAS } from "@/shared/global/OAS";
 import { validateArray } from "@/shared/spec/validators/array";
 import { validateObject } from "@/shared/spec/validators/object";
+import { WITH_PAGINATION, type WithPagination } from "@/shared/types/Pagination";
 import type { SpecObject, SpecObjectFor } from "@/shared/types/Util";
 
 export function makeArray(
@@ -53,5 +54,29 @@ export function makeParams<T extends Record<string, unknown>>(
             validateObject(input, this);
         },
         subValidators,
+    };
+}
+
+export function makePaginated<T>(spec: SpecObject): SpecObjectFor<WithPagination<T>> {
+    const boundValidate = spec.validate.bind(spec);
+
+    return {
+        schema: {
+            ...WITH_PAGINATION.schema,
+            properties: {
+                ...WITH_PAGINATION.schema.properties,
+                items: {
+                    ...WITH_PAGINATION.schema.properties.items,
+                    items: spec.schema,
+                },
+            },
+        },
+        validate(input) {
+            return validateObject(input, this);
+        },
+        subValidators: {
+            totalItemCount: WITH_PAGINATION.subValidators.totalItemCount,
+            items: (input) => validateArray(input, 0, Number.MAX_SAFE_INTEGER, boundValidate),
+        },
     };
 }
