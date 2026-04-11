@@ -19,6 +19,7 @@ import { putUserRole } from "./users/id/putUserRole";
 import { deleteMeSession } from "./users/me/deleteMeSession";
 import { deleteMeSteamUsersPrimary } from "./users/me/deleteMeSteamUsersPrimary";
 import { getMe } from "./users/me/getMe";
+import { getMeCompletedTransactions } from "./users/me/getMeCompletedTransactions";
 import { getMePendingTransactions } from "./users/me/getMePendingTransactions";
 import { getMeRoles } from "./users/me/getMeRoles";
 import { getMeSessions } from "./users/me/getMeSessions";
@@ -56,6 +57,7 @@ export const allRoutes: AnyEndpoint[] = [
     deleteMeSession,
     deleteMeSteamUsersPrimary,
     getMe,
+    getMeCompletedTransactions,
     getMePendingTransactions,
     getMeRoles,
     getMeSessions,

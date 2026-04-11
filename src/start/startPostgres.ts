@@ -1,5 +1,6 @@
 import { config } from "@/global/config";
 import { setPg } from "@/global/pg";
+import { createCompletedTransactionsTable } from "@/models/CompletedTransactionModel";
 import { createEconomyRewardItemsTable } from "@/models/EconomyRewardItemModel";
 import { createEconomyRewardsTable } from "@/models/EconomyRewardModel";
 import { createPendingTransactionsTable } from "@/models/PendingTransactionModel";
@@ -98,7 +99,11 @@ async function setupTables(): Promise<void> {
         createUserSessionsTable(),
         createRolesTable().then(createUserRolesTable),
         createEconomyRewardsTable().then(() =>
-            Promise.all([createEconomyRewardItemsTable(), createPendingTransactionsTable()]),
+            Promise.all([
+                createEconomyRewardItemsTable(),
+                createPendingTransactionsTable(),
+                createCompletedTransactionsTable(),
+            ]),
         ),
     ]);
 
