@@ -21,10 +21,11 @@ export async function getCurrentSession(
 ): Promise<InternalSession> {
     using _ = timer.create("getCurrentSession");
 
-    const { ip, userAgent, origin } = fingerprint;
+    const { ip, userAgent, userAgentHint, origin } = fingerprint;
 
     const ipQuery = ip ? sql`, ip = ${ip}` : sql``;
     const userAgentQuery = userAgent ? sql`, user_agent = ${userAgent}` : sql``;
+    const userAgentHintQuery = userAgentHint ? sql`, user_agent_hint = ${userAgentHint}` : sql``;
     const originQuery = origin ? sql`, origin = ${origin}` : sql``;
 
     try {
@@ -33,7 +34,7 @@ export async function getCurrentSession(
             SET
                 action_count = action_count + 1,
                 last_action_at = NOW()
-                ${ipQuery} ${userAgentQuery} ${originQuery}
+                ${ipQuery} ${userAgentQuery} ${userAgentHintQuery} ${originQuery}
             WHERE access_token = ${token}
             RETURNING id, user_id, refresh_token, expires_at
         `;
@@ -61,7 +62,7 @@ export async function getCurrentSession(
             SET
                last_seen_at = NOW(),
                lifetime_action_count = lifetime_action_count + 1
-               ${ipQuery} ${userAgentQuery} ${originQuery}
+               ${ipQuery} ${userAgentQuery} ${userAgentHintQuery} ${originQuery}
             WHERE id = ${user_id}
         `.catch((error) => {
             log(`Background update of user ${colorize(user_id, Color.FgRed)} threw an error`);
