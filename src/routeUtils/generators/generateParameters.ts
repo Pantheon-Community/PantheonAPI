@@ -18,6 +18,7 @@ export function* generatePathParameters(endpoint: AnyEndpoint): Generator<OAS.Pa
         };
     }
 }
+
 export function* generateQueryParameters(endpoint: AnyEndpoint): Generator<OAS.QueryParameter> {
     const { queryParams } = endpoint;
 
@@ -28,7 +29,7 @@ export function* generateQueryParameters(endpoint: AnyEndpoint): Generator<OAS.Q
     for (const [key, value] of typedEntries(queryParams.schema.properties)) {
         yield {
             in: "query",
-            required: true,
+            required: "$ref" in value || value.default === undefined,
             name: key,
             schema: value,
         };

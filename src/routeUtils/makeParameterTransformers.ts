@@ -1,5 +1,6 @@
 import type { OAS } from "@/shared/global/OAS";
 import type { SpecObject } from "@/shared/types/Util";
+import { getTypeName } from "@/shared/utils/specHelpers";
 import { Color } from "@/types/Color";
 import { colorize } from "@/utils/colorize";
 import type { Request } from "express";
@@ -16,6 +17,14 @@ function makeMutable(this: "params" | "query", req: Request): void {
 
 function identity<T>(x: T): T {
     return x;
+}
+
+function numberTransformWithFallback(this: number, input: unknown): unknown {
+    if (input === undefined) {
+        return this;
+    }
+
+    return Number(input);
 }
 
 /** Transformer for an array of parameters. */
@@ -44,6 +53,14 @@ function makeTransformer(schema: OAS.Schema | OAS.Reference): TransformFn {
 
         case "integer":
         case "number":
+            if (!("$ref" in schema) && schema.default !== undefined) {
+                if (typeof schema.default !== "number") {
+                    throw new Error(
+                        `Expected schema.default to be a number (got ${getTypeName(typeof schema.default)})`,
+                    );
+                }
+                return numberTransformWithFallback.bind(schema.default);
+            }
             return Number;
 
         case "boolean":
