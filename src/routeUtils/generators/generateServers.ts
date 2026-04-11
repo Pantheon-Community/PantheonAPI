@@ -31,6 +31,13 @@ export function generateServers(): OAS.Server[] {
         }
 
         servers.unshift(devServer);
+
+        if (config.api.customExampleServerUrl !== "http://example.com") {
+            servers.push({
+                url: config.api.customExampleServerUrl,
+                description: "Local Development Server (Custom)",
+            });
+        }
     }
 
     return servers;
