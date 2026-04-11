@@ -32,8 +32,6 @@ function getFingerprintExtra(req: AnyRequest): Fingerprint {
     if (token === mainWebsiteProxySecret) {
         const { ip, userAgent, userAgentHint, origin } = normalFingerprint;
 
-        console.log(req.get("x-pantheonclient-sec"), userAgentHint);
-
         return {
             ip: getAsString(req.get("x-pantheonclient-ip"), 128) || ip,
             userAgent: getAsString(req.get("x-pantheonclient-ua"), 128) || userAgent,
