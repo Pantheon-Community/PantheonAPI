@@ -53,9 +53,11 @@ export class ServerTimer {
 }
 
 if (config.dev.logTimers) {
-    const originalCreate = ServerTimer.prototype.create.bind(ServerTimer.prototype);
+    // oxlint-disable-next-line typescript/unbound-method
+    const originalCreate = ServerTimer.prototype.create;
 
-    const originalAddTo = ServerTimer.prototype.addTo.bind(ServerTimer.prototype);
+    // oxlint-disable-next-line typescript/unbound-method
+    const originalAddTo = ServerTimer.prototype.addTo;
 
     ServerTimer.prototype.create = function create(name): Disposable {
         const startedAt = Date.now();
