@@ -2,6 +2,8 @@ import type { AnyEndpoint } from "@/types/Express/Endpoint";
 import { postLogin } from "./auth/postLogin";
 import { postLogout } from "./auth/postLogout";
 import { postRefresh } from "./auth/postRefresh";
+import { deletePendingTransactions } from "./economy/deletePendingTransactions";
+import { getPendingTransactions } from "./economy/getPendingTransactions";
 import { getRewards } from "./economy/rewards/getRewards";
 import { deleteReward } from "./economy/rewards/id/deleteReward";
 import { patchReward } from "./economy/rewards/id/patchReward";
@@ -38,6 +40,9 @@ export const allRoutes: AnyEndpoint[] = [
     // economy/rewards
     getRewards,
     postRewards,
+    // economy/pending-transactions
+    deletePendingTransactions,
+    getPendingTransactions,
     // lookups
     getDiscordToSteam,
     getSteamDirect,

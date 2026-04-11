@@ -4,5 +4,6 @@ export type EndpointTags =
     | "Lookups"
     | "Me"
     | "Miscellaneous"
+    | "Plugins"
     | "Roles"
     | "Users";
