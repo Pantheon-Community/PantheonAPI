@@ -6,5 +6,9 @@ export function wrapPgError(error: unknown): unknown {
         return new Error(error.message, { cause: error });
     }
 
+    if (error instanceof SyntaxError) {
+        return new Error(error.message, { cause: error });
+    }
+
     return error;
 }
