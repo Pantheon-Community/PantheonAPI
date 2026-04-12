@@ -43,7 +43,7 @@ services:
         environment:
             # localhost (or whatever PostgresSQL's address actually is) cannot
             # be addressed directly from inside a container, instead we address
-            # its container.
+            # its container name.
             - DB_HOST=pantheon-db
             - GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
 
