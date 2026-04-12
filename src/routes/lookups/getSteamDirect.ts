@@ -25,7 +25,7 @@ export const getSteamDirect: Endpoint<void, GetSteamDirectResponse, void, { ids:
     requestBody: null,
     responseBody: GET_STEAM_DIRECT_RESPONSE,
     pathParams: null,
-    queryParams: makeParams({ ids: makeArray(STEAM_ID_64, 1, 10) }),
+    queryParams: makeParams({ ids: makeArray(STEAM_ID_64, 1, 20) }),
     async handleRequest({ req, timer }) {
         const { ids } = req.query;
 

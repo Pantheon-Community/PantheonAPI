@@ -19,7 +19,7 @@ export const getSteamToDiscord: Endpoint<void, UserFromSteam[], void, { ids: Ste
     requestBody: null,
     responseBody: makeArray(USER_FROM_STEAM),
     pathParams: null,
-    queryParams: makeParams({ ids: makeArray(STEAM_ID_64, 1, 10) }),
+    queryParams: makeParams({ ids: makeArray(STEAM_ID_64, 1, 40) }),
     async handleRequest({ req, timer }) {
         using _ = timer.create("getSteamToDiscord");
 
