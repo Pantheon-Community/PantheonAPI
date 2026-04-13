@@ -24,6 +24,9 @@ interface EndpointBase<Auth extends AuthScope> {
 
     flags?: EndpointFlags;
 
+    /** By default the first folder name from `routes/` is used. */
+    tag?: Lowercase<string>;
+
     requestBody: SpecObject | null;
 
     responseBody: SpecObject | null;

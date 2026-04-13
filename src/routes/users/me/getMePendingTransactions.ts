@@ -24,6 +24,7 @@ export const getMePendingTransactions: Endpoint<
     description: "Gets all pending transactions of the current user.",
     returns: "Array of pending transactions.",
     source: import.meta.path,
+    tag: "economy",
     requestBody: null,
     responseBody: makePaginated(ECONOMY_TRANSACTION),
     pathParams: null,

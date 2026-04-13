@@ -29,6 +29,7 @@ export const postMePendingTransactions: Endpoint<MakeTransactionRequest[]> = {
     returns: "Success, no content.",
     source: import.meta.path,
     flags: EndpointFlags.NoContent | EndpointFlags.May403 | EndpointFlags.May404,
+    tag: "economy",
     requestBody: makeArray(MAKE_TRANSACTION_REQUEST, 1, 10),
     responseBody: null,
     pathParams: null,

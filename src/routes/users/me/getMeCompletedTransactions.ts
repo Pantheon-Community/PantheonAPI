@@ -27,6 +27,7 @@ export const getMeCompletedTransactions: Endpoint<
     description: "Gets all completed transactions of the current user.",
     returns: "Array of completed transactions.",
     source: import.meta.path,
+    tag: "economy",
     requestBody: null,
     responseBody: makePaginated(COMPLETED_ECONOMY_TRANSACTION),
     pathParams: null,

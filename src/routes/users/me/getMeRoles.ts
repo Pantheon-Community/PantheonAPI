@@ -11,6 +11,7 @@ export const getMeRoles: Endpoint<void, RoleId[]> = {
     description: "Gets all the role IDs of the current user.",
     returns: "Array of role IDs.",
     source: import.meta.path,
+    tag: "roles",
     requestBody: null,
     responseBody: makeArray(ROLE_ID),
     pathParams: null,

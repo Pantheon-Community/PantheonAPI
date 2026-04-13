@@ -19,6 +19,7 @@ export const putUserRole: Endpoint<void, void, { userId: DiscordId; roleId: Role
     returns: "Success, no content.",
     source: import.meta.path,
     flags: EndpointFlags.NoContent | EndpointFlags.May404,
+    tag: "roles",
     requestBody: null,
     responseBody: null,
     pathParams: makeParams({ userId: DISCORD_ID, roleId: ROLE_ID }),

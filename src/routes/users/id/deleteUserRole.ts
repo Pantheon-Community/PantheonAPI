@@ -18,6 +18,7 @@ export const deleteUserRole: Endpoint<void, void, { userId: DiscordId; roleId: R
     returns: "Success, no content.",
     source: import.meta.path,
     flags: EndpointFlags.NoContent | EndpointFlags.May404,
+    tag: "roles",
     requestBody: null,
     responseBody: null,
     pathParams: makeParams({ userId: DISCORD_ID, roleId: ROLE_ID }),
