@@ -26,7 +26,7 @@ export const getMeCompletedTransactions: Endpoint<
     auth: AuthScope.Session,
     description: "Gets all completed transactions of the current user.",
     returns: "Array of completed transactions.",
-    tags: ["Economy", "Me", "Users"],
+    tag: "Economy",
     requestBody: null,
     responseBody: makePaginated(COMPLETED_ECONOMY_TRANSACTION),
     pathParams: null,

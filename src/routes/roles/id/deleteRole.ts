@@ -16,7 +16,7 @@ export const deleteRole: Endpoint<void, void, { id: RoleId }> = {
     auth: AuthScope.Permission,
     description: "Deletes an existing role.",
     returns: "Success, no content.",
-    tags: ["Roles"],
+    tag: "Roles",
     flags: EndpointFlags.NoContent,
     requestBody: null,
     responseBody: null,

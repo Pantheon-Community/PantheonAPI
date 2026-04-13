@@ -2,7 +2,6 @@ import type { PermissionsObject } from "@/shared/types/Permissions/PermissionsOb
 import type { SpecObject } from "@/shared/types/Util";
 import type { AuthScope } from "./AuthScope";
 import type { EndpointFlags } from "./EndpointFlags";
-import type { EndpointTags } from "./EndpointTags";
 import type {
     NoAuthHandlerArgs,
     PermissionAuthHandlerArgs,
@@ -20,7 +19,7 @@ interface EndpointBase<Auth extends AuthScope> {
 
     returns: string;
 
-    tags: EndpointTags[];
+    tag: "Auth" | "Economy" | "Lookups" | "Miscellaneous" | "Plugins" | "Roles" | "Users";
 
     flags?: EndpointFlags;
 

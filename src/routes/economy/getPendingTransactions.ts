@@ -23,7 +23,7 @@ export const getPendingTransactions: Endpoint<
     auth: AuthScope.None,
     description: "Gets all pending transactions for the given Steam IDs.",
     returns: "Array of pending transactions.",
-    tags: ["Economy", "Plugins"],
+    tag: "Economy",
     requestBody: null,
     responseBody: makeArray(GET_PENDING_TRANSACTIONS_RESPONSE, 0, 100),
     pathParams: null,

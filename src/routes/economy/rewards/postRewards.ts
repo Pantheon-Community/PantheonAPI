@@ -22,7 +22,7 @@ export const postRewards: Endpoint<EconomyRewardPayload, EconomyRewardId> = {
     auth: AuthScope.Permission,
     description: "Creates a new economy reward.",
     returns: "The ID of the created reward.",
-    tags: ["Economy"],
+    tag: "Economy",
     requestBody: ECONOMY_REWARD_PAYLOAD,
     responseBody: ECONOMY_REWARD_ID,
     pathParams: null,

@@ -25,7 +25,7 @@ export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
     auth: AuthScope.None,
     description: "Completes the Discord OAuth2 login flow.",
     returns: "User data and a token for making elevated requests to the API.",
-    tags: ["Auth"],
+    tag: "Auth",
     flags: EndpointFlags.MakesSecondaryRequests,
     requestBody: LOGIN_REQUEST,
     responseBody: AUTH_RESPONSE,

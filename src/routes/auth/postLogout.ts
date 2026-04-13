@@ -13,7 +13,7 @@ export const postLogout: Endpoint = {
     auth: AuthScope.Session,
     description: "Ends an existing Discord OAuth2 session.",
     returns: "Success, no content.",
-    tags: ["Auth"],
+    tag: "Auth",
     flags: EndpointFlags.NoContent | EndpointFlags.MakesSecondaryRequests,
     requestBody: null,
     responseBody: null,

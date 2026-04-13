@@ -13,7 +13,7 @@ export const getMeSessions: Endpoint<void, UserSessionBasic[]> = {
     auth: AuthScope.Session,
     description: "Returns all non-expired sessions of the current user.",
     returns: "Array of user sessions.",
-    tags: ["Me", "Users"],
+    tag: "Users",
     requestBody: null,
     responseBody: makeArray(USER_SESSION_BASIC),
     pathParams: null,

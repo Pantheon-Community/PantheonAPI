@@ -23,7 +23,7 @@ export const getMePendingTransactions: Endpoint<
     auth: AuthScope.Session,
     description: "Gets all pending transactions of the current user.",
     returns: "Array of pending transactions.",
-    tags: ["Economy", "Me", "Users"],
+    tag: "Economy",
     requestBody: null,
     responseBody: makePaginated(ECONOMY_TRANSACTION),
     pathParams: null,

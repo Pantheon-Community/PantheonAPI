@@ -13,7 +13,7 @@ export const deleteReward: Endpoint<void, void, { id: EconomyRewardId }> = {
     auth: AuthScope.Permission,
     description: "Deletes an existing economy reward.",
     returns: "Success, no content.",
-    tags: ["Economy"],
+    tag: "Economy",
     flags: EndpointFlags.NoContent,
     requestBody: null,
     responseBody: null,

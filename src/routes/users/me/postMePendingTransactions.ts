@@ -27,7 +27,7 @@ export const postMePendingTransactions: Endpoint<MakeTransactionRequest[]> = {
     auth: AuthScope.Session,
     description: "Creates new economy transactions for the current user.",
     returns: "Success, no content.",
-    tags: ["Economy", "Me", "Users"],
+    tag: "Economy",
     flags: EndpointFlags.NoContent | EndpointFlags.May403 | EndpointFlags.May404,
     requestBody: makeArray(MAKE_TRANSACTION_REQUEST, 1, 10),
     responseBody: null,

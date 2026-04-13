@@ -17,7 +17,7 @@ export const postRoles: Endpoint<RolePayload, RoleId> = {
     auth: AuthScope.Permission,
     description: "Creates a new role.",
     returns: "The ID of the created role.",
-    tags: ["Roles"],
+    tag: "Roles",
     requestBody: ROLE_PAYLOAD,
     responseBody: ROLE_ID,
     pathParams: null,

@@ -19,7 +19,7 @@ export const patchRole: Endpoint<RolePayload, void, { id: RoleId }> = {
     auth: AuthScope.Permission,
     description: "Updates an existing role.",
     returns: "Success, no content.",
-    tags: ["Roles"],
+    tag: "Roles",
     flags: EndpointFlags.NoContent | EndpointFlags.May404,
     requestBody: ROLE_PAYLOAD,
     responseBody: null,

@@ -15,7 +15,7 @@ export const getRewards: Endpoint<void, EconomyReward[]> = {
     auth: AuthScope.None,
     description: "Gets all economy rewards.",
     returns: "Array of rewards.",
-    tags: ["Economy"],
+    tag: "Economy",
     requestBody: null,
     responseBody: makeArray(ECONOMY_REWARD),
     pathParams: null,

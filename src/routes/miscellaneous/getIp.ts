@@ -9,7 +9,7 @@ export const getIp: Endpoint<void, Ip | null> = {
     auth: AuthScope.None,
     description: "Returns IP address information, useful for debugging proxies.",
     returns: "IP address of request, may be `::` if viewing from the same network.",
-    tags: ["Miscellaneous"],
+    tag: "Miscellaneous",
     requestBody: null,
     responseBody: {
         schema: { ...IP.schema, nullable: true },

@@ -14,7 +14,7 @@ export const putMeSteamUsersPrimary: Endpoint<void, void, { id: SteamId64 }> = {
     path: "/users/@me/steam-users/primary/:id",
     description: "Sets the primary Steam connection for the current user.",
     returns: "Success, no content.",
-    tags: ["Me", "Users"],
+    tag: "Users",
     flags: EndpointFlags.MakesSecondaryRequests | EndpointFlags.NoContent,
     requestBody: null,
     responseBody: null,

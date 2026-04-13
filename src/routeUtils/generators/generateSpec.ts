@@ -36,14 +36,14 @@ export function generateSpec(): void {
     }
 
     for (const endpoint of allRoutes) {
-        const { method, path, description, tags } = endpoint;
+        const { method, path, description, tag } = endpoint;
 
         const specPath = path.replaceAll(/:([A-Za-z0-9_]+)/g, "{$1}");
 
         const operation: OAS.Operation = {
             description: description,
             operationId: `${method}${path}`,
-            tags: tags,
+            tags: [tag],
             ...generateResponses(endpoint),
             ...generateRequestBody(endpoint),
         };
