@@ -26,7 +26,7 @@ export const deletePendingTransactions: Endpoint<
     auth: AuthScope.None,
     description: "Completes the given transactions.",
     returns: "Success, no content.",
-    tag: "Economy",
+    source: import.meta.path,
     flags: EndpointFlags.NoContent,
     requestBody: null,
     responseBody: null,

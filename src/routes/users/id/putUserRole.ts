@@ -17,7 +17,7 @@ export const putUserRole: Endpoint<void, void, { userId: DiscordId; roleId: Role
     auth: AuthScope.Permission,
     description: "Gives a user a role.",
     returns: "Success, no content.",
-    tag: "Roles",
+    source: import.meta.path,
     flags: EndpointFlags.NoContent | EndpointFlags.May404,
     requestBody: null,
     responseBody: null,

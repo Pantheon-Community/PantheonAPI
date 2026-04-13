@@ -15,7 +15,7 @@ export const getSteamToDiscord: Endpoint<void, UserFromSteam[], void, { ids: Ste
     description: "Returns Discord user info from Steam IDs.",
     returns:
         "Array of the relevant Discord user(s) for the given Steam IDs.\n\nNote that this does **not** map 1:1 with the input array, since a Steam ID can be associated with any number of users.",
-    tag: "Lookups",
+    source: import.meta.path,
     requestBody: null,
     responseBody: makeArray(USER_FROM_STEAM),
     pathParams: null,

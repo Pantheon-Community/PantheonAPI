@@ -11,7 +11,7 @@ export const deleteMeSteamUsersPrimary: Endpoint = {
     path: "/users/@me/steam-users/primary",
     description: "Clears the primary Steam connection of the current user.",
     returns: "Success, no content.",
-    tag: "Users",
+    source: import.meta.path,
     flags: EndpointFlags.NoContent,
     requestBody: null,
     responseBody: null,

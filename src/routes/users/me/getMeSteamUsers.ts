@@ -11,7 +11,7 @@ export const getMeSteamUsers: Endpoint<void, SteamUser[]> = {
     auth: AuthScope.Session,
     description: "Gets all the Discord Steam connections of the current user.",
     returns: "Array of Discord Steam connections.",
-    tag: "Users",
+    source: import.meta.path,
     flags: EndpointFlags.MakesSecondaryRequests,
     requestBody: null,
     responseBody: makeArray(STEAM_USER),

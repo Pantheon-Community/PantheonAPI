@@ -19,7 +19,8 @@ interface EndpointBase<Auth extends AuthScope> {
 
     returns: string;
 
-    tag: "Auth" | "Economy" | "Lookups" | "Miscellaneous" | "Plugins" | "Roles" | "Users";
+    /** Should be `import.meta.path` */
+    source: string;
 
     flags?: EndpointFlags;
 

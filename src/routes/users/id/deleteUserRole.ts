@@ -16,7 +16,7 @@ export const deleteUserRole: Endpoint<void, void, { userId: DiscordId; roleId: R
     auth: AuthScope.Permission,
     description: "Removes a role from a user.",
     returns: "Success, no content.",
-    tag: "Roles",
+    source: import.meta.path,
     flags: EndpointFlags.NoContent | EndpointFlags.May404,
     requestBody: null,
     responseBody: null,

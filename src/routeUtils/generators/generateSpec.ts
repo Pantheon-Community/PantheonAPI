@@ -1,6 +1,9 @@
 import { config } from "@/global/config";
 import { allRoutes } from "@/routes/allRoutes";
-import { generateDescription } from "@/routeUtils/generators/generateDescription";
+import {
+    generateEndpointDescription,
+    generateRootDescription,
+} from "@/routeUtils/generators/generateDescription";
 import {
     generatePathParameters,
     generateQueryParameters,
@@ -16,7 +19,7 @@ export function generateSpec(): void {
         openapi: "3.0.3",
         info: {
             title: "Pantheon API",
-            description: generateDescription(),
+            description: generateRootDescription(),
             version: config.commitHash || "unknown",
         },
         servers: generateServers(),
@@ -36,14 +39,13 @@ export function generateSpec(): void {
     }
 
     for (const endpoint of allRoutes) {
-        const { method, path, description, tag } = endpoint;
+        const { method, path } = endpoint;
 
         const specPath = path.replaceAll(/:([A-Za-z0-9_]+)/g, "{$1}");
 
         const operation: OAS.Operation = {
-            description: description,
             operationId: `${method}${path}`,
-            tags: [tag],
+            ...generateEndpointDescription(endpoint),
             ...generateResponses(endpoint),
             ...generateRequestBody(endpoint),
         };

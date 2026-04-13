@@ -13,7 +13,7 @@ export const deleteMeSession: Endpoint<void, void, { id: UserSessionId }> = {
     path: "/users/@me/sessions/:id",
     description: "Deletes a specific session of the current user.",
     returns: "Success, no content.",
-    tag: "Users",
+    source: import.meta.path,
     flags: EndpointFlags.NoContent | EndpointFlags.May403,
     requestBody: null,
     responseBody: null,

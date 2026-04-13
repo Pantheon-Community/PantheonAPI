@@ -10,7 +10,7 @@ export const getMe: Endpoint<void, GetMeResponse> = {
     auth: AuthScope.Session,
     description: "Gets information about the current user.",
     returns: "User information.",
-    tag: "Users",
+    source: import.meta.path,
     flags: EndpointFlags.MakesSecondaryRequests,
     requestBody: null,
     responseBody: GET_ME_RESPONSE,

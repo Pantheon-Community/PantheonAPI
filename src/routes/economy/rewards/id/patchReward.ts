@@ -24,7 +24,7 @@ export const patchReward: Endpoint<EconomyRewardPayload, void, { id: EconomyRewa
     auth: AuthScope.Permission,
     description: "Modifies an existing economy reward.",
     returns: "Success, no content.",
-    tag: "Economy",
+    source: import.meta.path,
     flags: EndpointFlags.NoContent | EndpointFlags.May404,
     requestBody: ECONOMY_REWARD_PAYLOAD,
     responseBody: null,

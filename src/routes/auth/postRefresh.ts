@@ -22,7 +22,7 @@ export const postRefresh: Endpoint<void, AuthResponse> = {
     auth: AuthScope.Session,
     description: "Refreshes an existing Discord OAuth2 session.",
     returns: "User data and a token for making elevated requests to the API.",
-    tag: "Auth",
+    source: import.meta.path,
     flags: EndpointFlags.MakesSecondaryRequests,
     requestBody: null,
     responseBody: AUTH_RESPONSE,

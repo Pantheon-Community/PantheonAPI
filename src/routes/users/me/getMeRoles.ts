@@ -10,7 +10,7 @@ export const getMeRoles: Endpoint<void, RoleId[]> = {
     auth: AuthScope.Session,
     description: "Gets all the role IDs of the current user.",
     returns: "Array of role IDs.",
-    tag: "Roles",
+    source: import.meta.path,
     requestBody: null,
     responseBody: makeArray(ROLE_ID),
     pathParams: null,

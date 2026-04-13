@@ -13,7 +13,7 @@ export const getRoles: Endpoint<void, Role[]> = {
     auth: AuthScope.None,
     description: "Gets all roles.",
     returns: "Array of roles.",
-    tag: "Roles",
+    source: import.meta.path,
     requestBody: null,
     responseBody: makeArray(ROLE),
     pathParams: null,
