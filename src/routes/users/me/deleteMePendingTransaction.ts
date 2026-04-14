@@ -29,7 +29,7 @@ export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewar
 
             const [deletedTransaction] = await pg<Pick<PendingTransactionModel, "cost">[]>`
                 DELETE FROM pending_transactions
-                WHERE id = ${req.params.id}
+                WHERE id = ${req.params.id} AND purchaser_id = ${session.userId}
                 RETURNING cost
             `;
 
