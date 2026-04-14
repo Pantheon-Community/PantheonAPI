@@ -1,7 +1,7 @@
 import { ForbiddenError } from "@/errors/ForbiddenError";
 import { pg } from "@/global/pg";
 import type { RoleModel } from "@/models/RoleModel";
-import type { DiscordId } from "@/shared/types/Common";
+import { type DiscordId, type UserToken } from "@/shared/types/Common";
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
 import { UserPermissions } from "@/shared/types/Permissions/UserPermissions";
 import type { RoleLevel } from "@/shared/types/Role";
@@ -57,7 +57,7 @@ async function handler(
     res: Response,
     timer: ServerTimer,
 ): Promise<unknown> {
-    const token = getTokenRequired(req);
+    const token = getTokenRequired<UserToken>(req);
 
     const fingerprint = getFingerprint(req);
 

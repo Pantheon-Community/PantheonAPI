@@ -12,6 +12,11 @@ import { getDiscordToSteam } from "./lookups/getDiscordToSteam";
 import { getSteamDirect } from "./lookups/getSteamDirect";
 import { getSteamToDiscord } from "./lookups/getSteamToDiscord";
 import { getIp } from "./miscellaneous/getIp";
+import { getPluginTokens } from "./plugins/getPluginTokens";
+import { deletePluginToken } from "./plugins/id/deletePluginToken";
+import { patchPluginToken } from "./plugins/id/patchPluginToken";
+import { postPluginTokens } from "./plugins/postPluginTokens";
+import { postPluginTokensCheck } from "./plugins/postPluginTokensCheck";
 import { getRoles } from "./roles/getRoles";
 import { deleteRole } from "./roles/id/deleteRole";
 import { patchRole } from "./roles/id/patchRole";
@@ -49,6 +54,13 @@ export const allRoutes: AnyEndpoint[] = [
     getSteamToDiscord,
     // miscellaneous
     getIp,
+    // plugins/id
+    deletePluginToken,
+    patchPluginToken,
+    // plugins
+    getPluginTokens,
+    postPluginTokens,
+    postPluginTokensCheck,
     // roles/id
     deleteRole,
     patchRole,

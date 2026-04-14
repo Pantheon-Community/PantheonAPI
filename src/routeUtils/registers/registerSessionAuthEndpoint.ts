@@ -1,3 +1,4 @@
+import type { UserToken } from "@/shared/types/Common";
 import type { SessionAuthEndpoint } from "@/types/Express/Endpoint";
 import { getFingerprint } from "@/utils/getFingerprint";
 import type { ServerTimer } from "@/utils/serverTimer";
@@ -16,7 +17,7 @@ async function handler(
     res: Response,
     timer: ServerTimer,
 ): Promise<unknown> {
-    const token = getTokenRequired(req);
+    const token = getTokenRequired<UserToken>(req);
 
     const fingerprint = getFingerprint(req);
 

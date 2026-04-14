@@ -12,6 +12,8 @@ import { generateRequestBody } from "@/routeUtils/generators/generateRequestBody
 import { generateResponses } from "@/routeUtils/generators/generateResponses";
 import { generateServers } from "@/routeUtils/generators/generateServers";
 import type { OAS } from "@/shared/global/OAS";
+import { USER_TOKEN } from "@/shared/types/Common";
+import { PLUGIN_TOKEN } from "@/shared/types/PluginToken";
 import { writeFileSync } from "node:fs";
 
 export function generateSpec(): void {
@@ -29,6 +31,12 @@ export function generateSpec(): void {
                 userToken: {
                     type: "http",
                     scheme: "bearer",
+                    description: `### User Token\n${USER_TOKEN.schema.description}`,
+                },
+                pluginToken: {
+                    type: "http",
+                    scheme: "bearer",
+                    description: `### Plugin Token\n${PLUGIN_TOKEN.schema.description}`,
                 },
             },
         },

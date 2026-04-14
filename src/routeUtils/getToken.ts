@@ -1,9 +1,10 @@
 import { UnauthorizedError } from "@/errors/UnauthorizedError";
 import type { UserToken } from "@/shared/types/Common";
+import type { PluginToken } from "@/shared/types/PluginToken";
 import type { AnyRequest } from "@/types/Express/AnyRequest";
 
 /** Gets the value of the 'Authorization' header of a request, if it exists. */
-export function getToken(req: AnyRequest): UserToken | null {
+export function getToken<T extends UserToken | PluginToken>(req: AnyRequest): T | null {
     let value = req.get("authorization");
 
     if (value === undefined) {
@@ -16,7 +17,7 @@ export function getToken(req: AnyRequest): UserToken | null {
         value = value.slice(6).trim();
     }
 
-    return value as UserToken;
+    return value as T;
 }
 
 /**
@@ -24,8 +25,8 @@ export function getToken(req: AnyRequest): UserToken | null {
  *
  * Throws an {@link UnauthorizedError} if it does not exist.
  */
-export function getTokenRequired(req: AnyRequest): UserToken {
-    const token = getToken(req);
+export function getTokenRequired<T extends UserToken | PluginToken>(req: AnyRequest): T {
+    const token = getToken<T>(req);
 
     if (token === null) {
         throw new UnauthorizedError({

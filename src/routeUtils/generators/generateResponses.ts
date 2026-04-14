@@ -28,6 +28,11 @@ export function generateResponses(
     let security: OAS.SecurityRequirement[] | undefined = undefined;
 
     switch (endpoint.auth) {
+        case AuthScope.Plugin:
+            responses[401] = UNAUTHORIZED_ERROR;
+            security = [{ pluginToken: [] }];
+            break;
+
         // @ts-expect-error rare valid use of switch fallthrough :O
         case AuthScope.Permission:
             responses[403] = FORBIDDEN_ERROR;

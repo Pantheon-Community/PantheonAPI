@@ -1,4 +1,5 @@
 import type { Fingerprint } from "@/shared/types/Fingerprint";
+import type { PluginTokenId } from "@/shared/types/PluginToken";
 import type { FlattenedPermissions } from "@/shared/utils/permissions";
 import type { ServerTimer } from "@/utils/serverTimer";
 import type { Request, Response } from "express";
@@ -28,4 +29,12 @@ export interface PermissionAuthHandlerArgs<
     QueryParams,
 > extends SessionAuthHandlerArgs<RequestBody, PathParams, QueryParams> {
     perms: FlattenedPermissions;
+}
+
+export interface PluginAuthHandlerArgs<
+    RequestBody,
+    PathParams,
+    QueryParams,
+> extends NoAuthHandlerArgs<RequestBody, PathParams, QueryParams> {
+    plugin: PluginTokenId;
 }

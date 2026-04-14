@@ -5,6 +5,7 @@ import type { EndpointFlags } from "./EndpointFlags";
 import type {
     NoAuthHandlerArgs,
     PermissionAuthHandlerArgs,
+    PluginAuthHandlerArgs,
     SessionAuthHandlerArgs,
 } from "./HandlerArgs";
 
@@ -88,6 +89,22 @@ export interface PermissionAuthEndpoint<
         | ResponseBody;
 }
 
+export interface PluginAuthEndpoint<
+    RequestBody = any,
+    ResponseBody = any,
+    PathParams = any,
+    QueryParams = any,
+> extends EndpointBase<AuthScope.Plugin> {
+    handleRequest({
+        req,
+        res,
+        timer,
+        plugin,
+    }: PluginAuthHandlerArgs<RequestBody, PathParams, QueryParams>):
+        | Promise<ResponseBody>
+        | ResponseBody;
+}
+
 export type Endpoint<
     RequestBody = void,
     ResponseBody = void,
@@ -96,6 +113,7 @@ export type Endpoint<
 > =
     | NoAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
     | SessionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
-    | PermissionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>;
+    | PermissionAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>
+    | PluginAuthEndpoint<RequestBody, ResponseBody, PathParams, QueryParams>;
 
 export type AnyEndpoint = Endpoint<any, any, any, any>;

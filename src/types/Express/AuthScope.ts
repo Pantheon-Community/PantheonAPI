@@ -17,4 +17,12 @@ export enum AuthScope {
      * modifying other users or roles.
      */
     Permission,
+
+    /**
+     * A valid `Authorization` header is needed, but the value is a plugin token, not a user token.
+     *
+     * This is used by endpoints that are exclusively called by our SCP:SL plugins or similar
+     * first-party services.
+     */
+    Plugin,
 }
