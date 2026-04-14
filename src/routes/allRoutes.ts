@@ -24,6 +24,7 @@ import { patchRole } from "./roles/id/patchRole";
 import { postRoles } from "./roles/postRoles";
 import { deleteUserRole } from "./users/id/deleteUserRole";
 import { putUserRole } from "./users/id/putUserRole";
+import { deleteMePendingTransaction } from "./users/me/deleteMePendingTransaction";
 import { deleteMeSession } from "./users/me/deleteMeSession";
 import { deleteMeSteamUsersPrimary } from "./users/me/deleteMeSteamUsersPrimary";
 import { getMe } from "./users/me/getMe";
@@ -74,6 +75,7 @@ export const allRoutes: AnyEndpoint[] = [
     deleteUserRole,
     putUserRole,
     // users/me
+    deleteMePendingTransaction,
     deleteMeSession,
     deleteMeSteamUsersPrimary,
     getMe,
