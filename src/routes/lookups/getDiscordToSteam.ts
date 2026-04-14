@@ -16,7 +16,7 @@ export const getDiscordToSteam: Endpoint<void, SteamUserFromDiscord[], void, { i
     {
         method: "get",
         path: "/lookup/discord-to-steam",
-        auth: AuthScope.None,
+        auth: AuthScope.Plugin,
         description: "Returns Steam user info from Discord IDs.",
         returns:
             "Array of the relevant Steam users for each of the the given Steam IDs.\n\nNote that this does **not** map 1:1 with the input array, since a Discord ID may not be associated with any steam users.",

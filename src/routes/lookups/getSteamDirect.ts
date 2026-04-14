@@ -17,7 +17,7 @@ import { sql } from "bun";
 export const getSteamDirect: Endpoint<void, GetSteamDirectResponse, void, { ids: SteamId64[] }> = {
     method: "get",
     path: "/lookup/steam-direct",
-    auth: AuthScope.None,
+    auth: AuthScope.Plugin,
     description: "Returns Steam user info from Steam IDs directly.",
     returns:
         "Array of the relevant Steam user info for the given Steam IDs.\n\nThis **does not** map 1:1 with the input array.",

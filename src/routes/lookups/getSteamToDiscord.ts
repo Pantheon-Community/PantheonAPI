@@ -11,7 +11,7 @@ import { sql } from "bun";
 export const getSteamToDiscord: Endpoint<void, UserFromSteam[], void, { ids: SteamId64[] }> = {
     method: "get",
     path: "/lookup/steam-to-discord",
-    auth: AuthScope.None,
+    auth: AuthScope.Plugin,
     description: "Returns Discord user info from Steam IDs.",
     returns:
         "Array of the relevant Discord user(s) for the given Steam IDs.\n\nNote that this does **not** map 1:1 with the input array, since a Steam ID can be associated with any number of users.",
