@@ -23,7 +23,7 @@ export const deletePendingTransactions: Endpoint<
 > = {
     method: "delete",
     path: "/economy/pending-transactions",
-    auth: AuthScope.None,
+    auth: AuthScope.Plugin,
     description: "Completes the given transactions.",
     returns: "Success, no content.",
     source: import.meta.path,
