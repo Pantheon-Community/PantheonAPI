@@ -11,16 +11,11 @@ import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { makeArray, makeParams } from "@/utils/specUtils";
+import { makeArray } from "@/utils/specUtils";
 import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
-export const deletePendingTransactions: Endpoint<
-    void,
-    void,
-    void,
-    { ids: EconomyTransactionId[] }
-> = {
+export const deletePendingTransactions: Endpoint<EconomyTransactionId[]> = {
     method: "delete",
     path: "/economy/pending-transactions",
     auth: AuthScope.Plugin,
@@ -28,12 +23,12 @@ export const deletePendingTransactions: Endpoint<
     returns: "Success, no content.",
     source: import.meta.path,
     flags: EndpointFlags.NoContent,
-    requestBody: null,
+    requestBody: makeArray(ECONOMY_TRANSACTION_ID, 1, 100),
     responseBody: null,
     pathParams: null,
-    queryParams: makeParams({ ids: makeArray(ECONOMY_TRANSACTION_ID, 1, 100) }),
+    queryParams: null,
     async handleRequest({ req, timer }) {
-        const { ids } = req.query;
+        const ids = req.body;
 
         let deletedTransactions: DeletedTransaction[];
 
