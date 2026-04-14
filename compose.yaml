@@ -40,6 +40,9 @@ services:
                 condition: service_healthy
                 restart: true
 
+        volumes:
+            - $PWD/assets:/usr/src/app/assets
+
         environment:
             # localhost (or whatever PostgresSQL's address actually is) cannot
             # be addressed directly from inside a container, instead we address

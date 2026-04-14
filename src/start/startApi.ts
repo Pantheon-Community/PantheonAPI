@@ -58,6 +58,8 @@ export async function startApi(): Promise<TeardownFn> {
 
     app.use("/", serveStatic("static"));
 
+    app.use("/assets", serveStatic("assets", { maxAge: 1_000 * 60 * 60 * 24 * 7 }));
+
     attachPreRouteMiddleware();
 
     generateSpec();
