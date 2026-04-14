@@ -29,6 +29,6 @@ This API and its source code is licensed under the MIT license. [Read more here]
 ### Remarks
 
 - None of this code was written with AI or AI assistance.
-- If you are interested in contributing to this API, see [CONTRIBUTING.md](./.github/CONTRIBUTING.md).
+- If you are interested in contributing to this API, see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ![Stylised Roman centurion helmet with blue highlights](static/logo.png)
