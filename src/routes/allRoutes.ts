@@ -3,6 +3,7 @@ import { postLogin } from "./auth/postLogin";
 import { postLogout } from "./auth/postLogout";
 import { postRefresh } from "./auth/postRefresh";
 import { deletePendingTransactions } from "./economy/deletePendingTransactions";
+import { postEarnings } from "./economy/earnings/postEarnings";
 import { getPendingTransactions } from "./economy/getPendingTransactions";
 import { getRewards } from "./economy/rewards/getRewards";
 import { deleteReward } from "./economy/rewards/id/deleteReward";
@@ -39,6 +40,8 @@ export const allRoutes: AnyEndpoint[] = [
     postLogin,
     postLogout,
     postRefresh,
+    // economy/earnings
+    postEarnings,
     // economy/rewards/id
     deleteReward,
     patchReward,

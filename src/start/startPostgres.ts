@@ -1,6 +1,7 @@
 import { config } from "@/global/config";
 import { setPg } from "@/global/pg";
 import { createCompletedTransactionsTable } from "@/models/CompletedTransactionModel";
+import { createEarningsTable } from "@/models/EarningsModel";
 import { createEconomyRewardItemsTable } from "@/models/EconomyRewardItemModel";
 import { createEconomyRewardsTable } from "@/models/EconomyRewardModel";
 import { createPendingTransactionsTable } from "@/models/PendingTransactionModel";
@@ -106,7 +107,7 @@ async function setupTables(): Promise<void> {
                 createCompletedTransactionsTable(),
             ]),
         ),
-        createPluginTokensTable(),
+        createPluginTokensTable().then(createEarningsTable),
     ]);
 
     logWithTimeTaken("Setup Database Tables", startedAt);
