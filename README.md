@@ -26,4 +26,9 @@ If you need help using or developing the API, feel free to message NachoToast on
 
 This API and its source code is licensed under the MIT license. [Read more here](https://github.com/Pantheon-Community/PantheonAPI/blob/main/LICENSE).
 
+### Remarks
+
+- None of this code was written with AI or AI assistance.
+- If you are interested in contributing to this API, see [CONTRIBUTING.md](./.github/CONTRIBUTING.md).
+
 ![Stylised Roman centurion helmet with blue highlights](static/logo.png)
