@@ -43,7 +43,7 @@ export function generateEndpointDescription(
 function getAuthDescription(endpoint: AnyEndpoint): string {
     const { auth } = endpoint;
 
-    const title = `Authorization Level: **${AuthScope[auth]}**`;
+    const title = `Authorisation Level: **${AuthScope[auth]}**`;
 
     const description = AUTH_SCOPE_DESCRIPTIONS[auth];
 
