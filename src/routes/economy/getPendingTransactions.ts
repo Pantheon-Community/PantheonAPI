@@ -20,7 +20,7 @@ export const getPendingTransactions: Endpoint<
 > = {
     method: "get",
     path: "/economy/pending-transactions",
-    auth: AuthScope.None,
+    auth: AuthScope.Plugin,
     description: "Gets all pending transactions for the given Steam IDs.",
     returns: "Array of pending transactions.",
     source: import.meta.path,
