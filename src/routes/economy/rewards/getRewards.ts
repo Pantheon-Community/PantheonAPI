@@ -42,6 +42,7 @@ function format(x: EconomyRewardModel): EconomyReward {
         title: x.title,
         subtitle: x.subtitle,
         description: x.description,
+        category: x.category,
         image: x.image,
         cost: x.cost,
         normalCost: x.normal_cost,

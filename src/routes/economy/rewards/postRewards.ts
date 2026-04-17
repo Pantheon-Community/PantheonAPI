@@ -46,12 +46,13 @@ async function createReward(
 ): Promise<EconomyRewardId> {
     using _ = timer.create("createReward");
 
-    const { title, subtitle, description, image, cost, normalCost } = payload;
+    const { title, subtitle, description, category, image, cost, normalCost } = payload;
 
     const insert: Partial<EconomyRewardModel> = {
         title,
         subtitle,
         description,
+        category,
         image,
         cost,
         normal_cost: normalCost,

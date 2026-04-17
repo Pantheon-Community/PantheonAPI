@@ -10,6 +10,8 @@ export interface EconomyRewardModel {
 
     description: string;
 
+    category: string;
+
     image: string;
 
     cost: number;
@@ -32,6 +34,7 @@ export async function createEconomyRewardsTable(): Promise<void> {
             title TEXT NOT NULL,
             subtitle TEXT NOT NULL,
             description TEXT NOT NULL,
+            category TEXT NOT NULL,
             image TEXT NOT NULL,
             cost INTEGER NOT NULL,
             normal_cost INTEGER NOT NULL,
@@ -40,5 +43,7 @@ export async function createEconomyRewardsTable(): Promise<void> {
             last_updated_by TEXT REFERENCES users(id) ON DELETE SET NULL,
             last_updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
-    `;
+
+        ALTER TABLE economy_rewards ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT '';
+    `.simple();
 }

@@ -54,12 +54,13 @@ async function updateReward(
 ): Promise<boolean> {
     using _ = timer.create("updateReward");
 
-    const { title, subtitle, description, image, cost, normalCost } = payload;
+    const { title, subtitle, description, category, image, cost, normalCost } = payload;
 
     const update: Partial<EconomyRewardModel> = {
         title,
         subtitle,
         description,
+        category,
         image,
         cost,
         normal_cost: normalCost,
