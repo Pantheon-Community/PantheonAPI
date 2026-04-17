@@ -58,7 +58,7 @@ async function getAllRewards(timer: ServerTimer): Promise<EconomyRewardModel[]> 
     using _ = timer.create("getAllRewards");
 
     try {
-        return await pg`SELECT * FROM economy_rewards`;
+        return await pg`SELECT * FROM economy_rewards ORDER BY id`;
     } catch (error) {
         throw wrapPgError(error);
     }
