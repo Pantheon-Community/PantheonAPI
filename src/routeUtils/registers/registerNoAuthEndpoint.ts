@@ -1,6 +1,7 @@
 import type { NoAuthEndpoint } from "@/types/Express/Endpoint";
 import type { ServerTimer } from "@/utils/serverTimer";
 import type { Request, Response } from "express";
+import { handleEndpointError } from "./handleEndpointError";
 import { registerBaseEndpoint } from "./registerBaseEndpoint";
 
 export function registerNoAuthEndpoint(endpoint: NoAuthEndpoint): void {
@@ -13,5 +14,10 @@ async function handler(
     res: Response,
     timer: ServerTimer,
 ): Promise<unknown> {
-    return await this.handleRequest({ req, res, timer });
+    try {
+        return await this.handleRequest({ req, res, timer });
+    } catch (error) {
+        handleEndpointError(req, error);
+        throw error;
+    }
 }

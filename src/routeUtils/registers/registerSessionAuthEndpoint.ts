@@ -5,6 +5,7 @@ import type { ServerTimer } from "@/utils/serverTimer";
 import type { Request, Response } from "express";
 import { getCurrentSession } from "../getCurrentSession";
 import { getTokenRequired } from "../getToken";
+import { handleEndpointError } from "./handleEndpointError";
 import { registerBaseEndpoint } from "./registerBaseEndpoint";
 
 export function registerSessionAuthEndpoint(endpoint: SessionAuthEndpoint): void {
@@ -23,5 +24,10 @@ async function handler(
 
     const session = await getCurrentSession(token, fingerprint, timer);
 
-    return await this.handleRequest({ req, res, timer, fingerprint, session });
+    try {
+        return await this.handleRequest({ req, res, timer, fingerprint, session });
+    } catch (error) {
+        handleEndpointError(req, error, session.userId);
+        throw error;
+    }
 }

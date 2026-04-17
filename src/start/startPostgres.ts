@@ -4,6 +4,7 @@ import { createCompletedTransactionsTable } from "@/models/CompletedTransactionM
 import { createEarningsTable } from "@/models/EarningsModel";
 import { createEconomyRewardItemsTable } from "@/models/EconomyRewardItemModel";
 import { createEconomyRewardsTable } from "@/models/EconomyRewardModel";
+import { createErrorsTable } from "@/models/ErrorModel";
 import { createPendingTransactionsTable } from "@/models/PendingTransactionModel";
 import { createPluginTokensTable } from "@/models/PluginTokenModel";
 import { createRolesTable } from "@/models/RoleModel";
@@ -108,6 +109,7 @@ async function setupTables(): Promise<void> {
             ]),
         ),
         createPluginTokensTable().then(createEarningsTable),
+        createErrorsTable(),
     ]);
 
     logWithTimeTaken("Setup Database Tables", startedAt);

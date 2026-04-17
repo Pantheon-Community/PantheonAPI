@@ -12,6 +12,7 @@ import type { ServerTimer } from "@/utils/serverTimer";
 import type { Request, Response } from "express";
 import { getCurrentSession } from "../getCurrentSession";
 import { getTokenRequired } from "../getToken";
+import { handleEndpointError } from "./handleEndpointError";
 import { registerBaseEndpoint } from "./registerBaseEndpoint";
 
 export function registerPermissionAuthEndpoint(endpoint: PermissionAuthEndpoint): void {
@@ -73,5 +74,10 @@ async function handler(
         });
     }
 
-    return await this.handleRequest({ req, res, timer, fingerprint, session, perms });
+    try {
+        return await this.handleRequest({ req, res, timer, fingerprint, session, perms });
+    } catch (error) {
+        handleEndpointError(req, error, session.userId);
+        throw error;
+    }
 }
