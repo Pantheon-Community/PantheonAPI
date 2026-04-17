@@ -32,7 +32,7 @@ export const config = {
          * If the API is sitting behind proxy servers, be sure to configure `numProxies` as well.
          */
         maxRequestsPerMinute: readFromEnv("API_MAX_REQUESTS_PER_MINUTE", (max) =>
-            max.hasDefaultValueOf("30").isInteger().zeroMeansInfinity().minValue(1),
+            max.hasDefaultValueOf("60").isInteger().zeroMeansInfinity().minValue(1),
         ),
 
         /**
