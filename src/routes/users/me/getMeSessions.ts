@@ -25,7 +25,9 @@ export const getMeSessions: Endpoint<void, UserSessionBasic[]> = {
             const sessions = await pg<Result[]>`
                 SELECT id, started_at, last_action_at, ip, user_agent, user_agent_hint, origin
                 FROM user_sessions
-                WHERE user_id = ${session.userId}`;
+                WHERE user_id = ${session.userId}
+                ORDER BY id
+            `;
 
             return sessions.map(format);
         } catch (error) {

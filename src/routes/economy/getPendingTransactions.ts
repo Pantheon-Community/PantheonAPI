@@ -36,6 +36,7 @@ export const getPendingTransactions: Endpoint<
             SELECT id, reward_id, purchaser_id
             FROM pending_transactions
             WHERE purchaser_id = ANY(${sql.array(req.query.ids, "TEXT")})
+            ORDER BY id
             LIMIT 100
         `;
 
