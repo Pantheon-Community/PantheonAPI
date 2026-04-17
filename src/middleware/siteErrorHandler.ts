@@ -1,3 +1,4 @@
+import { BadRequestError } from "@/errors/BadRequestError";
 import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import { SiteError } from "@/errors/SiteError";
 import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
@@ -24,6 +25,11 @@ export function siteErrorHandler(): ErrorRequestHandler {
     return (err, _req, res: Response<SiteErrorObject>, next): void => {
         if (err instanceof SiteError) {
             err.makeResponse(res);
+        } else if (err instanceof SyntaxError && err.message.startsWith("JSON Parse error")) {
+            new BadRequestError({
+                title: "Invalid Request",
+                description: err.message,
+            }).makeResponse(res);
         } else {
             next(err);
         }
