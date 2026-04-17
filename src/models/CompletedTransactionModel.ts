@@ -20,7 +20,7 @@ export async function createCompletedTransactionsTable(): Promise<void> {
     await pg`
         CREATE TABLE IF NOT EXISTS completed_transactions (
             id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-            reward_id INTEGER NOT NULL REFERENCES economy_rewards(id) ON DELETE SET NULL,
+            reward_id INTEGER REFERENCES economy_rewards(id) ON DELETE SET NULL,
             cost INTEGER NOT NULL,
             made_at TIMESTAMP NOT NULL,
             completed_at TIMESTAMP NOT NULL DEFAULT NOW(),
