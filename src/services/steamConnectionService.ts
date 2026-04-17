@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import { type SteamUserModel } from "@/models/SteamUserModel";
+import type { SteamUserModel } from "@/models/SteamUserModel";
 import { fetchMeSteamConnections } from "@/other/discord/main/fetchMeSteamConnections";
 import { getSteamUserInfo } from "@/other/steam/getSteamUserInfo";
 import type { UserToken } from "@/shared/types/Common";

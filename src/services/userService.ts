@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import { type UserModel } from "@/models/UserModel";
+import type { UserModel } from "@/models/UserModel";
 import { fetchMe } from "@/other/discord/main/fetchMe";
 import type { UserToken } from "@/shared/types/Common";
 import type { Fingerprint } from "@/shared/types/Fingerprint";

@@ -1,6 +1,6 @@
 import { pg } from "@/global/pg";
-import { type EconomyRewardModel } from "./EconomyRewardModel";
-import { type SteamUserModel } from "./SteamUserModel";
+import type { EconomyRewardModel } from "./EconomyRewardModel";
+import type { SteamUserModel } from "./SteamUserModel";
 
 export interface PendingTransactionModel {
     id: string;

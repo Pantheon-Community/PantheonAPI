@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import { type UserModel } from "./UserModel";
+import type { UserModel } from "./UserModel";
 
 export interface EconomyRewardModel {
     id: string;

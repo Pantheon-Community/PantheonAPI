@@ -1,11 +1,11 @@
 import { ForbiddenError } from "@/errors/ForbiddenError";
 import { pg } from "@/global/pg";
 import type { RoleModel } from "@/models/RoleModel";
-import { type DiscordId, type UserToken } from "@/shared/types/Common";
+import type { DiscordId, UserToken } from "@/shared/types/Common";
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
 import { UserPermissions } from "@/shared/types/Permissions/UserPermissions";
 import type { RoleLevel } from "@/shared/types/Role";
-import { hasPermission, type FlattenedPermissions } from "@/shared/utils/permissions";
+import { type FlattenedPermissions, hasPermission } from "@/shared/utils/permissions";
 import type { PermissionAuthEndpoint } from "@/types/Express/Endpoint";
 import { getFingerprint } from "@/utils/getFingerprint";
 import type { ServerTimer } from "@/utils/serverTimer";

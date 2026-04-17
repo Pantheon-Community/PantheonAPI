@@ -2,7 +2,7 @@ import { ForbiddenError } from "@/errors/ForbiddenError";
 import { pg } from "@/global/pg";
 import type { PluginTokenModel } from "@/models/PluginTokenModel";
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
-import { type PluginToken } from "@/shared/types/PluginToken";
+import type { PluginToken } from "@/shared/types/PluginToken";
 import {
     PLUGIN_TOKEN_REQUEST,
     type PluginTokenRequest,

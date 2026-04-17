@@ -3,7 +3,7 @@ import type { UserToken } from "@/shared/types/Common";
 import type { SteamId64 } from "@/shared/types/SteamUser";
 import type { DiscordSteamConnection } from "@/types/Discord";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { type APIConnection, ConnectionService, RouteBases } from "discord-api-types/v10";
+import { ConnectionService, RouteBases, type APIConnection } from "discord-api-types/v10";
 import { makeElevatedRequestHeaders } from "../utils/makeElevatedRequestHeaders";
 
 export async function fetchMeSteamConnections(

@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import { type UserSessionModel } from "@/models/UserSessionModel";
+import type { UserSessionModel } from "@/models/UserSessionModel";
 import { refreshAccessToken } from "@/other/discord/auth/refreshAccessToken";
 import { getUserRoleIds } from "@/services/getUserRoleIds";
 import { userService } from "@/services/userService";

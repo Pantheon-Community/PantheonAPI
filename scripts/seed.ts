@@ -1,8 +1,8 @@
 /** Inserts dummy users and steam users into the database. */
 
 import { pg } from "@/global/pg";
-import { type SteamUserModel } from "@/models/SteamUserModel";
-import { type UserModel } from "@/models/UserModel";
+import type { SteamUserModel } from "@/models/SteamUserModel";
+import type { UserModel } from "@/models/UserModel";
 import type { DiscordId, Ip } from "@/shared/types/Common";
 import type { SteamId64 } from "@/shared/types/SteamUser";
 import { startPostgres } from "@/start/startPostgres";

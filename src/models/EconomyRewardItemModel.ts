@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import { type EconomyRewardModel } from "./EconomyRewardModel";
+import type { EconomyRewardModel } from "./EconomyRewardModel";
 
 export interface EconomyRewardItemModel {
     reward_id: EconomyRewardModel["id"];

@@ -1,5 +1,5 @@
 import { pg } from "@/global/pg";
-import { type UserModel } from "@/models/UserModel";
+import type { UserModel } from "@/models/UserModel";
 import { STEAM_ID_64, type SteamId64 } from "@/shared/types/SteamUser";
 import { USER_FROM_STEAM, type UserFromSteam } from "@/shared/types/UserFromSteam";
 import { AuthScope } from "@/types/Express/AuthScope";

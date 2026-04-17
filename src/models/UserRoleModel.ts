@@ -1,7 +1,7 @@
 import { config } from "@/global/config";
 import { pg } from "@/global/pg";
-import { type RoleModel } from "./RoleModel";
-import { type UserModel } from "./UserModel";
+import type { RoleModel } from "./RoleModel";
+import type { UserModel } from "./UserModel";
 
 export interface UserRoleModel {
     user_id: UserModel["id"];

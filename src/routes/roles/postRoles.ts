@@ -1,6 +1,6 @@
 import { InsufficientLevelError } from "@/errors/ForbiddenError";
 import { pg } from "@/global/pg";
-import { type RoleModel } from "@/models/RoleModel";
+import type { RoleModel } from "@/models/RoleModel";
 import type { DiscordId } from "@/shared/types/Common";
 import { GeneralPermissions } from "@/shared/types/Permissions/GeneralPermissions";
 import { ROLE_ID, ROLE_PAYLOAD, type RoleId, type RolePayload } from "@/shared/types/Role";
