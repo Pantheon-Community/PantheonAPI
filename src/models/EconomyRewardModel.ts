@@ -43,7 +43,5 @@ export async function createEconomyRewardsTable(): Promise<void> {
             last_updated_by TEXT REFERENCES users(id) ON DELETE SET NULL,
             last_updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
-
-        ALTER TABLE economy_rewards ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT '';
     `.simple();
 }
