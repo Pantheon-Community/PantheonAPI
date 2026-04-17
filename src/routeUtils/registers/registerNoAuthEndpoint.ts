@@ -17,7 +17,6 @@ async function handler(
     try {
         return await this.handleRequest({ req, res, timer });
     } catch (error) {
-        handleEndpointError(req, error);
-        throw error;
+        throw await handleEndpointError(req, error);
     }
 }

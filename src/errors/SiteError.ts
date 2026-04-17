@@ -1,4 +1,3 @@
-import type { OAS } from "@/shared/global/OAS";
 import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 import type { Response } from "express";
 
@@ -18,9 +17,3 @@ export abstract class SiteError<T extends SiteErrorObject = SiteErrorObject> ext
         res.status(this.statusCode).json(this.responseBody);
     }
 }
-
-export const INTERNAL_SERVER_ERROR = {
-    description:
-        "Something went horribly wrong, please reach out to NachoToast if you receive this error!",
-    content: { "text/html": {} },
-} as const satisfies OAS.Response;

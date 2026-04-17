@@ -1,8 +1,8 @@
 import { BAD_REQUEST_ERROR } from "@/errors/BadRequestError";
 import { FORBIDDEN_ERROR } from "@/errors/ForbiddenError";
+import { INTERNAL_SERVER_ERROR } from "@/errors/InternalServerError";
 import { NOT_FOUND_ERROR } from "@/errors/NotFoundError";
 import { SECONDARY_REQUEST_ERROR } from "@/errors/SecondaryRequestError";
-import { INTERNAL_SERVER_ERROR } from "@/errors/SiteError";
 import { UNAUTHORIZED_ERROR } from "@/errors/UnauthorizedError";
 import { RATE_LIMITED_ERROR } from "@/middleware/rateLimitingMiddleware";
 import type { OAS } from "@/shared/global/OAS";

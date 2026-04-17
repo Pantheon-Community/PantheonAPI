@@ -77,7 +77,6 @@ async function handler(
     try {
         return await this.handleRequest({ req, res, timer, fingerprint, session, perms });
     } catch (error) {
-        handleEndpointError(req, error, session.userId);
-        throw error;
+        throw await handleEndpointError(req, error, session.userId);
     }
 }

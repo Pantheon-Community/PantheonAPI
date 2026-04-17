@@ -1,5 +1,4 @@
 import { BadRequestError } from "@/errors/BadRequestError";
-import { SecondaryRequestError } from "@/errors/SecondaryRequestError";
 import { SiteError } from "@/errors/SiteError";
 import type { SiteErrorObject } from "@/shared/types/SiteErrorObject";
 import { Color } from "@/types/Color";
@@ -9,7 +8,7 @@ import type { ErrorRequestHandler, Response } from "express";
 
 export function devSiteErrorHandler(): ErrorRequestHandler {
     return (err, req, _res, next): void => {
-        if (err instanceof SecondaryRequestError) {
+        if (err instanceof Error) {
             log(colorize(`${req.method} ${req.url} >> ${err.name}`, Color.FgRed));
 
             if (err.cause) {
@@ -21,7 +20,7 @@ export function devSiteErrorHandler(): ErrorRequestHandler {
     };
 }
 
-export function siteErrorHandler(): ErrorRequestHandler {
+export function prodSiteErrorHandler(): ErrorRequestHandler {
     return (err, _req, res: Response<SiteErrorObject>, next): void => {
         if (err instanceof SiteError) {
             err.makeResponse(res);

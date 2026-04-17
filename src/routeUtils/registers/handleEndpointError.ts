@@ -1,7 +1,9 @@
+import { InternalServerError } from "@/errors/InternalServerError";
 import { SiteError } from "@/errors/SiteError";
 import { pg } from "@/global/pg";
 import type { ErrorModel } from "@/models/ErrorModel";
 import type { DiscordId } from "@/shared/types/Common";
+import { castNumber } from "@/utils/castNumber";
 import { sql } from "bun";
 import type { Request } from "express";
 
@@ -25,9 +27,13 @@ function getRequestBody(req: Request): string {
     }
 }
 
-export function handleEndpointError(req: Request, error: unknown, userId?: DiscordId): void {
+export async function handleEndpointError(
+    req: Request,
+    error: unknown,
+    userId?: DiscordId,
+): Promise<unknown> {
     if (!shouldRecordError(error)) {
-        return;
+        return error;
     }
 
     const value: Partial<ErrorModel> = {
@@ -40,5 +46,10 @@ export function handleEndpointError(req: Request, error: unknown, userId?: Disco
     if (error.stack) value.stack = error.stack;
     if (userId !== undefined) value.user_id = userId;
 
-    pg`INSERT INTO errors ${sql(value)}`.catch(() => null);
+    const [insertedErrorObject] = await pg<[Pick<ErrorModel, "id">]>`
+            INSERT INTO errors ${sql(value)}
+            RETURNING id
+        `;
+
+    return new InternalServerError(castNumber(insertedErrorObject.id));
 }
