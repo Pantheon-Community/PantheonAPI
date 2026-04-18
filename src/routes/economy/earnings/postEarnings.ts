@@ -53,11 +53,11 @@ async function increaseBalanceFor(earning: EarningsRequest): Promise<EarningFull
     const { steamId, balanceInc } = earning;
 
     const users = await pg<Pick<UserModel, "id">[]>`
-        UPDATE users
+        UPDATE steam_users
         SET
             balance = balance + ${balanceInc},
             lifetime_balance = lifetime_balance + ${balanceInc}
-        WHERE steam_id = ${steamId}
+        WHERE id = ${steamId}
         RETURNING id
     `;
 

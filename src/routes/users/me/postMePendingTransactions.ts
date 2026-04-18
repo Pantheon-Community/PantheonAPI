@@ -127,7 +127,7 @@ async function getRewardCosts(
 async function addTransactionRecords(
     numTransactions: number,
     requiredBalance: number,
-    userId: SteamId64,
+    steamId: SteamId64,
     timer: ServerTimer,
 ): Promise<void> {
     using _ = timer.create("addTransactionRecords");
@@ -137,7 +137,7 @@ async function addTransactionRecords(
         SET
             balance = balance - ${requiredBalance},
             lifetime_purchase_count = lifetime_purchase_count + ${numTransactions}
-        WHERE id = ${userId} AND balance >= ${requiredBalance}
+        WHERE id = ${steamId}
     `;
 }
 

@@ -1,7 +1,10 @@
+import { ForbiddenError } from "@/errors/ForbiddenError";
 import { NotFoundError } from "@/errors/NotFoundError";
 import { pg } from "@/global/pg";
 import type { PendingTransactionModel } from "@/models/PendingTransactionModel";
+import type { UserModel } from "@/models/UserModel";
 import { ECONOMY_REWARD_ID, type EconomyRewardId } from "@/shared/types/EconomyReward";
+import type { SteamId64 } from "@/shared/types/SteamUser";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
@@ -21,6 +24,35 @@ export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewar
     pathParams: makeParams({ id: ECONOMY_REWARD_ID }),
     queryParams: null,
     async handleRequest({ req, timer, session }) {
+        let steamId: SteamId64 | null;
+
+        {
+            using _ = timer.create("getSteamId");
+
+            const [user] = await pg<Pick<UserModel, "steam_id">[]>`
+                SELECT steam_id
+                FROM users
+                WHERE id = ${session.userId}
+            `;
+
+            if (user === undefined) {
+                throw new NotFoundError({
+                    title: "User Not Found",
+                    description:
+                        "Could not find you in the database, your account may have been deleted.",
+                });
+            }
+            steamId = user.steam_id;
+        }
+
+        if (steamId === null) {
+            throw new ForbiddenError({
+                title: "No Steam Connection",
+                description:
+                    "You must link a Steam account to your Discord in order to refund transactions.",
+            });
+        }
+
         let deletedTransactionCost: number;
 
         {
@@ -28,8 +60,7 @@ export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewar
 
             const [deletedTransaction] = await pg<Pick<PendingTransactionModel, "cost">[]>`
                 DELETE FROM pending_transactions
-                WHERE id = ${req.params.id} AND purchaser_id in
-                (SELECT steam_id FROM users WHERE id = ${session.userId})
+                WHERE id = ${req.params.id} AND purchaser_id = ${steamId}
                 RETURNING cost
             `;
 
@@ -47,11 +78,11 @@ export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewar
         using _ = timer.create("increaseBalance");
 
         await pg`
-            UPDATE users
+            UPDATE steam_users
             SET
                 balance = balance + ${deletedTransactionCost},
                 lifetime_purchase_count = lifetime_purchase_count - 1
-            WHERE id = ${session.userId}
+            WHERE id = ${steamId}
         `;
     },
 };

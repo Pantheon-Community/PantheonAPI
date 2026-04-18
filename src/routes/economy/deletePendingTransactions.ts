@@ -107,9 +107,9 @@ async function penaliseFailedDeletions(
     await Promise.all(
         amountsById.entries().map(([steamId, amount]) => {
             return pg`
-            UPDATE users
+            UPDATE steam_users
             SET balance = balance - ${amount * 2}
-            WHERE steam_id = ${steamId}
+            WHERE id = ${steamId}
         `;
         }),
     );
