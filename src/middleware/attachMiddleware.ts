@@ -4,7 +4,7 @@ import { json } from "express";
 import { corsMiddleware } from "./corsMiddleware";
 import { postgresErrorHandler } from "./postgresErrorHandler";
 import { rateLimitingMiddleware } from "./rateLimitingMiddleware";
-import { devSiteErrorHandler, prodSiteErrorHandler } from "./siteErrorHandler";
+import { devSiteErrorHandler, siteErrorHandler } from "./siteErrorHandler";
 
 /** Attaches pre-route middleware to the API, such as authentication and input validation logic. */
 export function attachPreRouteMiddleware(): void {
@@ -17,9 +17,9 @@ export function attachPreRouteMiddleware(): void {
 export function attachPostRouteMiddleware(): void {
     if (config.environment === "development") {
         app.use(devSiteErrorHandler());
-    } else {
-        app.use(prodSiteErrorHandler());
     }
+
+    app.use(siteErrorHandler());
 
     app.use(postgresErrorHandler());
 
