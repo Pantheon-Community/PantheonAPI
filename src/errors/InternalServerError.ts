@@ -14,12 +14,15 @@ interface InternalServerErrorObject extends SiteErrorObject {
 export class InternalServerError extends SiteError<InternalServerErrorObject> {
     protected override statusCode = 500; // internal server error
 
-    public constructor(errorId: number) {
-        super({
-            title: "Internal Server Error",
-            description: "An unexpected error occurred, please contact NachoToast.",
-            errorId,
-        });
+    public constructor(errorId: number, cause: unknown) {
+        super(
+            {
+                title: "Internal Server Error",
+                description: "An unexpected error occurred, please contact NachoToast.",
+                errorId,
+            },
+            { cause },
+        );
     }
 }
 

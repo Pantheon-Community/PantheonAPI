@@ -71,5 +71,5 @@ export async function handleEndpointError(
 
     const errorId = await recordError(error, req.url, getRequestBody(req), userId);
 
-    return new InternalServerError(castNumber(errorId));
+    return new InternalServerError(castNumber(errorId), error);
 }
