@@ -14,6 +14,7 @@ import { generateServers } from "@/routeUtils/generators/generateServers";
 import type { OAS } from "@/shared/global/OAS";
 import { USER_TOKEN } from "@/shared/types/Common";
 import { PLUGIN_TOKEN } from "@/shared/types/PluginToken";
+import { LOGIN_REQUEST } from "@/shared/types/Requests/LoginRequest";
 import { writeFileSync } from "node:fs";
 
 export function generateSpec(): void {
@@ -22,7 +23,7 @@ export function generateSpec(): void {
         info: {
             title: "Pantheon API",
             description: generateRootDescription(),
-            version: config.commitHash || "unknown",
+            version: `${config.commitHash || "unknown"}-${config.environment}`,
         },
         servers: generateServers(),
         paths: {},
@@ -43,7 +44,12 @@ export function generateSpec(): void {
     };
 
     if (config.environment === "development") {
+        // developer QoL
         output.$schema = "../.github/openapi.schema.json";
+
+        Object.assign(LOGIN_REQUEST.schema.properties.redirectUri, {
+            example: `http://localhost:${config.api.port || 5000}`,
+        });
     }
 
     for (const endpoint of allRoutes) {
