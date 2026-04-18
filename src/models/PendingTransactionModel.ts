@@ -1,4 +1,4 @@
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { EconomyRewardModel } from "./EconomyRewardModel";
 import type { SteamUserModel } from "./SteamUserModel";
 
@@ -15,7 +15,7 @@ export interface PendingTransactionModel {
 }
 
 export async function createPendingTransactionsTable(): Promise<void> {
-    await pg`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS pending_transactions (
             id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
             reward_id INTEGER NOT NULL REFERENCES economy_rewards(id) ON DELETE CASCADE,
@@ -26,5 +26,5 @@ export async function createPendingTransactionsTable(): Promise<void> {
 
         CREATE INDEX IF NOT EXISTS pending_transactions_reward_id_idx ON pending_transactions (reward_id);
         CREATE INDEX IF NOT EXISTS pending_transactions_purchaser_id_idx ON pending_transactions (purchaser_id);
-    `.simple();
+    `);
 }

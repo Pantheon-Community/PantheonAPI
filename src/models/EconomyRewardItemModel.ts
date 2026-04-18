@@ -1,4 +1,4 @@
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { EconomyRewardModel } from "./EconomyRewardModel";
 
 export interface EconomyRewardItemModel {
@@ -10,12 +10,12 @@ export interface EconomyRewardItemModel {
 }
 
 export async function createEconomyRewardItemsTable(): Promise<void> {
-    await pg`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS economy_reward_items (
             reward_id INTEGER NOT NULL REFERENCES economy_rewards(id) ON DELETE CASCADE,
             item_id INTEGER NOT NULL,
             item_count INTEGER NOT NULL,
             PRIMARY KEY (reward_id, item_id)
         );
-    `;
+    `);
 }

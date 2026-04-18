@@ -5,7 +5,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const deletePluginToken: Endpoint<void, void, { id: PluginTokenId }> = {
     method: "delete",
@@ -24,11 +23,7 @@ export const deletePluginToken: Endpoint<void, void, { id: PluginTokenId }> = {
     async handleRequest({ req, timer }) {
         using _ = timer.create("deletePluginToken");
 
-        try {
-            // we don't care about return value, since 0 matching rows = already deleted
-            await pg`DELETE FROM plugin_tokens WHERE id = ${req.params.id}`;
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        // we don't care about return value, since 0 matching rows = already deleted
+        await pg`DELETE FROM plugin_tokens WHERE id = ${req.params.id}`;
     },
 };

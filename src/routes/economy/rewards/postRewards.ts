@@ -13,7 +13,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const postRewards: Endpoint<EconomyRewardPayload, EconomyRewardId> = {
@@ -60,16 +59,12 @@ async function createReward(
         last_updated_by: userId,
     };
 
-    try {
-        const [reward] = await pg<[Pick<EconomyRewardModel, "id">]>`
-            INSERT INTO economy_rewards ${sql(insert)}
-            RETURNING id
-        `;
+    const [reward] = await pg<[Pick<EconomyRewardModel, "id">]>`
+        INSERT INTO economy_rewards ${sql(insert)}
+        RETURNING id
+    `;
 
-        return castNumber(reward.id);
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return castNumber(reward.id);
 }
 
 async function createRewardItems(
@@ -79,16 +74,12 @@ async function createRewardItems(
 ): Promise<void> {
     using _ = timer.create("createRewardItems");
 
-    try {
-        await Promise.all(
-            items.map(({ id, count }) => {
-                return pg`
-                    INSERT INTO economy_reward_items (reward_id, item_id, item_count)
-                    VALUES (${rewardId}, ${id}, ${count})
-                `;
-            }),
-        );
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    await Promise.all(
+        items.map(({ id, count }) => {
+            return pg`
+                INSERT INTO economy_reward_items (reward_id, item_id, item_count)
+                VALUES (${rewardId}, ${id}, ${count})
+            `;
+        }),
+    );
 }

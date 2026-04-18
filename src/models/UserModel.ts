@@ -1,5 +1,5 @@
 import { config } from "@/global/config";
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { SteamUserModel } from "@/models/SteamUserModel";
 import type { DiscordId, Ip, Origin, UserAgent, UserAgentHint } from "@/shared/types/Common";
 
@@ -25,16 +25,10 @@ export interface UserModel {
     user_agent_hint: UserAgentHint | null;
 
     origin: Origin | null;
-
-    balance: number;
-
-    lifetime_balance: number;
-
-    lifetime_purchase_count: number;
 }
 
 export async function createUsersTable(): Promise<void> {
-    await pg.unsafe(`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
             username TEXT NOT NULL,
@@ -46,10 +40,7 @@ export async function createUsersTable(): Promise<void> {
             ip TEXT,
             user_agent TEXT,
             user_agent_hint TEXT,
-            origin TEXT,
-            balance INTEGER NOT NULL DEFAULT 0,
-            lifetime_balance INTEGER NOT NULL DEFAULT 0,
-            lifetime_purchase_count INTEGER NOT NULL DEFAULT 0
+            origin TEXT
         );
 
         CREATE INDEX IF NOT EXISTS users_steam_id_idx ON users (steam_id);
@@ -57,5 +48,9 @@ export async function createUsersTable(): Promise<void> {
         INSERT INTO users (id, username)
         VALUES ('${config.db.rootUserId}', 'Root User')
         ON CONFLICT (id) DO NOTHING;
+
+        ALTER TABLE users DROP COLUMN IF EXISTS balance;
+        ALTER TABLE users DROP COLUMN IF EXISTS lifetime_balance;
+        ALTER TABLE users DROP COLUMN IF EXISTS lifetime_purchase_count;
     `);
 }

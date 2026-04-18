@@ -5,7 +5,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const deleteMeSession: Endpoint<void, void, { id: UserSessionId }> = {
     auth: AuthScope.Session,
@@ -29,13 +28,9 @@ export const deleteMeSession: Endpoint<void, void, { id: UserSessionId }> = {
 
         using _ = timer.create("deleteSession");
 
-        try {
-            await pg<[]>`
-                DELETE FROM user_sessions
-                WHERE id = ${req.params.id} AND user_id = ${session.userId}
-            `;
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        await pg`
+            DELETE FROM user_sessions
+            WHERE id = ${req.params.id} AND user_id = ${session.userId}
+        `;
     },
 };

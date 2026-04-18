@@ -1,4 +1,4 @@
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { DiscordId } from "@/shared/types/Common";
 
 export interface ErrorModel {
@@ -17,10 +17,14 @@ export interface ErrorModel {
     stack: string | null;
 
     user_id: DiscordId | null;
+
+    cause: ErrorModel["id"] | null;
+
+    commit: string | null;
 }
 
 export async function createErrorsTable(): Promise<void> {
-    await pg`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS errors (
             id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
             timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -29,7 +33,12 @@ export async function createErrorsTable(): Promise<void> {
             url TEXT NOT NULL,
             request_body TEXT NOT NULL,
             stack TEXT,
-            user_id TEXT
+            user_id TEXT,
+            cause INTEGER REFERENCES errors(id) ON DELETE CASCADE,
+            commit TEXT
         );
-    `;
+
+        ALTER TABLE errors ADD COLUMN IF NOT EXISTS cause INTEGER REFERENCES errors(id) ON DELETE CASCADE;
+        ALTER TABLE errors ADD COLUMN IF NOT EXISTS commit TEXT;
+    `);
 }

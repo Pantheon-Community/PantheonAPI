@@ -10,7 +10,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
 import { makePaginated } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const getMePendingTransactions: Endpoint<
     void,
@@ -34,25 +33,21 @@ export const getMePendingTransactions: Endpoint<
 
         const { page, perPage } = req.query;
 
-        try {
-            const transactions = await pg<Result[]>`
-                SELECT pending_transactions.*, COUNT(*) OVER() AS total_count
-                FROM pending_transactions
-                JOIN users
-                ON pending_transactions.purchaser_id = users.steam_id
-                WHERE users.id = ${session.userId}
-                ORDER BY pending_transactions.id
-                LIMIT ${perPage}
-                OFFSET ${page * perPage}
-            `;
+        const transactions = await pg<Result[]>`
+            SELECT pending_transactions.*, COUNT(*) OVER() AS total_count
+            FROM pending_transactions
+            JOIN users
+            ON pending_transactions.purchaser_id = users.steam_id
+            WHERE users.id = ${session.userId}
+            ORDER BY pending_transactions.id
+            LIMIT ${perPage}
+            OFFSET ${page * perPage}
+        `;
 
-            return {
-                items: transactions.map(format),
-                totalItemCount: transactions[0] ? Number(transactions[0].total_count) : 0,
-            };
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        return {
+            items: transactions.map(format),
+            totalItemCount: transactions[0] ? Number(transactions[0].total_count) : 0,
+        };
     },
 };
 

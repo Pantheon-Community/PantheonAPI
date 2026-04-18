@@ -5,7 +5,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
 import { makeArray } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const getMeSessions: Endpoint<void, UserSessionBasic[]> = {
     method: "get",
@@ -21,18 +20,14 @@ export const getMeSessions: Endpoint<void, UserSessionBasic[]> = {
     async handleRequest({ timer, session }) {
         using _ = timer.create("getMeSessions");
 
-        try {
-            const sessions = await pg<Result[]>`
-                SELECT id, started_at, last_action_at, ip, user_agent, user_agent_hint, origin
-                FROM user_sessions
-                WHERE user_id = ${session.userId}
-                ORDER BY id
-            `;
+        const sessions = await pg<Result[]>`
+            SELECT id, started_at, last_action_at, ip, user_agent, user_agent_hint, origin
+            FROM user_sessions
+            WHERE user_id = ${session.userId}
+            ORDER BY id
+        `;
 
-            return sessions.map(format);
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        return sessions.map(format);
     },
 };
 

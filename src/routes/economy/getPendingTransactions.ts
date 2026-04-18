@@ -9,7 +9,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
 import { makeArray, makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const getPendingTransactions: Endpoint<
@@ -31,8 +30,7 @@ export const getPendingTransactions: Endpoint<
     async handleRequest({ req, timer }) {
         using _ = timer.create("getPendingTransactions");
 
-        try {
-            const transactions = await pg<Result[]>`
+        const transactions = await pg<Result[]>`
             SELECT id, reward_id, purchaser_id
             FROM pending_transactions
             WHERE purchaser_id = ANY(${sql.array(req.query.ids, "TEXT")})
@@ -40,10 +38,7 @@ export const getPendingTransactions: Endpoint<
             LIMIT 100
         `;
 
-            return transactions.map(format);
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        return transactions.map(format);
     },
 };
 

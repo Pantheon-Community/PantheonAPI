@@ -10,7 +10,6 @@ import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const patchRole: Endpoint<RolePayload, void, { id: RoleId }> = {
@@ -65,9 +64,5 @@ async function updateRole(
         last_updated_by: userId,
     };
 
-    try {
-        await pg`UPDATE roles SET ${sql(update)} WHERE id = ${roleId}`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    await pg`UPDATE roles SET ${sql(update)} WHERE id = ${roleId}`;
 }

@@ -9,7 +9,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const putUserRole: Endpoint<void, void, { userId: DiscordId; roleId: RoleId }> = {
     method: "put",
@@ -36,8 +35,7 @@ export const putUserRole: Endpoint<void, void, { userId: DiscordId; roleId: Role
 
         using _ = timer.create("addUserRole");
 
-        try {
-            const insertedRow = await pg<[]>`
+        const insertedRow = await pg<[]>`
                 INSERT INTO user_roles (user_id, role_id)
                 SELECT ${userId}, ${roleId}
                 WHERE EXISTS (SELECT 1 FROM users WHERE id = ${userId})
@@ -46,14 +44,11 @@ export const putUserRole: Endpoint<void, void, { userId: DiscordId; roleId: Role
                 RETURNING 1
             `;
 
-            if (insertedRow.length === 0) {
-                throw new NotFoundError({
-                    title: "User Not Found",
-                    description: "A user with this ID does not exist in the database.",
-                });
-            }
-        } catch (error) {
-            throw wrapPgError(error);
+        if (insertedRow.length === 0) {
+            throw new NotFoundError({
+                title: "User Not Found",
+                description: "A user with this ID does not exist in the database.",
+            });
         }
     },
 };

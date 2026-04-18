@@ -6,7 +6,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const putMeSteamUsersPrimary: Endpoint<void, void, { id: SteamId64 }> = {
     auth: AuthScope.Session,
@@ -35,10 +34,6 @@ export const putMeSteamUsersPrimary: Endpoint<void, void, { id: SteamId64 }> = {
 
         using _ = timer.create("putMeSteamUsersPrimary");
 
-        try {
-            await pg`UPDATE users SET steam_id = ${req.params.id} WHERE id = ${session.userId}`;
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        await pg`UPDATE users SET steam_id = ${req.params.id} WHERE id = ${session.userId}`;
     },
 };

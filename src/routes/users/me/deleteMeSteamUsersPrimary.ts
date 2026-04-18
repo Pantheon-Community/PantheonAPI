@@ -3,7 +3,6 @@ import { UserPermissions } from "@/shared/types/Permissions/UserPermissions";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const deleteMeSteamUsersPrimary: Endpoint = {
     auth: AuthScope.Permission,
@@ -21,10 +20,6 @@ export const deleteMeSteamUsersPrimary: Endpoint = {
     async handleRequest({ timer, session }) {
         using _ = timer.create("deleteMeSteamUsersPrimary");
 
-        try {
-            await pg`UPDATE users SET steam_id = NULL WHERE id = ${session.userId}`;
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        await pg`UPDATE users SET steam_id = NULL WHERE id = ${session.userId}`;
     },
 };

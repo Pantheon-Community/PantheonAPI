@@ -15,7 +15,6 @@ import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const patchReward: Endpoint<EconomyRewardPayload, void, { id: EconomyRewardId }> = {
@@ -67,18 +66,14 @@ async function updateReward(
         last_updated_by: userId,
     };
 
-    try {
-        const updatedRows = await pg<[]>`
-            UPDATE economy_rewards
-            SET ${sql(update)}, last_updated_at = NOW()
-            WHERE id = ${rewardId}
-            RETURNING 1
-        `;
+    const updatedRows = await pg<[]>`
+        UPDATE economy_rewards
+        SET ${sql(update)}, last_updated_at = NOW()
+        WHERE id = ${rewardId}
+        RETURNING 1
+    `;
 
-        return updatedRows.length > 0;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return updatedRows.length > 0;
 }
 
 async function updateRewardItems(
@@ -88,29 +83,23 @@ async function updateRewardItems(
 ): Promise<void> {
     const { items } = payload;
 
-    try {
+    {
         using _ = timer.create("deleteOldRewardItems");
 
         await pg`DELETE FROM economy_reward_items WHERE reward_id = ${rewardId}`;
-    } catch (error) {
-        throw wrapPgError(error);
     }
 
     if (items.length === 0) return;
 
-    try {
-        using _ = timer.create("createNewRewardItems");
+    using _ = timer.create("createNewRewardItems");
 
-        const rewardIdStr = rewardId.toString();
+    const rewardIdStr = rewardId.toString();
 
-        const values = items.map<EconomyRewardItemModel>(({ id, count }) => ({
-            reward_id: rewardIdStr,
-            item_id: id,
-            item_count: count,
-        }));
+    const values = items.map<EconomyRewardItemModel>(({ id, count }) => ({
+        reward_id: rewardIdStr,
+        item_id: id,
+        item_count: count,
+    }));
 
-        await pg`INSERT INTO economy_reward_items ${sql(values)}`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    await pg`INSERT INTO economy_reward_items ${sql(values)}`;
 }

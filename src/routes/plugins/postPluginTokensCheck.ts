@@ -11,7 +11,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { castNumber } from "@/utils/castNumber";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const postPluginTokensCheck: Endpoint<CheckPluginTokenRequest, PluginTokenObject> = {
     method: "post",
@@ -29,29 +28,8 @@ export const postPluginTokensCheck: Endpoint<CheckPluginTokenRequest, PluginToke
     async handleRequest({ req, timer }) {
         using _ = timer.create("postPluginTokensCheck");
 
-        try {
-            const [token] = await pg<Omit<PluginTokenModel, "token">[]>`
-                SELECT
-                    id,
-                    label,
-                    times_used,
-                    last_used_at,
-                    created_by,
-                    created_at,
-                    last_updated_by,
-                    last_updated_at
-                FROM plugin_tokens
-                WHERE token = ${req.body.token}
-            `;
-
-            if (token === undefined) {
-                throw new NotFoundError({
-                    title: "Token Not Found",
-                    description: "The supplied token is not recognised.",
-                });
-            }
-
-            const {
+        const [token] = await pg<Omit<PluginTokenModel, "token">[]>`
+            SELECT
                 id,
                 label,
                 times_used,
@@ -59,21 +37,38 @@ export const postPluginTokensCheck: Endpoint<CheckPluginTokenRequest, PluginToke
                 created_by,
                 created_at,
                 last_updated_by,
-                last_updated_at,
-            } = token;
+                last_updated_at
+            FROM plugin_tokens
+            WHERE token = ${req.body.token}
+        `;
 
-            return {
-                id: castNumber(id),
-                label,
-                timesUsed: times_used,
-                lastUsedAt: last_used_at.toISOString(),
-                createdBy: created_by,
-                createdAt: created_at.toISOString(),
-                lastUpdatedBy: last_updated_by,
-                lastUpdatedAt: last_updated_at.toISOString(),
-            };
-        } catch (error) {
-            throw wrapPgError(error);
+        if (token === undefined) {
+            throw new NotFoundError({
+                title: "Token Not Found",
+                description: "The supplied token is not recognised.",
+            });
         }
+
+        const {
+            id,
+            label,
+            times_used,
+            last_used_at,
+            created_by,
+            created_at,
+            last_updated_by,
+            last_updated_at,
+        } = token;
+
+        return {
+            id: castNumber(id),
+            label,
+            timesUsed: times_used,
+            lastUsedAt: last_used_at.toISOString(),
+            createdBy: created_by,
+            createdAt: created_at.toISOString(),
+            lastUpdatedBy: last_updated_by,
+            lastUpdatedAt: last_updated_at.toISOString(),
+        };
     },
 };

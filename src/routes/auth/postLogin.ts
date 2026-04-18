@@ -1,4 +1,3 @@
-import { config } from "@/global/config";
 import { pg } from "@/global/pg";
 import type { UserSessionModel } from "@/models/UserSessionModel";
 import { requestAccessToken } from "@/other/discord/auth/requestAccessToken";
@@ -16,7 +15,6 @@ import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { castNumber } from "@/utils/castNumber";
 import { getFingerprint } from "@/utils/getFingerprint";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const postLogin: Endpoint<LoginRequest, AuthResponse> = {
@@ -84,22 +82,10 @@ async function createNewSession(
     if (userAgent) insert.user_agent = userAgent;
     if (origin) insert.origin = origin;
 
-    try {
-        const [session] = await pg<[Pick<UserSessionModel, "id">]>`
-            INSERT INTO user_sessions ${sql(insert)}
-            RETURNING id
-        `;
+    const [session] = await pg<[Pick<UserSessionModel, "id">]>`
+        INSERT INTO user_sessions ${sql(insert)}
+        RETURNING id
+    `;
 
-        return castNumber(session.id);
-    } catch (error) {
-        throw wrapPgError(error);
-    }
-}
-
-if (config.environment === "development") {
-    // developer QoL
-
-    Object.assign(LOGIN_REQUEST.schema.properties.redirectUri, {
-        example: `http://localhost:${config.api.port || 5000}`,
-    });
+    return castNumber(session.id);
 }

@@ -1,5 +1,6 @@
 import { InternalServerError } from "@/errors/InternalServerError";
 import { SiteError } from "@/errors/SiteError";
+import { config } from "@/global/config";
 import { pg } from "@/global/pg";
 import type { ErrorModel } from "@/models/ErrorModel";
 import type { DiscordId } from "@/shared/types/Common";
@@ -27,6 +28,38 @@ function getRequestBody(req: Request): string {
     }
 }
 
+async function recordError(
+    error: Error,
+    url: string,
+    requestBody: string,
+    userId: DiscordId | undefined,
+): Promise<string> {
+    const { name, message, stack, cause } = error;
+
+    const value: Partial<ErrorModel> = {
+        name,
+        message,
+        url,
+        request_body: requestBody,
+    };
+
+    if (stack) value.stack = stack;
+    if (userId !== undefined) value.user_id = userId;
+    if (config.commitHash !== null) value.commit = config.commitHash;
+
+    if (cause instanceof Error) {
+        const causeObject = await recordError(cause, url, requestBody, userId);
+        value.cause = causeObject;
+    }
+
+    const [insertedErrorObject] = await pg<[Pick<ErrorModel, "id">]>`
+        INSERT INTO errors ${sql(value)}
+        RETURNING id
+    `;
+
+    return insertedErrorObject.id;
+}
+
 export async function handleEndpointError(
     req: Request,
     error: unknown,
@@ -36,20 +69,7 @@ export async function handleEndpointError(
         return error;
     }
 
-    const value: Partial<ErrorModel> = {
-        name: error.name,
-        message: error.message,
-        url: req.url,
-        request_body: getRequestBody(req),
-    };
+    const errorId = await recordError(error, req.url, getRequestBody(req), userId);
 
-    if (error.stack) value.stack = error.stack;
-    if (userId !== undefined) value.user_id = userId;
-
-    const [insertedErrorObject] = await pg<[Pick<ErrorModel, "id">]>`
-            INSERT INTO errors ${sql(value)}
-            RETURNING id
-        `;
-
-    return new InternalServerError(castNumber(insertedErrorObject.id));
+    return new InternalServerError(castNumber(errorId));
 }

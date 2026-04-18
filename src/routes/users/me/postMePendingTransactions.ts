@@ -3,7 +3,7 @@ import { NotFoundError } from "@/errors/NotFoundError";
 import { pg } from "@/global/pg";
 import type { EconomyRewardModel } from "@/models/EconomyRewardModel";
 import type { PendingTransactionModel } from "@/models/PendingTransactionModel";
-import type { UserModel } from "@/models/UserModel";
+import type { SteamUserModel } from "@/models/SteamUserModel";
 import type { DiscordId } from "@/shared/types/Common";
 import type { EconomyRewardId } from "@/shared/types/EconomyReward";
 import {
@@ -14,11 +14,9 @@ import type { SteamId64 } from "@/shared/types/SteamUser";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
-import type { WithNull } from "@/types/WithNull";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { makeArray } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const postMePendingTransactions: Endpoint<MakeTransactionRequest[]> = {
@@ -79,7 +77,7 @@ export const postMePendingTransactions: Endpoint<MakeTransactionRequest[]> = {
         }
 
         await Promise.all([
-            addTransactionRecords(req.body.length, requiredBalance, session.userId, timer),
+            addTransactionRecords(req.body.length, requiredBalance, steamId, timer),
             createTransactions(req.body, steamId, timer),
         ]);
     },
@@ -91,25 +89,22 @@ async function getSteamAndBalance(
 ): Promise<[SteamId64 | null, number]> {
     using _ = timer.create("getSteamAndBalance");
 
-    try {
-        const [user] = await pg<Pick<WithNull<UserModel>, "steam_id" | "balance">[]>`
-            SELECT steam_id, balance
-            FROM users
-            WHERE id = ${userId}
-        `;
+    const [user] = await pg<Pick<SteamUserModel, "id" | "balance">[]>`
+        SELECT steam_users.id, steam_users.balance
+        FROM steam_users
+        JOIN users
+        ON steam_users.id = users.steam_id
+        WHERE users.id = ${userId}
+    `;
 
-        if (user === undefined) {
-            throw new NotFoundError({
-                title: "User Not Found",
-                description:
-                    "Could not find you in the database, your account may have been deleted.",
-            });
-        }
-
-        return [user.steam_id, user.balance];
-    } catch (error) {
-        throw wrapPgError(error);
+    if (user === undefined) {
+        throw new NotFoundError({
+            title: "User Not Found",
+            description: "Could not find you in the database, your account may have been deleted.",
+        });
     }
+
+    return [user.id, user.balance];
 }
 
 async function getRewardCosts(
@@ -120,37 +115,30 @@ async function getRewardCosts(
 
     const uniqueRewardIds = new Set(transactionRequests.map((x) => x.rewardId)).values().toArray();
 
-    try {
-        const rewards = await pg<Pick<EconomyRewardModel, "id" | "cost">[]>`
-                SELECT id, cost
-                FROM economy_rewards
-                WHERE id = ANY(${sql.array(uniqueRewardIds, "INTEGER")})
-            `;
+    const rewards = await pg<Pick<EconomyRewardModel, "id" | "cost">[]>`
+        SELECT id, cost
+        FROM economy_rewards
+        WHERE id = ANY(${sql.array(uniqueRewardIds, "INTEGER")})
+    `;
 
-        return new Map(rewards.map((x) => [castNumber(x.id), x.cost]));
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return new Map(rewards.map((x) => [castNumber(x.id), x.cost]));
 }
 
 async function addTransactionRecords(
     numTransactions: number,
     requiredBalance: number,
-    userId: DiscordId,
+    userId: SteamId64,
     timer: ServerTimer,
 ): Promise<void> {
     using _ = timer.create("addTransactionRecords");
 
-    try {
-        await pg`
-            UPDATE users
-            SET
-                balance = balance - ${requiredBalance},
-                lifetime_purchase_count = lifetime_purchase_count + ${numTransactions}
-            WHERE id = ${userId} AND balance >= ${requiredBalance}`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    await pg`
+        UPDATE steam_users
+        SET
+            balance = balance - ${requiredBalance},
+            lifetime_purchase_count = lifetime_purchase_count + ${numTransactions}
+        WHERE id = ${userId} AND balance >= ${requiredBalance}
+    `;
 }
 
 async function createTransactions(
@@ -166,9 +154,5 @@ async function createTransactions(
         purchaser_id: steamId,
     }));
 
-    try {
-        await pg`INSERT INTO pending_transactions ${sql(values)}`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    await pg`INSERT INTO pending_transactions ${sql(values)}`;
 }

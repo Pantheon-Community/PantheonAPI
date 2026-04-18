@@ -10,7 +10,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const patchPluginToken: Endpoint<PluginTokenRequest, void, { id: PluginTokenId }> = {
     method: "patch",
@@ -28,25 +27,21 @@ export const patchPluginToken: Endpoint<PluginTokenRequest, void, { id: PluginTo
     async handleRequest({ req, timer, session }) {
         using _ = timer.create("patchPluginToken");
 
-        try {
-            const updatedRows = await pg<[]>`
-                UPDATE plugin_tokens
-                SET
-                    label = ${req.body.label},
-                    last_updated_by = ${session.userId},
-                    last_updated_at = NOW()
-                WHERE id = ${req.params.id}
-                RETURNING 1
+        const updatedRows = await pg<[]>`
+            UPDATE plugin_tokens
+            SET
+                label = ${req.body.label},
+                last_updated_by = ${session.userId},
+                last_updated_at = NOW()
+            WHERE id = ${req.params.id}
+            RETURNING 1
             `;
 
-            if (updatedRows.length < 1) {
-                throw new NotFoundError({
-                    title: "Token Not Found",
-                    description: "A plugin token with this ID does not exist in the database.",
-                });
-            }
-        } catch (error) {
-            throw wrapPgError(error);
+        if (updatedRows.length < 1) {
+            throw new NotFoundError({
+                title: "Token Not Found",
+                description: "A plugin token with this ID does not exist in the database.",
+            });
         }
     },
 };

@@ -5,7 +5,6 @@ import { USER_FROM_STEAM, type UserFromSteam } from "@/shared/types/UserFromStea
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { makeArray, makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const getSteamToDiscord: Endpoint<void, UserFromSteam[], void, { ids: SteamId64[] }> = {
@@ -23,17 +22,13 @@ export const getSteamToDiscord: Endpoint<void, UserFromSteam[], void, { ids: Ste
     async handleRequest({ req, timer }) {
         using _ = timer.create("getSteamToDiscord");
 
-        try {
-            const users = await pg<Result[]>`
-                SELECT id, username, avatar, steam_id
-                FROM users
-                WHERE steam_id = ANY(${sql.array(req.query.ids, "TEXT")})
-            `;
+        const users = await pg<Result[]>`
+            SELECT id, username, avatar, steam_id
+            FROM users
+            WHERE steam_id = ANY(${sql.array(req.query.ids, "TEXT")})
+        `;
 
-            return users.map(format);
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        return users.map(format);
     },
 };
 

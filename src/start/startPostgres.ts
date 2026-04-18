@@ -1,5 +1,5 @@
 import { config } from "@/global/config";
-import { setPg } from "@/global/pg";
+import { setPostgres } from "@/global/pg";
 import { createCompletedTransactionsTable } from "@/models/CompletedTransactionModel";
 import { createEarningsTable } from "@/models/EarningsModel";
 import { createEconomyRewardItemsTable } from "@/models/EconomyRewardItemModel";
@@ -78,7 +78,7 @@ async function connectToPostgres(): Promise<TeardownFn> {
         },
     });
 
-    setPg(pg);
+    setPostgres(pg);
 
     await pg.connect();
 

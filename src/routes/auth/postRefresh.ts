@@ -13,7 +13,6 @@ import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const postRefresh: Endpoint<void, AuthResponse> = {
@@ -62,24 +61,20 @@ async function deleteOldSession(
 ): Promise<DeletedSession> {
     using _ = timer.create("deleteOldSession");
 
-    try {
-        const [session] = await pg<DeletedSession[]>`
-            DELETE FROM user_sessions
-            WHERE id = ${sessionId}
-            RETURNING started_at, times_refreshed, action_count
-        `;
+    const [session] = await pg<DeletedSession[]>`
+        DELETE FROM user_sessions
+        WHERE id = ${sessionId}
+        RETURNING started_at, times_refreshed, action_count
+    `;
 
-        if (session === undefined) {
-            // Very rare, but technically possible; the session was deleted after the endpoint was
-            // called, but before this deletion logic was. No reason to fail, just use sensible
-            // fallback data.
-            return { started_at: new Date(), times_refreshed: 0, action_count: 0 };
-        }
-
-        return session;
-    } catch (error) {
-        throw wrapPgError(error);
+    if (session === undefined) {
+        // Very rare, but technically possible; the session was deleted after the endpoint was
+        // called, but before this deletion logic was. No reason to fail, just use sensible
+        // fallback data.
+        return { started_at: new Date(), times_refreshed: 0, action_count: 0 };
     }
+
+    return session;
 }
 
 async function createNewSession(
@@ -111,16 +106,12 @@ async function createNewSession(
     if (userAgent) insert.user_agent = userAgent;
     if (origin) insert.origin = origin;
 
-    try {
-        const [session] = await pg<[Pick<UserSessionModel, "id">]>`
-            INSERT INTO user_sessions ${sql(insert)}
-            RETURNING id
-        `;
+    const [session] = await pg<[Pick<UserSessionModel, "id">]>`
+        INSERT INTO user_sessions ${sql(insert)}
+        RETURNING id
+    `;
 
-        return castNumber(session.id);
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return castNumber(session.id);
 }
 
 async function replaceSession(

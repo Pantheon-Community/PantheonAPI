@@ -1,13 +1,10 @@
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { DiscordId } from "@/shared/types/Common";
 import {
     ALL_GENERAL_PERMISSIONS,
-    type GeneralPermissions,
+    GeneralPermissions,
 } from "@/shared/types/Permissions/GeneralPermissions";
-import {
-    ALL_USER_PERMISSIONS,
-    type UserPermissions,
-} from "@/shared/types/Permissions/UserPermissions";
+import { ALL_USER_PERMISSIONS, UserPermissions } from "@/shared/types/Permissions/UserPermissions";
 import type { RoleLevel } from "@/shared/types/Role";
 
 export interface RoleModel {
@@ -35,24 +32,30 @@ export interface RoleModel {
 }
 
 export async function createRolesTable(): Promise<void> {
-    await pg.unsafe(`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS roles (
             id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
             name TEXT NOT NULL,
-            icon TEXT NOT NULL,
-            category TEXT NOT NULL,
-            level INTEGER NOT NULL,
-            p_general INTEGER NOT NULL,
-            p_user INTEGER NOT NULL,
+            icon TEXT NOT NULL DEFAULT '',
+            category TEXT NOT NULL DEFAULT '',
+            level INTEGER NOT NULL DEFAULT 0,
+            p_general INTEGER NOT NULL DEFAULT ${GeneralPermissions.None},
+            p_user INTEGER NOT NULL DEFAULT ${UserPermissions.None},
             created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
             last_updated_by TEXT REFERENCES users(id) ON DELETE SET NULL,
             last_updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
 
-        INSERT INTO roles (id, name, icon, category, level, p_general, p_user)
+        ALTER TABLE roles ALTER COLUMN icon SET DEFAULT '';
+        ALTER TABLE roles ALTER COLUMN category SET DEFAULT '';
+        ALTER TABLE roles ALTER COLUMN level SET DEFAULT 0;
+        ALTER TABLE roles ALTER COLUMN p_general SET DEFAULT ${GeneralPermissions.None};
+        ALTER TABLE roles ALTER COLUMN p_user SET DEFAULT ${UserPermissions.None};
+
+        INSERT INTO roles (id, name, level, p_general, p_user)
         OVERRIDING SYSTEM VALUE
-        VALUES (0, 'Root', '', '', 32767, ${ALL_GENERAL_PERMISSIONS}, ${ALL_USER_PERMISSIONS})
+        VALUES (0, 'Root', 32767, ${ALL_GENERAL_PERMISSIONS}, ${ALL_USER_PERMISSIONS})
         ON CONFLICT (id) DO UPDATE SET
             p_general = ${ALL_GENERAL_PERMISSIONS},
             p_user = ${ALL_USER_PERMISSIONS},

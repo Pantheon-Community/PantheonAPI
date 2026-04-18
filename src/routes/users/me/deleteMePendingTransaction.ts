@@ -6,7 +6,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewardId }> = {
     method: "delete",
@@ -24,7 +23,7 @@ export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewar
     async handleRequest({ req, timer, session }) {
         let deletedTransactionCost: number;
 
-        try {
+        {
             using _ = timer.create("deleteTransaction");
 
             const [deletedTransaction] = await pg<Pick<PendingTransactionModel, "cost">[]>`
@@ -43,22 +42,16 @@ export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewar
             }
 
             deletedTransactionCost = deletedTransaction.cost;
-        } catch (error) {
-            throw wrapPgError(error);
         }
 
-        try {
-            using _ = timer.create("increaseBalance");
+        using _ = timer.create("increaseBalance");
 
-            await pg`
-                UPDATE users
-                SET
-                    balance = balance + ${deletedTransactionCost},
-                    lifetime_purchase_count = lifetime_purchase_count - 1
-                WHERE id = ${session.userId}
-            `;
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        await pg`
+            UPDATE users
+            SET
+                balance = balance + ${deletedTransactionCost},
+                lifetime_purchase_count = lifetime_purchase_count - 1
+            WHERE id = ${session.userId}
+        `;
     },
 };

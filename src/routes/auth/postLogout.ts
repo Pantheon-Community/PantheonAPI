@@ -1,11 +1,8 @@
 import { pg } from "@/global/pg";
 import { revokeAccessToken } from "@/other/discord/auth/revokeAccessToken";
-import type { UserSessionId } from "@/shared/types/UserSession";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
-import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const postLogout: Endpoint = {
     method: "post",
@@ -26,16 +23,8 @@ export const postLogout: Endpoint = {
 
         await revokeAccessToken(session.accessToken, timer);
 
-        await deleteSession(session.id, timer);
+        using _ = timer.create("deleteSession");
+
+        await pg`DELETE FROM user_sessions WHERE id = ${session.id}`;
     },
 };
-
-async function deleteSession(sessionId: UserSessionId, timer: ServerTimer): Promise<void> {
-    using _ = timer.create("deleteSession");
-
-    try {
-        await pg`DELETE FROM user_sessions WHERE id = ${sessionId}`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
-}

@@ -8,7 +8,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const deleteUserRole: Endpoint<void, void, { userId: DiscordId; roleId: RoleId }> = {
     method: "delete",
@@ -35,13 +34,9 @@ export const deleteUserRole: Endpoint<void, void, { userId: DiscordId; roleId: R
 
         using _ = timer.create("removeUserRole");
 
-        try {
-            await pg`
-                DELETE FROM user_roles
-                WHERE user_id = ${userId} AND role_id = ${roleId}
-            `;
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        await pg`
+            DELETE FROM user_roles
+            WHERE user_id = ${userId} AND role_id = ${roleId}
+        `;
     },
 };

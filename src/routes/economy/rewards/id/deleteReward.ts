@@ -5,7 +5,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const deleteReward: Endpoint<void, void, { id: EconomyRewardId }> = {
     method: "delete",
@@ -23,11 +22,7 @@ export const deleteReward: Endpoint<void, void, { id: EconomyRewardId }> = {
     async handleRequest({ req, timer }) {
         using _ = timer.create("deleteReward");
 
-        try {
-            // we don't care about return value, since 0 matching rows = already deleted
-            await pg`DELETE FROM economy_rewards WHERE id = ${req.params.id}`;
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        // we don't care about return value, since 0 matching rows = already deleted
+        await pg`DELETE FROM economy_rewards WHERE id = ${req.params.id}`;
     },
 };

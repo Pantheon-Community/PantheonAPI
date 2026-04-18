@@ -1,4 +1,4 @@
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { DiscordId } from "@/shared/types/Common";
 
 export interface PluginTokenModel {
@@ -22,7 +22,7 @@ export interface PluginTokenModel {
 }
 
 export async function createPluginTokensTable(): Promise<void> {
-    await pg`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS plugin_tokens (
             id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
             label TEXT NOT NULL UNIQUE,
@@ -36,5 +36,5 @@ export async function createPluginTokensTable(): Promise<void> {
         );
 
         CREATE INDEX IF NOT EXISTS plugin_tokens_token_idx ON plugin_tokens (token);
-    `.simple();
+    `);
 }

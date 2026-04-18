@@ -1,4 +1,4 @@
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { UserModel } from "./UserModel";
 
 export interface EconomyRewardModel {
@@ -28,7 +28,7 @@ export interface EconomyRewardModel {
 }
 
 export async function createEconomyRewardsTable(): Promise<void> {
-    await pg`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS economy_rewards (
             id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
             title TEXT NOT NULL,
@@ -43,5 +43,5 @@ export async function createEconomyRewardsTable(): Promise<void> {
             last_updated_by TEXT REFERENCES users(id) ON DELETE SET NULL,
             last_updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
-    `.simple();
+    `);
 }

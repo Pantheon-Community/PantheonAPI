@@ -7,7 +7,6 @@ import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { makeArray } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const getRewards: Endpoint<void, EconomyReward[]> = {
     method: "get",
@@ -57,19 +56,11 @@ function format(x: EconomyRewardModel): EconomyReward {
 async function getAllRewards(timer: ServerTimer): Promise<EconomyRewardModel[]> {
     using _ = timer.create("getAllRewards");
 
-    try {
-        return await pg`SELECT * FROM economy_rewards ORDER BY id`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return await pg`SELECT * FROM economy_rewards ORDER BY id`;
 }
 
 async function getAllRewardItems(timer: ServerTimer): Promise<EconomyRewardItemModel[]> {
     using _ = timer.create("getAllRewardItems");
 
-    try {
-        return await pg`SELECT * FROM economy_reward_items`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return await pg`SELECT * FROM economy_reward_items`;
 }

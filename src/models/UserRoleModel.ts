@@ -1,5 +1,5 @@
 import { config } from "@/global/config";
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type { RoleModel } from "./RoleModel";
 import type { UserModel } from "./UserModel";
 
@@ -10,7 +10,7 @@ export interface UserRoleModel {
 }
 
 export async function createUserRolesTable(): Promise<void> {
-    await pg.unsafe(`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS user_roles (
             user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
             role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,

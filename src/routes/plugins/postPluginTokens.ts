@@ -14,7 +14,6 @@ import {
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { SQL } from "bun";
 import { randomBytes } from "node:crypto";
 
@@ -54,7 +53,7 @@ export const postPluginTokens: Endpoint<PluginTokenRequest, PostPluginTokenRespo
                 });
             }
 
-            throw wrapPgError(error);
+            throw error;
         }
     },
 };

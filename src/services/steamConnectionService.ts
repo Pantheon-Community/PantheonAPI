@@ -6,7 +6,6 @@ import type { UserToken } from "@/shared/types/Common";
 import type { SteamUser } from "@/shared/types/SteamUser";
 import type { DiscordSteamConnection } from "@/types/Discord";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 /** Fetches the Steam connections of the given Discord user and upserts them in the database. */
@@ -25,11 +24,6 @@ export async function steamConnectionService(
     return await Promise.all(steamConnections.slice(0, 5).map(registerConnection));
 }
 
-type UpsertedSteamUser = Pick<
-    SteamUserModel,
-    "avatar" | "location" | "member_since" | "first_seen_at" | "last_seen_at" | "times_seen"
->;
-
 async function registerConnection(connection: DiscordSteamConnection): Promise<SteamUser> {
     const { id, username } = connection;
 
@@ -42,39 +36,58 @@ async function registerConnection(connection: DiscordSteamConnection): Promise<S
         username,
     };
 
-    const { avatar, location, memberSince } = await getSteamUserInfo(connection.id);
+    const userInfo = await getSteamUserInfo(connection.id);
 
     // by never including null values in the update payload, we effectively "remember"
     // previously-public data (although avatar links will likely not work)
 
-    if (avatar) insert.avatar = update.avatar = avatar;
-    if (location) insert.location = update.location = location;
-    if (memberSince) insert.member_since = update.member_since = memberSince;
+    if (userInfo.avatar) insert.avatar = update.avatar = userInfo.avatar;
+    if (userInfo.location) insert.location = update.location = userInfo.location;
+    if (userInfo.memberSince) insert.member_since = update.member_since = userInfo.memberSince;
 
-    try {
-        const [steamUser] = await pg<[UpsertedSteamUser]>`
+    const [steamUser] = await pg<[SteamUserModel]>`
             INSERT INTO steam_users ${sql(insert)}
             ON CONFLICT (id) DO UPDATE
             SET ${sql(update)}
-            RETURNING avatar, location, member_since, first_seen_at, last_seen_at, times_seen
+            RETURNING *
         `;
 
-        return {
-            id,
-            username,
-            avatar: steamUser.avatar,
-            location: steamUser.location,
-            memberSince: steamUser.member_since?.toISOString() ?? null,
-            analytics:
-                steamUser.first_seen_at && steamUser.last_seen_at
-                    ? {
-                          firstSeenAt: steamUser.first_seen_at.toISOString(),
-                          lastSeenAt: steamUser.last_seen_at.toISOString(),
-                          timesSeen: steamUser.times_seen,
-                      }
-                    : null,
-        };
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    const {
+        avatar,
+        location,
+        member_since,
+        group_name,
+        first_seen_at,
+        last_seen_at,
+        times_seen,
+        balance,
+        lifetime_balance,
+        lifetime_purchase_count,
+        last_login_bonus_given_at,
+        login_streak,
+    } = steamUser;
+
+    return {
+        id,
+        username,
+        avatar: avatar,
+        location: location,
+        memberSince: member_since?.toISOString() ?? null,
+        groupName: group_name,
+        analytics:
+            first_seen_at && last_seen_at
+                ? {
+                      firstSeenAt: first_seen_at.toISOString(),
+                      lastSeenAt: last_seen_at.toISOString(),
+                      timesSeen: times_seen,
+                  }
+                : null,
+        economyStats: {
+            balance,
+            lifetimeBalance: lifetime_balance,
+            lifetimePurchaseCount: lifetime_purchase_count,
+            lastLoginBonusGivenAt: last_login_bonus_given_at?.toISOString() ?? null,
+            loginStreak: login_streak,
+        },
+    };
 }

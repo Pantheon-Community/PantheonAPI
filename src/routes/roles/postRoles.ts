@@ -8,7 +8,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const postRoles: Endpoint<RolePayload, RoleId> = {
@@ -55,14 +54,10 @@ async function createRole(
         last_updated_by: userId,
     };
 
-    try {
-        const [role] = await pg<[Pick<RoleModel, "id">]>`
+    const [role] = await pg<[Pick<RoleModel, "id">]>`
             INSERT INTO roles ${sql(insert)}
             RETURNING id
         `;
 
-        return castNumber(role.id);
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return castNumber(role.id);
 }

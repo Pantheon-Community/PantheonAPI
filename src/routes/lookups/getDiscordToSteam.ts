@@ -9,7 +9,6 @@ import {
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { makeArray, makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const getDiscordToSteam: Endpoint<void, SteamUserFromDiscord[], void, { ids: DiscordId[] }> =
@@ -28,23 +27,19 @@ export const getDiscordToSteam: Endpoint<void, SteamUserFromDiscord[], void, { i
         async handleRequest({ req, timer }) {
             using _ = timer.create("getDiscordToSteam");
 
-            try {
-                const steamUsers = await pg<JoinResult[]>`
-                    SELECT
-                        steam_users.id,
-                        steam_users.username,
-                        steam_users.avatar,
-                        users.id AS user_id
-                    FROM steam_users
-                    JOIN users
-                    ON steam_users.id = users.steam_id
-                    WHERE users.id = ANY(${sql.array(req.query.ids, "TEXT")})
-                `;
+            const steamUsers = await pg<JoinResult[]>`
+                SELECT
+                    steam_users.id,
+                    steam_users.username,
+                    steam_users.avatar,
+                    users.id AS user_id
+                FROM steam_users
+                JOIN users
+                ON steam_users.id = users.steam_id
+                WHERE users.id = ANY(${sql.array(req.query.ids, "TEXT")})
+            `;
 
-                return steamUsers.map(format);
-            } catch (error) {
-                throw wrapPgError(error);
-            }
+            return steamUsers.map(format);
         },
     };
 

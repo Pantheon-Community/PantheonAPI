@@ -11,7 +11,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { makeArray, makeParams } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const getSteamDirect: Endpoint<void, GetSteamDirectResponse, void, { ids: SteamId64[] }> = {
@@ -45,9 +44,15 @@ function formatSteamUser(x: SteamUserModel): SteamUser {
         avatar,
         location,
         member_since,
+        group_name,
         first_seen_at,
         last_seen_at,
         times_seen,
+        balance,
+        lifetime_balance,
+        lifetime_purchase_count,
+        last_login_bonus_given_at,
+        login_streak,
     } = x;
 
     return {
@@ -56,6 +61,7 @@ function formatSteamUser(x: SteamUserModel): SteamUser {
         avatar,
         location,
         memberSince: member_since?.toISOString() ?? null,
+        groupName: group_name,
         analytics:
             first_seen_at !== null && last_seen_at !== null
                 ? {
@@ -64,23 +70,26 @@ function formatSteamUser(x: SteamUserModel): SteamUser {
                       timesSeen: times_seen,
                   }
                 : null,
+        economyStats: {
+            balance,
+            lifetimeBalance: lifetime_balance,
+            lifetimePurchaseCount: lifetime_purchase_count,
+            lastLoginBonusGivenAt: last_login_bonus_given_at?.toISOString() ?? null,
+            loginStreak: login_streak,
+        },
     };
 }
 
 async function getSteamUsers(ids: SteamId64[], timer: ServerTimer): Promise<SteamUser[]> {
     using _ = timer.create("getSteamUsers");
 
-    try {
-        const steamUsers = await pg<SteamUserModel[]>`
-            SELECT *
-            FROM steam_users
-            WHERE id = ANY(${sql.array(ids, "TEXT")})
-        `;
+    const steamUsers = await pg<SteamUserModel[]>`
+        SELECT *
+        FROM steam_users
+        WHERE id = ANY(${sql.array(ids, "TEXT")})
+    `;
 
-        return steamUsers.map(formatSteamUser);
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return steamUsers.map(formatSteamUser);
 }
 
 interface Result extends Pick<UserModel, "id" | "username" | "avatar"> {
@@ -96,15 +105,11 @@ function formatUser(x: Result): GetDirectUser {
 async function getUsers(ids: SteamId64[], timer: ServerTimer): Promise<GetDirectUser[]> {
     using _ = timer.create("getUsers");
 
-    try {
-        const users = await pg<Result[]>`
-            SELECT id, username, avatar, steam_id
-            FROM users
-            WHERE steam_id = ANY(${sql.array(ids, "TEXT")})
-        `;
+    const users = await pg<Result[]>`
+        SELECT id, username, avatar, steam_id
+        FROM users
+        WHERE steam_id = ANY(${sql.array(ids, "TEXT")})
+    `;
 
-        return users.map(formatUser);
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    return users.map(formatUser);
 }

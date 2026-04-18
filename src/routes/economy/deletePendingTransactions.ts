@@ -12,7 +12,6 @@ import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { castNumber } from "@/utils/castNumber";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { makeArray } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 import { sql } from "bun";
 
 export const deletePendingTransactions: Endpoint<EconomyTransactionId[]> = {
@@ -32,7 +31,7 @@ export const deletePendingTransactions: Endpoint<EconomyTransactionId[]> = {
 
         let deletedTransactions: DeletedTransaction[];
 
-        try {
+        {
             using _ = timer.create("deletePendingTransactions");
 
             deletedTransactions = await pg`
@@ -40,8 +39,6 @@ export const deletePendingTransactions: Endpoint<EconomyTransactionId[]> = {
                 WHERE id = ANY(${sql.array(ids, "INTEGER")})
                 RETURNING id, reward_id, cost, made_at, purchaser_id
             `;
-        } catch (error) {
-            throw wrapPgError(error);
         }
 
         const failedToDeleteIds = new Set(ids);
@@ -76,11 +73,7 @@ async function createCompletedTransactions(
         return { reward_id, cost, made_at, purchaser_id };
     });
 
-    try {
-        await pg`INSERT INTO completed_transactions ${sql(values)}`;
-    } catch (error) {
-        throw wrapPgError(error);
-    }
+    await pg`INSERT INTO completed_transactions ${sql(values)}`;
 }
 
 type AlreadyCompletedTransaction = Pick<CompletedTransactionModel, "cost" | "purchaser_id">;
@@ -93,7 +86,7 @@ async function penaliseFailedDeletions(
 
     let alreadyCompleted: AlreadyCompletedTransaction[];
 
-    try {
+    {
         using _ = timer.create("fetchAlreadyCompletedTransactions");
 
         alreadyCompleted = await pg`
@@ -101,8 +94,6 @@ async function penaliseFailedDeletions(
             FROM completed_transactions
             WHERE id = ANY(${sql.array(failures.values().toArray(), "INTEGER")})
         `;
-    } catch (error) {
-        throw wrapPgError(error);
     }
 
     const amountsById = new Map<SteamId64, number>();

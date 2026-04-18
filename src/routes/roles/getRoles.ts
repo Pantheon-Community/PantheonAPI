@@ -5,7 +5,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { castNumber } from "@/utils/castNumber";
 import { makeArray } from "@/utils/specUtils";
-import { wrapPgError } from "@/utils/wrapPgError";
 
 export const getRoles: Endpoint<void, Role[]> = {
     method: "get",
@@ -21,13 +20,9 @@ export const getRoles: Endpoint<void, Role[]> = {
     async handleRequest({ timer }) {
         using _ = timer.create("getRoles");
 
-        try {
-            const roles = await pg<RoleModel[]>`SELECT * FROM roles`;
+        const roles = await pg<RoleModel[]>`SELECT * FROM roles ORDER BY id`;
 
-            return roles.map(format);
-        } catch (error) {
-            throw wrapPgError(error);
-        }
+        return roles.map(format);
     },
 };
 

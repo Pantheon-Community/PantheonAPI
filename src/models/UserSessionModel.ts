@@ -1,4 +1,4 @@
-import { pg } from "@/global/pg";
+import { pgUnsafe } from "@/global/pg";
 import type {
     DiscordId,
     Ip,
@@ -37,7 +37,7 @@ export interface UserSessionModel {
 }
 
 export async function createUserSessionsTable(): Promise<void> {
-    await pg`
+    await pgUnsafe(`
         CREATE TABLE IF NOT EXISTS user_sessions (
             id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
             user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -56,5 +56,5 @@ export async function createUserSessionsTable(): Promise<void> {
 
         CREATE INDEX IF NOT EXISTS user_sessions_user_id_idx ON user_sessions (user_id);
         CREATE INDEX IF NOT EXISTS user_sessions_expires_at_idx ON user_sessions (expires_at);
-    `.simple();
+    `);
 }
