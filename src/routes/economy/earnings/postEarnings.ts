@@ -146,10 +146,6 @@ function startOfYesterday(): Date {
     return d;
 }
 
-console.log(
-    `Today is ${startOfToday().toLocaleString("en-NZ")}, Yesterday was ${startOfYesterday().toLocaleString("en-NZ")}`,
-);
-
 function getDailySignInBonus(groupName: string | null): number {
     // we will put these in a DB eventually
     switch (groupName) {
