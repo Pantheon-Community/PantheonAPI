@@ -23,7 +23,5 @@ export async function createEarningsTable(): Promise<void> {
             made_by INTEGER REFERENCES plugin_tokens(id) ON DELETE SET NULL,
             made_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
-
-        ALTER TABLE earnings DROP COLUMN IF EXISTS user_id;
     `);
 }

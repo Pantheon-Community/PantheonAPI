@@ -49,12 +49,5 @@ export async function createSteamUsersTable(): Promise<void> {
             last_login_bonus_given_at TIMESTAMP,
             login_streak INTEGER NOT NULL DEFAULT 0
         );
-
-        ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS group_name TEXT;
-        ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS balance INTEGER NOT NULL DEFAULT 0;
-        ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS lifetime_balance INTEGER NOT NULL DEFAULT 0;
-        ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS lifetime_purchase_count INTEGER NOT NULL DEFAULT 0;
-        ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS last_login_bonus_given_at TIMESTAMP;
-        ALTER TABLE steam_users ADD COLUMN IF NOT EXISTS login_streak INTEGER NOT NULL DEFAULT 0;
     `);
 }

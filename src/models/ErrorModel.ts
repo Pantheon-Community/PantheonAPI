@@ -37,8 +37,5 @@ export async function createErrorsTable(): Promise<void> {
             cause INTEGER REFERENCES errors(id) ON DELETE CASCADE,
             commit TEXT
         );
-
-        ALTER TABLE errors ADD COLUMN IF NOT EXISTS cause INTEGER REFERENCES errors(id) ON DELETE CASCADE;
-        ALTER TABLE errors ADD COLUMN IF NOT EXISTS commit TEXT;
     `);
 }

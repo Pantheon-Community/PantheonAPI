@@ -47,12 +47,6 @@ export async function createRolesTable(): Promise<void> {
             last_updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
 
-        ALTER TABLE roles ALTER COLUMN icon SET DEFAULT '';
-        ALTER TABLE roles ALTER COLUMN category SET DEFAULT '';
-        ALTER TABLE roles ALTER COLUMN level SET DEFAULT 0;
-        ALTER TABLE roles ALTER COLUMN p_general SET DEFAULT ${GeneralPermissions.None};
-        ALTER TABLE roles ALTER COLUMN p_user SET DEFAULT ${UserPermissions.None};
-
         INSERT INTO roles (id, name, level, p_general, p_user)
         OVERRIDING SYSTEM VALUE
         VALUES (0, 'Root', 32767, ${ALL_GENERAL_PERMISSIONS}, ${ALL_USER_PERMISSIONS})

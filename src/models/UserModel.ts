@@ -48,9 +48,5 @@ export async function createUsersTable(): Promise<void> {
         INSERT INTO users (id, username)
         VALUES ('${config.db.rootUserId}', 'Root User')
         ON CONFLICT (id) DO NOTHING;
-
-        ALTER TABLE users DROP COLUMN IF EXISTS balance;
-        ALTER TABLE users DROP COLUMN IF EXISTS lifetime_balance;
-        ALTER TABLE users DROP COLUMN IF EXISTS lifetime_purchase_count;
     `);
 }
