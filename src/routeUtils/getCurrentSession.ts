@@ -47,6 +47,10 @@ export async function getCurrentSession(
 
     const { id, expires_at, refresh_token, user_id } = session;
 
+    if (expires_at === undefined) {
+        console.error(`expires_at is undefined!`, session, token);
+    }
+
     if (expires_at.getTime() < Date.now()) {
         throw new UnauthorizedError({
             title: "Expired Token",
