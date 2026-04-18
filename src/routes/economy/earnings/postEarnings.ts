@@ -150,7 +150,7 @@ console.log(
     `Today is ${startOfToday().toLocaleString("en-NZ")}, Yesterday was ${startOfYesterday().toLocaleString("en-NZ")}`,
 );
 
-function getDailySignInBonus(groupName: string): number {
+function getDailySignInBonus(groupName: string | null): number {
     // we will put these in a DB eventually
     switch (groupName) {
         case "d5mega":
@@ -170,6 +170,7 @@ function getDailySignInBonus(groupName: string): number {
         // case "smoderator":
         // case "moderator":
         // case "tmoderator":
+        case null:
         default:
             return 50;
     }
