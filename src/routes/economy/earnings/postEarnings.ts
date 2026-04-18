@@ -124,6 +124,7 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
                 lifetime_balance = lifetime_balance + ${signinBonus},
                 last_login_bonus_given_at = NOW(),
                 login_streak = login_streak + 1
+            WHERE id = ${steamId}
         `;
     }
 
