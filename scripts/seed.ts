@@ -23,6 +23,9 @@ const steamUsers = new Array(100).fill(null).map((_, i) => {
     const output: Partial<SteamUserModel> = {
         id: generateId(i),
         username: `Steam User #${i + 1}`,
+        balance: (10 * i) % 100,
+        lifetime_balance: (20 * i) % 100,
+        lifetime_purchase_count: (2 * i) % 3,
     };
 
     switch (i % 3) {
@@ -65,9 +68,6 @@ const users = new Array(100).fill(null).map((_, i) => {
         first_seen_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * (i % 10)),
         last_seen_at: new Date(Date.now() - 1000 * 60 * 60 * 12 * (i % 10)),
         lifetime_action_count: i,
-        balance: (10 * i) % 100,
-        lifetime_balance: (20 * i) % 100,
-        lifetime_purchase_count: (2 * i) % 3,
     };
 
     if (i % 2 === 0) output.steam_id = steamUsers[i]!.id!;
