@@ -90,8 +90,7 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
     const { last_login_bonus_given_at, login_streak } = steamUser;
 
     if (last_login_bonus_given_at === null) {
-        console.log("new user");
-
+        // no previous streak
         await pg`
             UPDATE steam_users
             SET
@@ -103,8 +102,6 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
         `;
     } else if (last_login_bonus_given_at < startOfYesterday()) {
         // streak broken
-        console.log("streak broken!");
-
         await pg`
             UPDATE steam_users
             SET
@@ -116,7 +113,6 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
         `;
     } else if (last_login_bonus_given_at < startOfToday()) {
         // streak increased
-        console.log("streak increased!");
 
         // +10% earnings per consecutive day, max of +50% (5 days)
         signinBonus += Math.floor(signinBonus * Math.min(login_streak / 10, 0.5));
@@ -129,10 +125,9 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
                 last_login_bonus_given_at = NOW(),
                 login_streak = login_streak + 1
         `;
-    } else {
-        // logged in recently, no streak actions
-        console.log("streak unchanged!");
     }
+
+    // logged in recently, no streak actions
 }
 
 function startOfToday(): Date {
