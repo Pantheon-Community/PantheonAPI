@@ -27,10 +27,9 @@ export const postEarnings: Endpoint<EarningsRequest[]> = {
 
         const earnings = req.body;
 
-        await Promise.all([
-            addEarningRecords(earnings, plugin, timer),
-            ...earnings.map(updateSteamUser),
-        ]);
+        await Promise.all(earnings.map(updateSteamUser));
+
+        await addEarningRecords(earnings, plugin, timer);
     },
 };
 
