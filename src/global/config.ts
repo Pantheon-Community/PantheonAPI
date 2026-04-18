@@ -111,5 +111,10 @@ export const config = {
         immediateSchedules: readFromEnv("DEV_IMMEDIATE_SCHEDULES", (env) =>
             env.hasDefaultValueOf("false").isBoolean(),
         ),
+
+        /** Log ALL requests and their times. */
+        logEverything: readFromEnv("DEV_LOG_EVERYTHING", (env) =>
+            env.hasDefaultValueOf("false").isBoolean(),
+        ),
     },
 } as const;
