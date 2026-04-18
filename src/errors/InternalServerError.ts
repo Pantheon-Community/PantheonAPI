@@ -3,7 +3,7 @@ import { SITE_ERROR_OBJECT, type SiteErrorObject } from "@/shared/types/SiteErro
 import { SiteError } from "./SiteError";
 
 interface InternalServerErrorObject extends SiteErrorObject {
-    errorCode: number;
+    errorId: number;
 }
 
 /**
@@ -14,11 +14,11 @@ interface InternalServerErrorObject extends SiteErrorObject {
 export class InternalServerError extends SiteError<InternalServerErrorObject> {
     protected override statusCode = 500; // internal server error
 
-    public constructor(errorCode: number) {
+    public constructor(errorId: number) {
         super({
             title: "Internal Server Error",
             description: "An unexpected error occurred, please contact NachoToast.",
-            errorCode,
+            errorId,
         });
     }
 }
@@ -34,7 +34,7 @@ export const INTERNAL_SERVER_ERROR = {
                     title: "Internal Server Error",
                     description:
                         "Something went wrong with that request, please reach out to a developer.",
-                    errorCode: 123,
+                    errorId: 123,
                 },
             },
         },
