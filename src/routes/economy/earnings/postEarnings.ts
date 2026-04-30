@@ -3,9 +3,12 @@ import type { EarningsModel } from "@/models/EarningsModel";
 import type { SteamUserModel } from "@/models/SteamUserModel";
 import type { PluginTokenId } from "@/shared/types/PluginToken";
 import { EARNINGS_REQUEST, type EarningsRequest } from "@/shared/types/Requests/EarningsRequest";
+import { Color } from "@/types/Color";
 import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
+import { colorize } from "@/utils/colorize";
+import { log } from "@/utils/logging";
 import type { ServerTimer } from "@/utils/serverTimer";
 import { makeArray } from "@/utils/specUtils";
 import { sql } from "bun";
@@ -88,8 +91,12 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
 
     const { last_login_bonus_given_at, login_streak } = steamUser;
 
+    const usernameC = `${colorize(username, Color.FgCyan)} (${groupName} / $${signinBonus})`;
+
     if (last_login_bonus_given_at === null) {
         // no previous streak
+        log(`New login streak for ${usernameC}`);
+
         await pg`
             UPDATE steam_users
             SET
@@ -101,6 +108,8 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
         `;
     } else if (last_login_bonus_given_at < startOfYesterday()) {
         // streak broken
+        log(`Broken ${login_streak}x streak for ${usernameC}`);
+
         await pg`
             UPDATE steam_users
             SET
@@ -115,6 +124,8 @@ async function updateSteamUser(earning: EarningsRequest): Promise<void> {
 
         // +10% earnings per consecutive day, max of +50% (5 days)
         signinBonus += Math.floor(signinBonus * Math.min(login_streak / 10, 0.5));
+
+        log(`Increased ${login_streak}x streak for ${usernameC}, earned $${signinBonus}`);
 
         await pg`
             UPDATE steam_users
