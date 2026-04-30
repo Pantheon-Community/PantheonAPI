@@ -162,6 +162,9 @@ function getDailySignInBonus(groupName: string | null): number {
     switch (groupName) {
         case "d5mega":
         case "d4mega":
+        case "director":
+        case "manager":
+        case "supervisor":
             return 350;
         case "d3gold":
             return 275;
@@ -169,9 +172,6 @@ function getDailySignInBonus(groupName: string | null): number {
             return 200;
         case "d1bronze":
             return 150;
-        // case "director":
-        // case "manager":
-        // case "supervisor":
         // case "developer":
         // case "admin":
         // case "smoderator":
