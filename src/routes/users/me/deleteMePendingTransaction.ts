@@ -53,36 +53,20 @@ export const deleteMePendingTransaction: Endpoint<void, void, { id: EconomyRewar
             });
         }
 
-        let deletedTransactionCost: number;
+        using _ = timer.create("deleteTransaction");
 
-        {
-            using _ = timer.create("deleteTransaction");
-
-            const [deletedTransaction] = await pg<Pick<PendingTransactionModel, "cost">[]>`
+        const [deletedTransaction] = await pg<Pick<PendingTransactionModel, "cost">[]>`
                 DELETE FROM pending_transactions
                 WHERE id = ${req.params.id} AND purchaser_id = ${steamId}
                 RETURNING cost
             `;
 
-            if (deletedTransaction === undefined) {
-                throw new NotFoundError({
-                    title: "Transaction Not Found",
-                    description:
-                        "A pending transaction with this ID does not exist in the database, it may have already been completed.",
-                });
-            }
-
-            deletedTransactionCost = deletedTransaction.cost;
+        if (deletedTransaction === undefined) {
+            throw new NotFoundError({
+                title: "Transaction Not Found",
+                description:
+                    "A pending transaction with this ID does not exist in the database, it may have already been completed.",
+            });
         }
-
-        using _ = timer.create("increaseBalance");
-
-        await pg`
-            UPDATE steam_users
-            SET
-                balance = balance + ${deletedTransactionCost},
-                lifetime_purchase_count = lifetime_purchase_count - 1
-            WHERE id = ${steamId}
-        `;
     },
 };
