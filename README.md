@@ -1,4 +1,4 @@
-# PantheonAPI [![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml) [![Deploy](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/deploy.yml)
+# PantheonAPI [![CI](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/Pantheon-Community/PantheonAPI/actions/workflows/ci.yml)
 
 Centralised API for the Pantheon Community server network.
 
