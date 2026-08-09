@@ -23,6 +23,9 @@ import { deleteRole } from "./roles/id/deleteRole";
 import { patchRole } from "./roles/id/patchRole";
 import { postRoles } from "./roles/postRoles";
 import { deleteUserRole } from "./users/id/deleteUserRole";
+import { patchUserBalance } from "./users/id/patchUserBalance";
+import { postUserPayoutSpecial } from "./users/id/postUserPayoutSpecials";
+import { putUserBalance } from "./users/id/putUserBalance";
 import { putUserRole } from "./users/id/putUserRole";
 import { deleteMePendingTransaction } from "./users/me/deleteMePendingTransaction";
 import { deleteMeSession } from "./users/me/deleteMeSession";
@@ -74,6 +77,11 @@ export const allRoutes: AnyEndpoint[] = [
     // users/id
     deleteUserRole,
     putUserRole,
+    // users/id/balance
+    putUserBalance,
+    patchUserBalance,
+    // users/id/special-rewards/:id
+    postUserPayoutSpecial,
     // users/me
     deleteMePendingTransaction,
     deleteMeSession,
