@@ -2,6 +2,8 @@ name: CI
 
 on: [push, workflow_dispatch]
 
+permissions: {}
+
 jobs:
     build:
         name: Bun
