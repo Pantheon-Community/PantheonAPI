@@ -33,6 +33,7 @@ export const getPluginTokens: Endpoint<void, PluginTokenObject[]> = {
                 last_updated_by,
                 last_updated_at
             FROM plugin_tokens
+            ORDER BY id
         `;
 
         return tokens.map(format);
