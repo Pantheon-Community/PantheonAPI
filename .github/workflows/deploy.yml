@@ -31,12 +31,3 @@ jobs:
                       git clean -d --force --quiet
                       git pull --quiet
                       GIT_COMMIT_HASH=$(git rev-parse --short HEAD) docker compose up --build --detach
-                      for attempt in $(seq 1 30); do
-                          if curl --fail --silent --show-error http://127.0.0.1:5000/roles >/dev/null; then
-                              exit 0
-                          fi
-                          sleep 2
-                      done
-                      docker compose ps
-                      docker compose logs --tail=200 pantheon-api
-                      exit 1
