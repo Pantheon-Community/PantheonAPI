@@ -80,7 +80,7 @@ export function eventRequiresStaff(command: string): boolean {
 export function eventComingSoon(command: string): boolean {
     return (
         isSupportedEventCommand(command) &&
-        ["redlightgreenlight", "murderinthedark", "nutallergy"].includes(
+        ["redlightgreenlight", "murderinthedark"].includes(
             validateEventCommand(command).split(" ")[0]!,
         )
     );
