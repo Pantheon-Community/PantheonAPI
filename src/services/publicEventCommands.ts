@@ -29,7 +29,6 @@ export const PUBLIC_EVENT_COMMANDS = [
     "searchanddestroy",
     "traitor",
     "zombiesurvival",
-    "everythingexplodes",
     "excorpses",
     "ff",
     "hsonly",
@@ -56,7 +55,6 @@ const SONG_EVENTS: Record<string, number> = { hangthedj: 11, musicalchairs: 11 }
 
 const COMMAND_SET: ReadonlySet<string> = new Set<string>(PUBLIC_EVENT_COMMANDS);
 const MODIFIER_COMMANDS: ReadonlySet<string> = new Set([
-    "everythingexplodes",
     "excorpses",
     "ff",
     "hsonly",
@@ -69,12 +67,6 @@ const MODIFIER_COMMANDS: ReadonlySet<string> = new Set([
 export function eventRequiresDonor(command: string): boolean {
     if (!isSupportedEventCommand(command)) return true;
     return !MODIFIER_COMMANDS.has(validateEventCommand(command).split(" ")[0]!);
-}
-
-export function eventRequiresStaff(command: string): boolean {
-    return (
-        isSupportedEventCommand(command) && validateEventCommand(command) === "everythingexplodes"
-    );
 }
 
 export function eventComingSoon(command: string): boolean {

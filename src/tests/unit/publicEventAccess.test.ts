@@ -4,7 +4,7 @@ import type { SQL } from "bun";
 import { ForbiddenError } from "@/errors/ForbiddenError";
 import { ServiceUnavailableError } from "@/errors/ServiceUnavailableError";
 import { setPostgres } from "@/global/pg";
-import { eventRequiresDonor, eventRequiresStaff } from "@/services/publicEventCommands";
+import { eventRequiresDonor } from "@/services/publicEventCommands";
 import { requireEventAccess } from "@/services/publicEventAccess";
 import { purchasePublicEvent } from "@/services/publicEvents";
 import { EVENT_CATALOG, EVENT_ADMIN_CATALOG, EVENT_PURCHASE } from "@/shared/types/PublicEvents";
@@ -21,8 +21,6 @@ test.serial(
                 );
                 // eslint-disable-next-line no-await-in-loop
                 await requireEventAccess("verified-id");
-                // eslint-disable-next-line no-await-in-loop
-                await assert.rejects(requireEventAccess("verified-id", true), ForbiddenError);
             }
             for (const secondary of [["member", " D3GOLD "], '["member", " D5MEGA "]']) {
                 bots.fetchMock.mockImplementation(async () =>
@@ -58,8 +56,6 @@ test.serial(
                     bots.fetchMock.mockImplementation(async () => Response.json([row]));
                     // eslint-disable-next-line no-await-in-loop
                     await requireEventAccess("verified-id");
-                    // eslint-disable-next-line no-await-in-loop
-                    await requireEventAccess("verified-id", true);
                 }
             }
             const [url, options] = bots.fetchMock.mock.calls.at(-1)!;
@@ -132,7 +128,6 @@ test.serial(
             await assert.rejects(requireEventAccess("verified-id"), ServiceUnavailableError);
 
             for (const command of [
-                "everythingexplodes",
                 "excorpses",
                 "ff",
                 "hsonly",
@@ -145,8 +140,6 @@ test.serial(
             expect(eventRequiresDonor(" /TRAITOR ")).toBe(true);
             expect(eventRequiresDonor("musicalchairs 2")).toBe(true);
             expect(eventRequiresDonor("tiny;traitor")).toBe(true);
-            expect(eventRequiresStaff(" /EVERYTHINGEXPLODES ")).toBe(true);
-            expect(eventRequiresStaff("tiny")).toBe(false);
             const catalog = {
                 id: 1,
                 name: "Test",
@@ -202,7 +195,7 @@ test.serial(
             await assert.rejects(purchasePublicEvent(input), {
                 name: "ForbiddenError",
                 message:
-                    "Only donators and staff can purchase events. Other members can purchase non-staff modifiers.",
+                    "Only donators and staff can purchase events. Other members can purchase modifiers.",
             });
             expect(
                 queries.some(
@@ -225,6 +218,22 @@ test.serial(
             const beforeModifier = bots.fetchMock.mock.calls.length;
             expect((await purchasePublicEvent(input)).balance).toBe(90);
             expect(bots.fetchMock.mock.calls.length).toBe(beforeModifier);
+            for (const removed of [
+                "everythingexplodes",
+                " /EVERYTHINGEXPLODES ",
+                "everythingexplodes 1",
+            ]) {
+                command = removed;
+                queries.length = 0;
+                // eslint-disable-next-line no-await-in-loop
+                await assert.rejects(purchasePublicEvent(input), {
+                    name: "NotFoundError",
+                    message:
+                        "This event is no longer available, you might need to refresh your page.",
+                });
+                expect(bots.fetchMock.mock.calls.length).toBe(beforeModifier);
+                expect(queries.some((text) => /^(INSERT|UPDATE|DELETE)/.test(text))).toBe(false);
+            }
         } finally {
             bots.restore();
         }

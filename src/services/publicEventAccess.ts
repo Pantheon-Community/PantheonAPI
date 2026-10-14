@@ -27,7 +27,7 @@ const ROLE_ALIASES: Record<string, string> = {
 export const EVENT_ACCESS_LOOKUP_TIMEOUT_MS = 3000;
 
 /** Only call for new restricted purchases, with the verified session's Discord ID. */
-export async function requireEventAccess(discordId: string, staffOnly = false): Promise<void> {
+export async function requireEventAccess(discordId: string): Promise<void> {
     let roles: string[];
     try {
         const base = process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"];
@@ -97,12 +97,11 @@ export async function requireEventAccess(discordId: string, staffOnly = false): 
                 "Cannot verify event purchase eligibility right now. Please try again later.",
         });
     }
-    if (!roles.some((role) => STAFF_ROLES.has(role) || (!staffOnly && DONOR_ROLES.has(role)))) {
+    if (!roles.some((role) => STAFF_ROLES.has(role) || DONOR_ROLES.has(role))) {
         throw new ForbiddenError({
-            title: staffOnly ? "Staff Access Required" : "Event Access Required",
-            description: staffOnly
-                ? "Only staff can purchase Everything Explodes."
-                : "Only donators and staff can purchase events. Other members can purchase non-staff modifiers.",
+            title: "Event Access Required",
+            description:
+                "Only donators and staff can purchase events. Other members can purchase modifiers.",
         });
     }
 }

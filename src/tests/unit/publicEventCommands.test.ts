@@ -6,8 +6,11 @@ import {
     validateEventCommand,
     validateCatalogCommand,
     isSupportedEventCommand,
+    listPublicEventCommands,
     UNSUPPORTED_EVENT_COMMANDS,
 } from "@/services/publicEventCommands";
+import { PUBLIC_EVENT_DESCRIPTIONS } from "@/services/publicEventDescriptions";
+import { PUBLIC_EVENT_PRICE_SHEET } from "@/services/publicEventSeed";
 import {
     EVENT_CATALOG,
     EVENT_ADMIN_CATALOG,
@@ -56,7 +59,7 @@ test("catalog schemas require category and expose support only to staff", () => 
 
 describe("public event command allowlist", () => {
     test("contains no aliases, only canonical catalog keys", () => {
-        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(30);
+        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(29);
         expect(new Set(PUBLIC_EVENT_COMMANDS).size).toBe(PUBLIC_EVENT_COMMANDS.length);
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("stop");
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("list");
@@ -72,7 +75,6 @@ describe("public event command allowlist", () => {
 
     test("modifiers accept no arguments and placeholders cannot execute or enable", () => {
         for (const command of [
-            "everythingexplodes",
             "excorpses",
             "ff",
             "hsonly",
@@ -99,6 +101,24 @@ describe("public event command allowlist", () => {
         expect(() => validateEventCommand("hangthedj 12")).toThrow();
         expect(() => validateEventCommand("musicalchairs 0")).toThrow();
         expect(() => validateEventCommand("traitor 1")).toThrow();
+    });
+
+    test("removed Everything Explodes cannot execute or be configured", () => {
+        expect(listPublicEventCommands()).not.toContain("everythingexplodes");
+        expect(PUBLIC_EVENT_DESCRIPTIONS).not.toHaveProperty("everythingexplodes");
+        expect(
+            PUBLIC_EVENT_PRICE_SHEET.some(([command]) => command === "everythingexplodes"),
+        ).toBe(false);
+        for (const command of [
+            "everythingexplodes",
+            " /EVERYTHINGEXPLODES ",
+            "everythingexplodes 1",
+        ]) {
+            expect(isSupportedEventCommand(command)).toBe(false);
+            expect(() => validateEventCommand(command)).toThrow();
+            expect(() => validateCatalogCommand(command, true)).toThrow();
+            expect(() => validateCatalogCommand(command, false)).toThrow();
+        }
     });
 
     test("rejects out of range, non-integer, and non-positive song values", () => {

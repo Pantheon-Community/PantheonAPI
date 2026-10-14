@@ -29,7 +29,6 @@ export const PUBLIC_EVENT_PRICE_SHEET: readonly (readonly [
     ["redlightgreenlight", "Red Light Green Light", 1500, "minigame"],
     ["spleef", "Spleef", 3000, "minigame"],
     ["tag", "Tag", 2000, "minigame"],
-    ["everythingexplodes", "Everything Explodes", 4000, "modifier"],
     ["excorpses", "Exploding Corpses", 2000, "modifier"],
     ["ff", "Friendly Fire", 5000, "modifier"],
     ["hsonly", "Headshots Only", 2000, "modifier"],

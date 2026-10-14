@@ -16,7 +16,6 @@ export const PUBLIC_EVENT_DESCRIPTIONS: Record<string, string> = {
     dodgeball: "Dodge bouncing SCP-018s and outlast your opponents in the arena.",
     musicalchairs: "Claim a safe platform when the music stops. Miss out and you are eliminated.",
     redlightgreenlight: "Move on green, freeze on red, and reach the finish line.",
-    everythingexplodes: "Turn gunfire, item actions and deaths into explosions.",
     excorpses: "Adds visual explosion effects when players die.",
     ff: "Enables friendly fire after a warning countdown.",
     hsonly: "Human-versus-human damage only counts on headshots.",

@@ -130,7 +130,7 @@ try {
     `);
     await createPublicEventsTables();
     const seeded = await getAdminCatalog();
-    assert.equal(seeded.length, 35);
+    assert.equal(seeded.length, 34);
     for (const [command, name, cost, category] of PUBLIC_EVENT_PRICE_SHEET) {
         const matches = seeded.filter(
             (row) => row.command.replace(/^\/+/, "").toLowerCase() === command,
@@ -146,7 +146,7 @@ try {
     assert.equal(seeded[1]?.cost, 27);
     assert.equal(seeded[1]?.enabled, true);
     assert.equal(seeded.filter((row) => !row.supported).length, 5);
-    assert.equal((await getPublicCatalog()).length, 24);
+    assert.equal((await getPublicCatalog()).length, 23);
     const bird = seeded[0];
     const staffBird = await updateCatalogItem(bird.id, {
         ...bird,
@@ -296,7 +296,7 @@ try {
             const before = (await getAdminOrders(query)).items[0];
             await db`DELETE FROM public_event_bootstrap`;
             await Promise.all(Array.from({ length: 8 }, () => seedPublicEventCatalog()));
-            assert.equal((await getAdminCatalog()).length, 35);
+            assert.equal((await getAdminCatalog()).length, 34);
             assert.deepEqual((await getAdminOrders(query)).items[0], before);
             const placeholder = (await getAdminCatalog()).find(
                 (row) => row.command === "walkingdead",
@@ -405,12 +405,30 @@ try {
     );
 
     await runCase(
-        "Everything Explodes requires trusted staff, not donations or client claims",
+        "persisted Everything Explodes is unavailable even to staff and preserves history",
         async () => {
+            const requestId = crypto.randomUUID();
+            const orderId = await purchase("1", "buyer", requestId);
+            // Model a purchase made before the command was removed.
+            await db`UPDATE public_event_orders SET command = 'everythingexplodes', event_name = 'Everything Explodes' WHERE id = ${orderId}`;
             await db`UPDATE public_event_catalog SET command = '/EVERYTHINGEXPLODES', category = 'survival', name = 'Renamed modifier' WHERE id = ${eventId}`;
-            assert.equal((await getPublicCatalog())[0]?.requiresStaff, true);
-            assert.equal((await getPublicCatalog())[0]?.requiresDonor, false);
-            assert.equal((await getAdminCatalog())[0]?.requiresStaff, true);
+            assert.equal((await getPublicCatalog()).length, 0);
+            const legacy = (await getAdminCatalog())[0]!;
+            assert.equal(legacy.enabled, true);
+            assert.equal(legacy.supported, false);
+            assert.equal(legacy.requiresStaff, false);
+            await assert.rejects(createCatalogItem({ ...legacy, enabled: true }));
+            await assert.rejects(updateCatalogItem(eventId, { ...legacy, enabled: false }));
+            const before = await db`SELECT * FROM public_event_orders`;
+            const catalogBefore = await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`;
+            await db`DELETE FROM public_event_bootstrap`;
+            await seedPublicEventCatalog();
+            assert.deepEqual(await db`SELECT * FROM public_event_orders`, before);
+            assert.deepEqual(
+                await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`,
+                catalogBefore,
+            );
+            assert(!(await getPublicCatalog()).some((row) => row.id === eventId));
             const input = {
                 buyerId: "buyer",
                 eventId,
@@ -420,43 +438,36 @@ try {
                 isStaff: true,
                 requiresStaff: false,
             } as const;
-            for (const role of ["member", "donator", "d5mega"]) {
+            const calls = bots.fetchMock.mock.calls.length;
+            for (const role of ["member", "donator", "d5mega", "tmoderator", "owner"]) {
                 bots.fetchMock.mockImplementation(async () =>
                     Response.json([{ role, other_roles: [] }]),
                 );
                 // eslint-disable-next-line no-await-in-loop
                 await assert.rejects(purchasePublicEvent(input), {
-                    name: "ForbiddenError",
-                    message: "Only staff can purchase Everything Explodes.",
+                    name: "NotFoundError",
+                    message: "This event is no longer available, you might need to refresh your page.",
                 });
             }
             assert.equal(
                 (await db`SELECT balance FROM steam_users WHERE id = 'steam'`)[0].balance,
-                100,
+                90,
             );
             assert.equal(
                 (await db`SELECT COUNT(*)::int AS count FROM public_event_orders`)[0].count,
-                0,
+                1,
             );
-            bots.fetchMock.mockImplementation(async () =>
-                Response.json([{ role: "member", other_roles: '[" TMODERATOR "]' }]),
-            );
-            const paid = await purchasePublicEvent(input);
-            assert.equal(paid.balance, 90);
-            bots.fetchMock.mockImplementation(async () =>
-                Response.json([{ role: "donator", other_roles: [] }]),
-            );
-            const calls = bots.fetchMock.mock.calls.length;
-            assert.deepEqual(await purchasePublicEvent(input), paid);
+            assert.equal(await purchase("1", "buyer", requestId), orderId);
             assert.equal(bots.fetchMock.mock.calls.length, calls);
-            await assert.rejects(purchase(), ForbiddenError);
+            await assert.rejects(purchase());
             delete process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"];
-            await assert.rejects(purchase(), ServiceUnavailableError);
+            await assert.rejects(purchase());
             process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"] = "https://synthetic-bots.invalid";
             assert.equal(
                 (await db`SELECT balance FROM steam_users WHERE id = 'steam'`)[0].balance,
                 90,
             );
+            assert.deepEqual(await db`SELECT * FROM public_event_orders`, before);
         },
     );
 

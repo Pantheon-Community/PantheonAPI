@@ -15,7 +15,6 @@ import {
     validateCatalogCommand,
     validateEventCommand,
     eventRequiresDonor,
-    eventRequiresStaff,
     eventComingSoon,
 } from "./publicEventCommands";
 import { requireEventAccess } from "./publicEventAccess";
@@ -514,7 +513,7 @@ export async function getPublicCatalog(): Promise<
         .map((row) => ({
             category: row.category,
             requiresDonor: eventRequiresDonor(row.command),
-            requiresStaff: eventRequiresStaff(row.command),
+            requiresStaff: false,
             comingSoon: eventComingSoon(row.command),
             id: toNumber(row.id),
             name: row.name,
@@ -744,8 +743,7 @@ export async function purchasePublicEvent(input: PurchaseInput): Promise<Purchas
             });
         }
 
-        if (eventRequiresStaff(command)) await requireEventAccess(input.buyerId, true);
-        else if (eventRequiresDonor(command)) await requireEventAccess(input.buyerId);
+        if (eventRequiresDonor(command)) await requireEventAccess(input.buyerId);
 
         const server = await sql<Pick<PublicEventServerModel, "id" | "enabled">[]>`
             SELECT id, enabled FROM public_event_servers WHERE id = ${input.serverId} FOR UPDATE
@@ -1384,7 +1382,7 @@ function formatAdminCatalog(row: PublicEventCatalogModel): AdminCatalogItem {
     return {
         category: row.category,
         requiresDonor: eventRequiresDonor(row.command),
-        requiresStaff: eventRequiresStaff(row.command),
+        requiresStaff: false,
         comingSoon: eventComingSoon(row.command),
         supported: isSupportedEventCommand(row.command),
         id: toNumber(row.id),
