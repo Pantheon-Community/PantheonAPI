@@ -1241,7 +1241,7 @@ try {
             assert.equal((await getAdminOrders(query)).items[0]?.command, "traitor");
             assert.equal((await getPublicServers()).length, 2);
             assert.equal((await getAdminServers())[0]?.pluginTokenId, 1);
-            await assert.rejects(updateAdminServer("2", { enabled: true, pluginTokenId: 1 }));
+            await updateAdminServer("2", { enabled: true, pluginTokenId: 1 });
             await assert.rejects(updateAdminServer("1", { enabled: true, pluginTokenId: 999 }));
             await heartbeatServer("1", 1, instance);
             await updateAdminServer("1", { enabled: true, pluginTokenId: 3 });

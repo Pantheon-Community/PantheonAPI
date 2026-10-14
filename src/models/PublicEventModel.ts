@@ -94,7 +94,7 @@ export async function createPublicEventsTables(): Promise<void> {
             id TEXT PRIMARY KEY CHECK(id IN ('1','2')),
             name TEXT NOT NULL,
             enabled BOOLEAN NOT NULL DEFAULT FALSE,
-            plugin_token_id INTEGER UNIQUE REFERENCES plugin_tokens(id) ON DELETE SET NULL,
+            plugin_token_id INTEGER REFERENCES plugin_tokens(id) ON DELETE SET NULL,
             instance_id UUID,
             instance_until TIMESTAMPTZ,
             current_round UUID,
@@ -105,6 +105,8 @@ export async function createPublicEventsTables(): Promise<void> {
         INSERT INTO public_event_servers (id, name, enabled)
         VALUES ('1', 'Pantheon #1', FALSE), ('2', 'Pantheon #2', FALSE)
         ON CONFLICT (id) DO NOTHING;
+
+        ALTER TABLE public_event_servers DROP CONSTRAINT IF EXISTS public_event_servers_plugin_token_id_key;
 
         CREATE TABLE IF NOT EXISTS public_event_rounds (
             id UUID PRIMARY KEY,

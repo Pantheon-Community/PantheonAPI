@@ -1497,18 +1497,6 @@ export async function updateAdminServer(
                     description: "That plugin token does not exist.",
                 });
             }
-
-            const bound = await sql<{ id: string }[]>`
-                SELECT id FROM public_event_servers
-                WHERE plugin_token_id = ${payload.pluginTokenId} AND id <> ${serverId}
-            `;
-
-            if (bound[0] !== undefined) {
-                throw new ForbiddenError({
-                    title: "Token Already Bound",
-                    description: "That plugin token is already bound to another server.",
-                });
-            }
         }
 
         // Disabling or rebinding must not leave a live scheduler authoritative.
