@@ -11,6 +11,8 @@
         "format-fix": "oxfmt",
         "typecheck": "bun run tsc --project tsconfig.strict.json",
         "test": "bun test --concurrent",
+        "test:integration": "bun --no-env-file run src/tests/integration/publicEvents.integration.ts",
+        "test:integration:plugin": "PAID_EVENTS_PLUGIN_INTEGRATION=1 bun --no-env-file run src/tests/integration/publicEvents.integration.ts",
         "check-all": "bun run format && bun run lint && bun run typecheck && bun run test"
     },
     "dependencies": {

@@ -20,4 +20,7 @@ export enum EndpointFlags {
 
     /** Self-explanatory. */
     May404 = 1 << 3,
+
+    /** A required trusted datasource may be unavailable. */
+    May503 = 1 << 4,
 }

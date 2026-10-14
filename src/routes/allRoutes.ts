@@ -18,6 +18,20 @@ import { deletePluginToken } from "./plugins/id/deletePluginToken";
 import { patchPluginToken } from "./plugins/id/patchPluginToken";
 import { postPluginTokens } from "./plugins/postPluginTokens";
 import { postPluginTokensCheck } from "./plugins/postPluginTokensCheck";
+import { getAdminPublicEventCatalog } from "./public-events/admin/catalog/getAdminPublicEventCatalog";
+import { patchAdminPublicEventCatalog } from "./public-events/admin/catalog/id/patchAdminPublicEventCatalog";
+import { postAdminPublicEventCatalog } from "./public-events/admin/catalog/postAdminPublicEventCatalog";
+import { getAdminPublicEventOrders } from "./public-events/admin/orders/getAdminPublicEventOrders";
+import { postAdminPublicEventReconcile } from "./public-events/admin/orders/id/postAdminPublicEventReconcile";
+import { getAdminPublicEventServers } from "./public-events/admin/servers/getAdminPublicEventServers";
+import { patchAdminPublicEventServer } from "./public-events/admin/servers/id/patchAdminPublicEventServer";
+import { getPublicEventCatalog } from "./public-events/getPublicEventCatalog";
+import { getPublicEventQueue } from "./public-events/getPublicEventQueue";
+import { getPublicEventServers } from "./public-events/getPublicEventServers";
+import { postPublicEventHeartbeat } from "./public-events/servers/id/postPublicEventHeartbeat";
+import { postPublicEventRound } from "./public-events/servers/id/postPublicEventRound";
+import { postPublicEventStart } from "./public-events/servers/id/orders/id/postPublicEventStart";
+import { postPublicEventResult } from "./public-events/servers/id/orders/id/postPublicEventResult";
 import { getRoles } from "./roles/getRoles";
 import { deleteRole } from "./roles/id/deleteRole";
 import { patchRole } from "./roles/id/patchRole";
@@ -37,6 +51,7 @@ import { getMeRoles } from "./users/me/getMeRoles";
 import { getMeSessions } from "./users/me/getMeSessions";
 import { getMeSteamUsers } from "./users/me/getMeSteamUsers";
 import { postMePendingTransactions } from "./users/me/postMePendingTransactions";
+import { postMePublicEvents } from "./users/me/postMePublicEvents";
 import { putMeSteamUsersPrimary } from "./users/me/putMeSteamUsersPrimary";
 
 export const allRoutes: AnyEndpoint[] = [
@@ -68,6 +83,29 @@ export const allRoutes: AnyEndpoint[] = [
     getPluginTokens,
     postPluginTokens,
     postPluginTokensCheck,
+    // public-events (public)
+    getPublicEventCatalog,
+    getPublicEventServers,
+    getPublicEventQueue,
+    // public-events/admin/catalog/id
+    patchAdminPublicEventCatalog,
+    // public-events/admin/catalog
+    getAdminPublicEventCatalog,
+    postAdminPublicEventCatalog,
+    // public-events/admin/orders/id
+    postAdminPublicEventReconcile,
+    // public-events/admin/orders
+    getAdminPublicEventOrders,
+    // public-events/admin/servers/id
+    patchAdminPublicEventServer,
+    // public-events/admin/servers
+    getAdminPublicEventServers,
+    // public-events/servers/:serverId/orders/:orderId
+    postPublicEventStart,
+    postPublicEventResult,
+    // public-events/servers/:serverId
+    postPublicEventHeartbeat,
+    postPublicEventRound,
     // roles/id
     deleteRole,
     patchRole,
@@ -93,5 +131,6 @@ export const allRoutes: AnyEndpoint[] = [
     getMeSessions,
     getMeSteamUsers,
     postMePendingTransactions,
+    postMePublicEvents,
     putMeSteamUsersPrimary,
 ];

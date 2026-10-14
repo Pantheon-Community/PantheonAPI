@@ -16,7 +16,7 @@ if (config.commitHash === null) {
     log(`Running in ${environment} (commit ${commit})`);
 }
 
-const teardownFns = await Promise.all([startPostgres(), startApi()]);
+const teardownFns = [await startPostgres(), await startApi()];
 
 process.on("SIGTERM", async () => {
     const receivedAt = Date.now();

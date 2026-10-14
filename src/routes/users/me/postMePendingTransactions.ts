@@ -1,6 +1,6 @@
 import { ForbiddenError } from "@/errors/ForbiddenError";
 import { NotFoundError } from "@/errors/NotFoundError";
-import { pg } from "@/global/pg";
+import { pgTransaction, type TransactionSql } from "@/global/pg";
 import type { EconomyRewardModel } from "@/models/EconomyRewardModel";
 import type { PendingTransactionModel } from "@/models/PendingTransactionModel";
 import type { SteamUserModel } from "@/models/SteamUserModel";
@@ -15,7 +15,6 @@ import { AuthScope } from "@/types/Express/AuthScope";
 import type { Endpoint } from "@/types/Express/Endpoint";
 import { EndpointFlags } from "@/types/Express/EndpointFlags";
 import { castNumber } from "@/utils/castNumber";
-import type { ServerTimer } from "@/utils/serverTimer";
 import { makeArray } from "@/utils/specUtils";
 import { sql } from "bun";
 
@@ -33,68 +32,67 @@ export const postMePendingTransactions: Endpoint<MakeTransactionRequest[]> = {
     pathParams: null,
     queryParams: null,
     async handleRequest({ req, timer, session }) {
-        const [steamId, balance] = await getSteamAndBalance(session.userId, timer);
+        using _ = timer.create("postMePendingTransactions");
 
-        if (steamId === null) {
-            throw new ForbiddenError({
-                title: "No Steam Connection",
-                description:
-                    "You must link a Steam account to your Discord in order to buy things.",
-            });
-        }
-
-        const rewardCostMap = await getRewardCosts(req.body, timer);
+        const transactions = req.body;
 
         let requiredBalance = 0;
 
-        for (const { rewardId, expectedPrice } of req.body) {
-            const matchingRewardPrice = rewardCostMap.get(rewardId);
-
-            if (matchingRewardPrice === undefined) {
-                throw new NotFoundError({
-                    title: "Expired Reward",
-                    description:
-                        "One or more of the specified rewards is no longer available, you might need to refresh your page.",
-                });
-            }
-
-            if (matchingRewardPrice !== expectedPrice) {
+        for (const { expectedPrice } of transactions) {
+            if (!Number.isSafeInteger(expectedPrice) || expectedPrice < 0) {
                 throw new ForbiddenError({
-                    title: "Mismatched Reward",
+                    title: "Invalid Price",
                     description:
-                        "The requested price of one of the specified rewards did not match its actual price, you might need to refresh your page.",
+                        "One of the requested prices was invalid, you might need to refresh your page.",
                 });
             }
 
-            requiredBalance += matchingRewardPrice;
+            requiredBalance += expectedPrice;
         }
 
-        if (balance < requiredBalance) {
-            throw new ForbiddenError({
-                title: "Not Enough Balance",
-                description: "You are too poor to afford these rewards",
-            });
-        }
+        // The debit and the queue rows must commit together, otherwise a
+        // concurrent purchase could spend the same credits twice or leave a
+        // charged purchase with nothing queued.
+        await pgTransaction(async (tx) => {
+            const steamId = await getSteamId(tx, session.userId);
 
-        await Promise.all([
-            addTransactionRecords(req.body.length, requiredBalance, steamId, timer),
-            createTransactions(req.body, steamId, timer),
-        ]);
+            const rewardCostMap = await getRewardCosts(tx, transactions);
+
+            for (const { rewardId, expectedPrice } of transactions) {
+                const matchingRewardPrice = rewardCostMap.get(rewardId);
+
+                if (matchingRewardPrice === undefined) {
+                    throw new NotFoundError({
+                        title: "Expired Reward",
+                        description:
+                            "One or more of the specified rewards is no longer available, you might need to refresh your page.",
+                    });
+                }
+
+                if (matchingRewardPrice !== expectedPrice) {
+                    throw new ForbiddenError({
+                        title: "Mismatched Reward",
+                        description:
+                            "The requested price of one of the specified rewards did not match its actual price, you might need to refresh your page.",
+                    });
+                }
+            }
+
+            await debitBalance(tx, requiredBalance, transactions.length, steamId);
+
+            await createTransactions(tx, transactions, steamId);
+        });
     },
 };
 
-async function getSteamAndBalance(
-    userId: DiscordId,
-    timer: ServerTimer,
-): Promise<[SteamId64 | null, number]> {
-    using _ = timer.create("getSteamAndBalance");
-
-    const [user] = await pg<Pick<SteamUserModel, "id" | "balance">[]>`
-        SELECT steam_users.id, steam_users.balance
+async function getSteamId(tx: TransactionSql, userId: DiscordId): Promise<SteamId64> {
+    const [user] = await tx<Pick<SteamUserModel, "id">[]>`
+        SELECT steam_users.id
         FROM steam_users
         JOIN users
         ON steam_users.id = users.steam_id
         WHERE users.id = ${userId}
+        FOR UPDATE OF steam_users
     `;
 
     if (user === undefined) {
@@ -104,55 +102,62 @@ async function getSteamAndBalance(
         });
     }
 
-    return [user.id, user.balance];
+    return user.id;
 }
 
 async function getRewardCosts(
+    tx: TransactionSql,
     transactionRequests: MakeTransactionRequest[],
-    timer: ServerTimer,
 ): Promise<Map<EconomyRewardId, number>> {
-    using _ = timer.create("getRewardCosts");
+    const uniqueRewardIds = transactionRequests
+        .map((x) => x.rewardId)
+        .values()
+        .toArray();
 
-    const uniqueRewardIds = new Set(transactionRequests.map((x) => x.rewardId)).values().toArray();
-
-    const rewards = await pg<Pick<EconomyRewardModel, "id" | "cost">[]>`
+    const rewards = await tx<Pick<EconomyRewardModel, "id" | "cost">[]>`
         SELECT id, cost
         FROM economy_rewards
         WHERE id = ANY(${sql.array(uniqueRewardIds, "INTEGER")})
+        FOR SHARE
     `;
 
     return new Map(rewards.map((x) => [castNumber(x.id), x.cost]));
 }
 
-async function addTransactionRecords(
-    numTransactions: number,
+async function debitBalance(
+    tx: TransactionSql,
     requiredBalance: number,
+    numTransactions: number,
     steamId: SteamId64,
-    timer: ServerTimer,
 ): Promise<void> {
-    using _ = timer.create("addTransactionRecords");
-
-    await pg`
+    const updated = await tx<[]>`
         UPDATE steam_users
         SET
             balance = balance - ${requiredBalance},
             lifetime_purchase_count = lifetime_purchase_count + ${numTransactions}
         WHERE id = ${steamId}
+        AND balance >= ${requiredBalance}
+        RETURNING 1
     `;
+
+    if (updated.length === 0) {
+        throw new ForbiddenError({
+            title: "Not Enough Balance",
+            description: "You are too poor to afford these rewards",
+        });
+    }
 }
 
 async function createTransactions(
+    tx: TransactionSql,
     transactions: MakeTransactionRequest[],
     steamId: SteamId64,
-    timer: ServerTimer,
 ): Promise<void> {
-    using _ = timer.create("createTransactions");
-
     const values = transactions.map<Omit<PendingTransactionModel, "id" | "made_at">>((x) => ({
         reward_id: x.rewardId.toString(),
         cost: x.expectedPrice,
         purchaser_id: steamId,
     }));
 
-    await pg`INSERT INTO pending_transactions ${sql(values)}`;
+    await tx`INSERT INTO pending_transactions ${sql(values)}`;
 }

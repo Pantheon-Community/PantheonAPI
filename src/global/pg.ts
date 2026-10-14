@@ -1,6 +1,12 @@
-import { SQL } from "bun";
+import { SQL, type TransactionSQL } from "bun";
 
 let postgres: SQL;
+
+export type TransactionSql = TransactionSQL;
+
+export async function pgTransaction<T>(work: (sql: TransactionSql) => Promise<T>): Promise<T> {
+    return (await postgres.begin(work)) as T;
+}
 
 export function setPostgres(value: SQL): void {
     postgres = value;

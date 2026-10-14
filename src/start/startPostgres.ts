@@ -7,6 +7,7 @@ import { createEconomyRewardsTable } from "@/models/EconomyRewardModel";
 import { createErrorsTable } from "@/models/ErrorModel";
 import { createPendingTransactionsTable } from "@/models/PendingTransactionModel";
 import { createPluginTokensTable } from "@/models/PluginTokenModel";
+import { createPublicEventsTables } from "@/models/PublicEventModel";
 import { createRolesTable } from "@/models/RoleModel";
 import { createSteamUsersTable } from "@/models/SteamUserModel";
 import { createUsersTable } from "@/models/UserModel";
@@ -111,6 +112,8 @@ async function setupTables(): Promise<void> {
         createPluginTokensTable().then(createEarningsTable),
         createErrorsTable(),
     ]);
+
+    await createPublicEventsTables();
 
     logWithTimeTaken("Setup Database Tables", startedAt);
 }

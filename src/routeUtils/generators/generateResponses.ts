@@ -3,6 +3,7 @@ import { FORBIDDEN_ERROR } from "@/errors/ForbiddenError";
 import { INTERNAL_SERVER_ERROR } from "@/errors/InternalServerError";
 import { NOT_FOUND_ERROR } from "@/errors/NotFoundError";
 import { SECONDARY_REQUEST_ERROR } from "@/errors/SecondaryRequestError";
+import { SERVICE_UNAVAILABLE_ERROR } from "@/errors/ServiceUnavailableError";
 import { UNAUTHORIZED_ERROR } from "@/errors/UnauthorizedError";
 import { RATE_LIMITED_ERROR } from "@/middleware/rateLimitingMiddleware";
 import type { OAS } from "@/shared/global/OAS";
@@ -57,6 +58,10 @@ export function generateResponses(
 
         if (has(flags, EndpointFlags.May404)) {
             responses[404] = NOT_FOUND_ERROR;
+        }
+
+        if (has(flags, EndpointFlags.May503)) {
+            responses[503] = SERVICE_UNAVAILABLE_ERROR;
         }
 
         if (has(flags, EndpointFlags.MakesSecondaryRequests)) {
