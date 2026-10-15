@@ -29,18 +29,29 @@ export const EVENT_ACCESS_LOOKUP_TIMEOUT_MS = 3000;
 /** Only call for new restricted purchases, with the verified session's Discord ID. */
 export async function requireEventAccess(discordId: string): Promise<void> {
     let roles: string[];
+    let failure:
+        | "Configuration Missing"
+        | "Configuration Invalid"
+        | "Credentials Rejected"
+        | "Datasource Unavailable"
+        | "Verification Timed Out"
+        | "Response Invalid" = "Configuration Invalid";
     try {
-        const base = process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"];
+        const base = process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"]?.trim();
         const key =
-            process.env["BOTS_SUPABASE_SERVICE_ROLE_KEY"] ??
-            process.env["BOTS_NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"];
-        if (!base || !key) throw new Error("Missing datasource configuration");
+            process.env["BOTS_SUPABASE_SERVICE_ROLE_KEY"]?.trim() ||
+            process.env["BOTS_NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"]?.trim();
+        if (!base || !key) {
+            failure = "Configuration Missing";
+            throw new Error("Missing datasource configuration");
+        }
         const query = new URL(`${base.replace(/\/+$/, "")}/rest/v1/roles`);
         if (!["https:", "http:"].includes(query.protocol) || query.username || query.password)
             throw new Error("Invalid datasource URL");
         query.searchParams.set("select", "role,other_roles");
         query.searchParams.set("discord_id", `eq.${discordId}`);
         query.searchParams.set("limit", "1");
+        failure = "Datasource Unavailable";
 
         // Bound both fetch and body parsing, including a stalled response body.
         const controller = new AbortController();
@@ -58,12 +69,20 @@ export async function requireEventAccess(discordId: string): Promise<void> {
                     signal: controller.signal,
                     redirect: "error",
                 });
-                if (!response.ok) throw new Error("Datasource request failed");
+                if (!response.ok) {
+                    failure =
+                        response.status === 401 || response.status === 403
+                            ? "Credentials Rejected"
+                            : "Datasource Unavailable";
+                    throw new Error("Datasource request failed");
+                }
+                failure = "Response Invalid";
                 return await response.json();
             })(),
             new Promise<never>((_, reject) => {
                 timeout = setTimeout(() => {
                     controller.abort();
+                    failure = "Verification Timed Out";
                     reject(new Error("Datasource timeout"));
                 }, EVENT_ACCESS_LOOKUP_TIMEOUT_MS);
             }),
@@ -92,9 +111,9 @@ export async function requireEventAccess(discordId: string): Promise<void> {
     } catch {
         // Never propagate upstream bodies, URLs, keys, or raw fetch errors to logs/clients.
         throw new ServiceUnavailableError({
-            title: "Event Access Verification Unavailable",
+            title: `Event Access ${failure}` as const,
             description:
-                "Cannot verify event purchase eligibility right now. Please try again later.",
+                "Cannot verify event purchase eligibility right now. No credits were charged.",
         });
     }
     if (!roles.some((role) => STAFF_ROLES.has(role) || DONOR_ROLES.has(role))) {

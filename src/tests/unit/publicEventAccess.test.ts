@@ -71,6 +71,21 @@ test.serial(
                 "Accept-Profile": "public",
             });
 
+            process.env["BOTS_SUPABASE_SERVICE_ROLE_KEY"] = "   ";
+            process.env["BOTS_NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"] =
+                " synthetic-publishable-key ";
+            process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"] = " https://synthetic-bots.invalid/ ";
+            await requireEventAccess("verified-id");
+            expect(bots.fetchMock.mock.calls.at(-1)?.[1]?.headers).toMatchObject({
+                apikey: "synthetic-publishable-key",
+                Authorization: "Bearer synthetic-publishable-key",
+            });
+            expect(new URL(bots.fetchMock.mock.calls.at(-1)![0]).pathname).toBe("/rest/v1/roles");
+            process.env["BOTS_SUPABASE_SERVICE_ROLE_KEY"] = "synthetic-service-key";
+            process.env["BOTS_NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"] =
+                "synthetic-publishable-key";
+            process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"] = "https://synthetic-bots.invalid";
+
             for (const row of [
                 [],
                 [{ role: "member", other_roles: ["unknown", "staff", "EditEconomyRewards"] }],
@@ -241,4 +256,53 @@ test.serial(
         }
     },
     10000,
+);
+
+test.serial(
+    "event eligibility failures return safe diagnostic titles before charging",
+    async () => {
+        const bots = mockBotsRoles();
+        const expectUnavailable = async (title: string): Promise<void> => {
+            await assert.rejects(requireEventAccess("verified-id"), (error: unknown) => {
+                assert(error instanceof ServiceUnavailableError);
+                error.makeResponse({
+                    status(status: number) {
+                        expect(status).toBe(503);
+                        return {
+                            json(body: { title: string; description: string }): void {
+                                expect(body.title).toBe(title);
+                                expect(body.description).toContain("No credits were charged");
+                                expect(JSON.stringify(body)).not.toMatch(
+                                    /synthetic-service-key|secret upstream/,
+                                );
+                            },
+                        };
+                    },
+                } as unknown as Parameters<ServiceUnavailableError["makeResponse"]>[0]);
+                return true;
+            });
+        };
+        try {
+            delete process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"];
+            await expectUnavailable("Event Access Configuration Missing");
+            process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"] = "invalid-url";
+            await expectUnavailable("Event Access Configuration Invalid");
+            process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"] = "https://synthetic-bots.invalid";
+            for (const status of [401, 403]) {
+                bots.fetchMock.mockImplementation(
+                    async () => new Response("secret upstream", { status }),
+                );
+                // eslint-disable-next-line no-await-in-loop
+                await expectUnavailable("Event Access Credentials Rejected");
+            }
+            bots.fetchMock.mockImplementation(async () => {
+                throw new Error("secret upstream");
+            });
+            await expectUnavailable("Event Access Datasource Unavailable");
+            bots.fetchMock.mockImplementation(async () => Response.json({ unexpected: true }));
+            await expectUnavailable("Event Access Response Invalid");
+        } finally {
+            bots.restore();
+        }
+    },
 );
