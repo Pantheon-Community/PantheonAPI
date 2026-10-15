@@ -148,7 +148,7 @@ try {
     assert.equal(seeded[1]?.cost, 27);
     assert.equal(seeded[1]?.enabled, true);
     assert.equal(seeded.filter((row) => !row.supported).length, 5);
-    assert.equal((await getPublicCatalog()).length, 26);
+    assert.equal((await getPublicCatalog()).length, 27);
     const bird = seeded[0];
     const staffBird = await updateCatalogItem(bird.id, {
         ...bird,
@@ -531,7 +531,31 @@ try {
     );
 
     await runCase(
-        "placeholders stay administrative and bootstrap preserves queued snapshots",
+        "Walking Dead price upgrade preserves disabled status and purchase history",
+        async () => {
+            await purchase();
+            const ordersBefore = await db`SELECT * FROM public_event_orders ORDER BY id`;
+            await db`UPDATE public_event_catalog SET command = ' /WALKINGDEAD ', cost = 3000, enabled = FALSE, category = 'modifier' WHERE id = ${eventId}`;
+            const [before] = await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`;
+            await db`DELETE FROM public_event_bootstrap WHERE key = 'catalog-walking-dead-v1'`;
+            await Promise.all(Array.from({ length: 8 }, () => seedPublicEventCatalog()));
+            assert.deepEqual(
+                (await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`)[0],
+                { ...before, cost: 3400 },
+            );
+            assert.equal(
+                (await getPublicCatalog()).find((row) => row.id === eventId)?.comingSoon,
+                true,
+            );
+            assert.deepEqual(await db`SELECT * FROM public_event_orders ORDER BY id`, ordersBefore);
+            await db`UPDATE public_event_catalog SET cost = 3500 WHERE id = ${eventId}`;
+            await seedPublicEventCatalog();
+            assert.equal((await getAdminCatalog()).find((row) => row.id === eventId)?.cost, 3500);
+        },
+    );
+
+    await runCase(
+        "Walking Dead is visible as coming soon but cannot be enabled or purchased",
         async () => {
             await purchase();
             const before = (await getAdminOrders(query)).items[0];
@@ -544,13 +568,23 @@ try {
             )!;
             assert.equal(placeholder.supported, false);
             assert.equal(placeholder.category, "modifier");
+            assert.equal(placeholder.enabled, false);
+            assert.equal(placeholder.comingSoon, true);
+            assert.equal(placeholder.cost, 3400);
+            assert.equal(
+                (await getPublicCatalog()).find((row) => row.id === placeholder.id)?.comingSoon,
+                true,
+            );
             await updateCatalogItem(placeholder.id, { ...placeholder, cost: 1234, enabled: false });
             await assert.rejects(
                 updateCatalogItem(placeholder.id, { ...placeholder, enabled: true }),
             );
             await assert.rejects(createCatalogItem({ ...placeholder, enabled: true }));
             await db`UPDATE public_event_catalog SET enabled = TRUE WHERE id = ${placeholder.id}`;
-            assert(!(await getPublicCatalog()).some((row) => row.id === placeholder.id));
+            assert.equal(
+                (await getPublicCatalog()).find((row) => row.id === placeholder.id)?.comingSoon,
+                true,
+            );
             await assert.rejects(
                 purchasePublicEvent({
                     buyerId: "buyer",

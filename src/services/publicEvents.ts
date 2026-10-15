@@ -505,11 +505,13 @@ export async function getPublicCatalog(): Promise<
     }[]
 > {
     const rows = await pg<PublicEventCatalogModel[]>`
-        SELECT * FROM public_event_catalog WHERE enabled = TRUE ORDER BY id
+        SELECT * FROM public_event_catalog
+        WHERE enabled = TRUE OR regexp_replace(lower(btrim(command)), '^/+', '') = 'walkingdead'
+        ORDER BY id
     `;
 
     return rows
-        .filter((row) => isSupportedEventCommand(row.command))
+        .filter((row) => isSupportedEventCommand(row.command) || eventComingSoon(row.command))
         .map((row) => ({
             category: row.category,
             requiresDonor: eventRequiresDonor(row.command),

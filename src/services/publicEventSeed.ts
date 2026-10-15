@@ -35,7 +35,7 @@ export const PUBLIC_EVENT_PRICE_SHEET: readonly (readonly [
     ["lifesteal", "Life Steal", 3000, "modifier"],
     ["gravity", "Low Gravity", 1500, "modifier"],
     ["tiny", "Tiny", 2500, "modifier"],
-    ["walkingdead", "Walking Dead", 3000, "modifier"],
+    ["walkingdead", "Walking Dead", 3400, "modifier"],
     ["fog", "Fog", 1500, "modifier"],
     ["faultyfacility", "Faulty Facility", 2500, "modifier"],
     ["peanutdodgeball", "Peanut Dodgeball", 2000, "minigame"],
@@ -161,6 +161,15 @@ export async function seedPublicEventCatalog(): Promise<void> {
                         2000, 'peanutdodgeball', TRUE, 'minigame')
                 `;
             }
+        }
+
+        const walkingDeadMarker = await sql`
+            INSERT INTO public_event_bootstrap (key) VALUES ('catalog-walking-dead-v1')
+            ON CONFLICT (key) DO NOTHING RETURNING key
+        `;
+        if (walkingDeadMarker.length > 0) {
+            await sql`UPDATE public_event_catalog SET cost = 3400
+                WHERE regexp_replace(lower(btrim(command)), '^/+', '') = 'walkingdead'`;
         }
 
         const descriptionMarker = await sql`

@@ -6,6 +6,7 @@ import {
     validateEventCommand,
     validateCatalogCommand,
     isSupportedEventCommand,
+    eventComingSoon,
     listPublicEventCommands,
     UNSUPPORTED_EVENT_COMMANDS,
 } from "@/services/publicEventCommands";
@@ -71,6 +72,16 @@ test("queue cancellation accepts only a bounded audit reason", () => {
 });
 
 describe("public event command allowlist", () => {
+    test("Walking Dead is coming soon but remains unsupported and cannot be enabled", () => {
+        for (const command of ["walkingdead", " /WALKINGDEAD "]) {
+            expect(eventComingSoon(command)).toBe(true);
+            expect(isSupportedEventCommand(command)).toBe(false);
+            expect(() => validateCatalogCommand(command, true)).toThrow();
+        }
+        expect(eventComingSoon("walkingdead 1")).toBe(false);
+        expect(eventComingSoon("unknown")).toBe(false);
+    });
+
     test("contains no aliases, only canonical catalog keys", () => {
         expect(PUBLIC_EVENT_COMMANDS).toHaveLength(31);
         expect(new Set(PUBLIC_EVENT_COMMANDS).size).toBe(PUBLIC_EVENT_COMMANDS.length);
@@ -92,6 +103,7 @@ describe("public event command allowlist", () => {
             ["faultyfacility", 2500],
             ["tiny", 2500],
             ["peanutdodgeball", 2000],
+            ["walkingdead", 3400],
         ] as const) {
             expect(PUBLIC_EVENT_PRICE_SHEET.find(([key]) => key === command)?.[2]).toBe(cost);
         }

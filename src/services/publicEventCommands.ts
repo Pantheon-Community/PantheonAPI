@@ -74,6 +74,7 @@ export function eventRequiresDonor(command: string): boolean {
 }
 
 export function eventComingSoon(command: string): boolean {
+    if (command.trim().replace(/^\/+/, "").toLowerCase() === "walkingdead") return true;
     return (
         isSupportedEventCommand(command) &&
         ["redlightgreenlight", "murderinthedark"].includes(
