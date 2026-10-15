@@ -23,6 +23,7 @@ import { patchAdminPublicEventCatalog } from "./public-events/admin/catalog/id/p
 import { postAdminPublicEventCatalog } from "./public-events/admin/catalog/postAdminPublicEventCatalog";
 import { getAdminPublicEventOrders } from "./public-events/admin/orders/getAdminPublicEventOrders";
 import { postAdminPublicEventReconcile } from "./public-events/admin/orders/id/postAdminPublicEventReconcile";
+import { postAdminPublicEventCancel } from "./public-events/admin/orders/id/postAdminPublicEventCancel";
 import { getAdminPublicEventServers } from "./public-events/admin/servers/getAdminPublicEventServers";
 import { patchAdminPublicEventServer } from "./public-events/admin/servers/id/patchAdminPublicEventServer";
 import { getPublicEventCatalog } from "./public-events/getPublicEventCatalog";
@@ -94,6 +95,7 @@ export const allRoutes: AnyEndpoint[] = [
     postAdminPublicEventCatalog,
     // public-events/admin/orders/id
     postAdminPublicEventReconcile,
+    postAdminPublicEventCancel,
     // public-events/admin/orders
     getAdminPublicEventOrders,
     // public-events/admin/servers/id

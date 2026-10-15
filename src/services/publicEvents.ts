@@ -238,7 +238,7 @@ async function selectNonRepeatingOrder(
 ): Promise<PublicEventOrderModel | null> {
     const pending = await sql<PublicEventOrderModel[]>`
         SELECT * FROM public_event_orders
-        WHERE server_id = ${serverId} AND status <> 'fulfilled'
+        WHERE server_id = ${serverId} AND status IN ('queued','reserved','starting','uncertain')
         ORDER BY COALESCE(queue_order, id), id
     `;
     const head = pending[0];
@@ -565,7 +565,7 @@ async function listServerRows(sql: TransactionSql): Promise<ServerRow[]> {
             s.*,
             (
                 SELECT COUNT(*)::text FROM public_event_orders o
-                WHERE o.server_id = s.id AND o.status <> 'fulfilled'
+                WHERE o.server_id = s.id AND o.status IN ('queued','reserved','starting','uncertain')
             ) AS pending,
             (
                 SELECT CASE WHEN s.last_paid_round_number IS NULL THEN 0 ELSE COUNT(*) END::text
@@ -618,7 +618,7 @@ export async function getPublicQueue(query: QueueQuery): Promise<{
                 ROW_NUMBER() OVER (PARTITION BY o.server_id ORDER BY COALESCE(o.queue_order, o.id), o.id)::text AS position
             FROM public_event_orders o
             JOIN public_event_servers s ON s.id = o.server_id
-            WHERE o.status <> 'fulfilled'
+            WHERE o.status IN ('queued','reserved','starting','uncertain')
             AND (${serverFilter}::text IS NULL OR o.server_id = ${serverFilter})
         )
         SELECT *, COUNT(*) OVER ()::text AS total_count
@@ -633,7 +633,7 @@ export async function getPublicQueue(query: QueueQuery): Promise<{
                   (
                       await pg<{ count: string }[]>`
                 SELECT COUNT(*)::text AS count FROM public_event_orders
-                WHERE status <> 'fulfilled'
+                WHERE status IN ('queued','reserved','starting','uncertain')
                 AND (${serverFilter}::text IS NULL OR server_id = ${serverFilter})
             `
                   )[0]?.count ?? "0",
@@ -828,7 +828,7 @@ async function currentBalance(sql: TransactionSql, steamId: string): Promise<num
 async function pendingCountFor(sql: TransactionSql, serverId: string): Promise<number> {
     const rows = await sql<{ count: string }[]>`
         SELECT COUNT(*)::text AS count FROM public_event_orders
-        WHERE server_id = ${serverId} AND status <> 'fulfilled'
+        WHERE server_id = ${serverId} AND status IN ('queued','reserved','starting','uncertain')
     `;
     return toNumber(rows[0]?.count ?? "0");
 }
@@ -1302,8 +1302,8 @@ export async function recordResult(
             });
         }
 
-        if (order.status === "fulfilled") {
-            // Duplicate acknowledgement of a confirmed start; harmless.
+        if (order.status === "fulfilled" || order.status === "cancelled") {
+            // Late acknowledgements must never resurrect terminal orders.
             return;
         }
 
@@ -1349,7 +1349,7 @@ export async function recordResult(
             await sql`
                 UPDATE public_event_orders
                 SET status = 'queued', message = ${message || "The event did not start and will be retried on a later round."}
-                WHERE id = ${orderId} AND status <> 'fulfilled'
+                WHERE id = ${orderId} AND status IN ('queued','reserved','starting','uncertain')
             `;
             await sql`UPDATE public_event_rounds SET attempted = TRUE WHERE id = ${roundId}`;
         }
@@ -1545,7 +1545,7 @@ export async function getAdminOrders(
                 o.id,
                 ROW_NUMBER() OVER (PARTITION BY o.server_id ORDER BY COALESCE(o.queue_order, o.id), o.id)::text AS position
             FROM public_event_orders o
-            WHERE o.status <> 'fulfilled'
+            WHERE o.status IN ('queued','reserved','starting','uncertain')
         )
         SELECT o.*, s.name AS server_name,
             COALESCE(p.position, ROW_NUMBER() OVER (PARTITION BY o.server_id ORDER BY o.id)::text) AS position
@@ -1729,7 +1729,7 @@ export async function reconcileOrder(
             await sql`
                 UPDATE public_event_orders
                 SET status = 'queued', message = ${`Staff returned this order to the queue: ${reason}`}
-                WHERE id = ${id} AND status <> 'fulfilled'
+                WHERE id = ${id} AND status IN ('queued','reserved','starting','uncertain')
             `;
         }
 
@@ -1740,6 +1740,66 @@ export async function reconcileOrder(
         await selectNonRepeatingOrder(sql, order.server_id);
     });
 
+    return { ok: true };
+}
+
+export async function cancelOrder(
+    id: number,
+    actorId: string,
+    reason: string,
+): Promise<{ ok: true }> {
+    if (!reason.trim() || reason.length > 2000) {
+        throw new ForbiddenError({
+            title: "Reason Required",
+            description: "A non-blank cancellation reason of at most 2000 characters is required.",
+        });
+    }
+    await pgTransaction(async (sql) => {
+        // Serialize with reservation, authorization, reconciliation, and results.
+        const [target] = await sql<Pick<PublicEventOrderModel, "server_id">[]>`
+            SELECT server_id FROM public_event_orders WHERE id = ${id}
+        `;
+        if (target !== undefined)
+            await sql`SELECT id FROM public_event_servers WHERE id = ${target.server_id} FOR UPDATE`;
+        const [order] = await sql<PublicEventOrderModel[]>`
+            SELECT * FROM public_event_orders WHERE id = ${id} FOR UPDATE
+        `;
+        if (order === undefined) {
+            throw new NotFoundError({
+                title: "Order Not Found",
+                description: "That order does not exist.",
+            });
+        }
+        if (order.status !== "queued") {
+            throw new ForbiddenError({
+                title: "Order Not Queued",
+                description:
+                    "Only queued orders can be removed without refund. Refresh the queue before taking further action.",
+            });
+        }
+        // Even an expired/retried historical authorization may report a late start.
+        const authorized = await sql<{ id: string }[]>`
+            SELECT id FROM public_event_deliveries
+            WHERE order_id = ${id} AND authorized_at IS NOT NULL LIMIT 1
+        `;
+        if (authorized.length > 0) {
+            throw new ForbiddenError({
+                title: "Previously Authorized",
+                description:
+                    "This order has a historically authorized delivery and cannot safely be removed. Staff must verify its execution history.",
+            });
+        }
+        await sql`
+            UPDATE public_event_orders
+            SET status = 'cancelled', repeat_deferral = 'none', message = ${`Removed by staff without refund: ${reason.trim()}`}
+            WHERE id = ${id}
+        `;
+        await sql`
+            INSERT INTO public_event_audit (order_id, delivery_id, actor_id, outcome, reason)
+            VALUES (${id}, ${order.delivery_id}, ${actorId}, 'cancelled', ${reason.trim()})
+        `;
+        await selectNonRepeatingOrder(sql, order.server_id);
+    });
     return { ok: true };
 }
 

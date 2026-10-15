@@ -34,8 +34,10 @@ export const PUBLIC_EVENT_PRICE_SHEET: readonly (readonly [
     ["hsonly", "Headshots Only", 2000, "modifier"],
     ["lifesteal", "Life Steal", 3000, "modifier"],
     ["gravity", "Low Gravity", 1500, "modifier"],
-    ["tiny", "Tiny", 1800, "modifier"],
+    ["tiny", "Tiny", 2500, "modifier"],
     ["walkingdead", "Walking Dead", 3000, "modifier"],
+    ["fog", "Fog", 1500, "modifier"],
+    ["faultyfacility", "Faulty Facility", 2500, "modifier"],
 ];
 
 const OTHER_EVENTS: readonly (readonly [string, string, PublicEventCategory])[] = [
@@ -118,6 +120,26 @@ export async function seedPublicEventCatalog(): Promise<void> {
                 await sql`UPDATE public_event_catalog SET cost = ${cost}
                 WHERE regexp_replace(lower(btrim(command)), '^/+', '') = ${command}`;
             }
+        }
+
+        const modifierMarker = await sql`
+            INSERT INTO public_event_bootstrap (key) VALUES ('catalog-modifiers-v3')
+            ON CONFLICT (key) DO NOTHING RETURNING key
+        `;
+        if (modifierMarker.length > 0) {
+            for (const [command, name, cost, category] of PUBLIC_EVENT_PRICE_SHEET) {
+                if (command !== "fog" && command !== "faultyfacility") continue;
+                // Existing staff-configured entries and historical order snapshots are retained.
+                // eslint-disable-next-line no-await-in-loop
+                await sql`
+                    INSERT INTO public_event_catalog (name, description, cost, command, enabled, category)
+                    SELECT ${name}, ${PUBLIC_EVENT_DESCRIPTIONS[command]!}, ${cost}, ${command}, TRUE, ${category}
+                    WHERE NOT EXISTS (SELECT 1 FROM public_event_catalog
+                        WHERE regexp_replace(lower(btrim(command)), '^/+', '') = ${command})
+                `;
+            }
+            await sql`UPDATE public_event_catalog SET cost = 2500
+                WHERE regexp_replace(lower(btrim(command)), '^/+', '') = 'tiny'`;
         }
 
         const descriptionMarker = await sql`

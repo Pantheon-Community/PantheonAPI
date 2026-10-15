@@ -11,6 +11,7 @@ import { createPublicEventsTables } from "@/models/PublicEventModel";
 import { PUBLIC_EVENT_PRICE_SHEET, seedPublicEventCatalog } from "@/services/publicEventSeed";
 import {
     authorizeStart,
+    cancelOrder,
     createCatalogItem,
     getAdminCatalog,
     getAdminOrders,
@@ -130,7 +131,7 @@ try {
     `);
     await createPublicEventsTables();
     const seeded = await getAdminCatalog();
-    assert.equal(seeded.length, 34);
+    assert.equal(seeded.length, 36);
     for (const [command, name, cost, category] of PUBLIC_EVENT_PRICE_SHEET) {
         const matches = seeded.filter(
             (row) => row.command.replace(/^\/+/, "").toLowerCase() === command,
@@ -146,7 +147,7 @@ try {
     assert.equal(seeded[1]?.cost, 27);
     assert.equal(seeded[1]?.enabled, true);
     assert.equal(seeded.filter((row) => !row.supported).length, 5);
-    assert.equal((await getPublicCatalog()).length, 23);
+    assert.equal((await getPublicCatalog()).length, 25);
     const bird = seeded[0];
     const staffBird = await updateCatalogItem(bird.id, {
         ...bird,
@@ -162,6 +163,138 @@ try {
     );
     passed++;
 
+    await runCase(
+        "queued cancellation migrates existing constraints, audits without refund, and preserves idempotency",
+        async () => {
+            const requestId = crypto.randomUUID();
+            const id = await purchase("1", "buyer", requestId);
+            const next = await purchase();
+            await db`ALTER TABLE public_event_orders DROP CONSTRAINT public_event_orders_status_check`;
+            await db`ALTER TABLE public_event_orders ADD CONSTRAINT public_event_orders_status_check CHECK(status IN ('queued','reserved','starting','uncertain','fulfilled'))`;
+            await createPublicEventsTables();
+            const [before] = await db`SELECT * FROM steam_users WHERE id = 'steam'`;
+            await cancelOrder(id, "manager", "  Requested removal  ");
+            assert.deepEqual((await db`SELECT * FROM steam_users WHERE id = 'steam'`)[0], before);
+            const history = (await getAdminOrders(query)).items.find((order) => order.id === id);
+            assert.equal(history?.status, "cancelled");
+            assert.equal(history?.audits[0]?.actorId, "manager");
+            assert.equal(history?.audits[0]?.outcome, "cancelled");
+            assert.equal(history?.audits[0]?.reason, "Requested removal");
+            assert.deepEqual(
+                (await getPublicQueue(query)).items.map((order) => order.id),
+                [next],
+            );
+            assert.equal(
+                (await getPublicServers()).find((server) => server.id === "1")?.pendingCount,
+                1,
+            );
+            assert.equal(
+                (await getAdminServers()).find((server) => server.id === "1")?.pendingCount,
+                1,
+            );
+            const replay = await purchasePublicEvent({
+                buyerId: "buyer",
+                eventId,
+                serverId: "1",
+                expectedPrice: 10,
+                requestId,
+            });
+            assert.equal(replay.orderId, id);
+            assert.equal(replay.balance, 80);
+            assert.equal(replay.pendingCount, 1);
+            await assert.rejects(
+                purchasePublicEvent({
+                    buyerId: "buyer",
+                    eventId,
+                    serverId: "2",
+                    expectedPrice: 10,
+                    requestId,
+                }),
+            );
+            await assert.rejects(cancelOrder(id, "manager", "Again"));
+            assert.equal(
+                (
+                    await db`SELECT COUNT(*)::int AS count FROM public_event_audit WHERE order_id = ${id}`
+                )[0].count,
+                1,
+            );
+            await heartbeatServer("1", 1, instance);
+            const round = await reportRound("1", 1, instance, crypto.randomUUID(), "started");
+            assert.equal(round.reservation?.orderId, next);
+        },
+    );
+
+    await runCase(
+        "cancelled orders ignore late un-authorized reports while authorized history blocks removal",
+        async () => {
+            const id = await purchase();
+            await heartbeatServer("1", 1, instance);
+            const roundId = crypto.randomUUID();
+            const reserved = await reportRound("1", 1, instance, roundId, "started");
+            const deliveryId = reserved.reservation!.deliveryId;
+            await assert.rejects(cancelOrder(id, "manager", "Reserved"));
+            await recordResult(
+                "1",
+                1,
+                instance,
+                id,
+                roundId,
+                deliveryId,
+                "deferred",
+                "Not authorized",
+            );
+            await cancelOrder(id, "manager", "Safe removal");
+            await recordResult("1", 1, instance, id, roundId, deliveryId, "deferred", "Late");
+            await recordResult("1", 1, instance, id, roundId, deliveryId, "uncertain", "Late");
+            await assert.rejects(
+                recordResult("1", 1, instance, id, roundId, deliveryId, "started", "Unauthorized"),
+            );
+            assert.equal((await getAdminOrders(query)).items[0]?.status, "cancelled");
+            assert.equal((await getPublicQueue(query)).totalItemCount, 0);
+
+            const authorizedId = await purchase();
+            const authorizedRoundId = crypto.randomUUID();
+            const authorized = await reportRound("1", 1, instance, authorizedRoundId, "started");
+            const authorizedDeliveryId = authorized.reservation!.deliveryId;
+            await authorizeStart(
+                "1",
+                1,
+                instance,
+                authorizedId,
+                authorizedRoundId,
+                authorizedDeliveryId,
+            );
+            await recordResult(
+                "1",
+                1,
+                instance,
+                authorizedId,
+                authorizedRoundId,
+                authorizedDeliveryId,
+                "deferred",
+                "Retry",
+            );
+            // The historical check must not depend on the current delivery pointer.
+            await db`UPDATE public_event_orders SET delivery_id = NULL WHERE id = ${authorizedId}`;
+            await assert.rejects(cancelOrder(authorizedId, "manager", "Unsafe removal"));
+            await recordResult(
+                "1",
+                1,
+                instance,
+                authorizedId,
+                authorizedRoundId,
+                authorizedDeliveryId,
+                "started",
+                "Late authorized start",
+            );
+            assert.equal(
+                (await getAdminOrders(query)).items.find((order) => order.id === authorizedId)
+                    ?.status,
+                "fulfilled",
+            );
+        },
+    );
+
     await runCase("v1-to-v2 price-only upgrade preserves staff fields and snapshots", async () => {
         const revised = [
             ["hangthedj", 1500, 1800],
@@ -173,7 +306,7 @@ try {
             ["dodgeball", 2500, 2000],
             ["musicalchairs", 3000, 2800],
             ["tag", 3000, 2000],
-            ["tiny", 1500, 1800],
+            ["tiny", 1500, 2500],
         ] as const;
         await db`DELETE FROM public_event_bootstrap WHERE key = 'categorized-price-sheet-v2'`;
         assert.equal(
@@ -226,6 +359,75 @@ try {
         assert.deepEqual(await db`SELECT * FROM public_event_catalog ORDER BY id`, staffEdited);
         assert.deepEqual(await db`SELECT * FROM public_event_orders ORDER BY id`, ordersBefore);
     });
+
+    await runCase(
+        "modifier upgrade adds missing entries and reprices Tiny without rewriting history",
+        async () => {
+            await db`UPDATE public_event_catalog SET command = 'tiny', cost = 1800 WHERE id = ${eventId}`;
+            await db`UPDATE steam_users SET balance = 10000`;
+            await purchasePublicEvent({
+                buyerId: "buyer",
+                eventId,
+                serverId: "1",
+                expectedPrice: 1800,
+                requestId: crypto.randomUUID(),
+            });
+            await db`UPDATE public_event_catalog SET enabled = FALSE WHERE id = ${eventId}`;
+            const [tinyBefore] = await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`;
+            const ordersBefore = await db`SELECT * FROM public_event_orders ORDER BY id`;
+            const fog = await createCatalogItem({
+                name: "Staff Fog",
+                description: "Staff copy",
+                image: null,
+                cost: 1234,
+                command: "fog",
+                category: "pvp",
+                enabled: true,
+            });
+            await db`UPDATE public_event_catalog SET command = '/FOG' WHERE id = ${fog.id}`;
+            const [fogBefore] = await db`SELECT * FROM public_event_catalog WHERE id = ${fog.id}`;
+            await db`DELETE FROM public_event_bootstrap WHERE key = 'catalog-modifiers-v3'`;
+            await Promise.all(Array.from({ length: 8 }, () => seedPublicEventCatalog()));
+            assert.deepEqual(
+                (await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`)[0],
+                { ...tinyBefore, cost: 2500 },
+            );
+            assert.deepEqual(
+                (await db`SELECT * FROM public_event_catalog WHERE id = ${fog.id}`)[0],
+                fogBefore,
+            );
+            assert.deepEqual(await db`SELECT * FROM public_event_orders ORDER BY id`, ordersBefore);
+            const catalog = await getAdminCatalog();
+            assert.equal(catalog.length, 3);
+            const faulty = catalog.find((row) => row.command === "faultyfacility")!;
+            assert.equal(faulty.cost, 2500);
+            assert.equal(faulty.category, "modifier");
+            assert.equal(faulty.enabled, true);
+            assert.equal(faulty.requiresDonor, false);
+            assert.equal(faulty.requiresStaff, false);
+            assert(faulty.description.length > 10);
+            bots.fetchMock.mockImplementation(async () =>
+                Response.json([{ role: "member", other_roles: [] }]),
+            );
+            for (const entry of [fog, faulty]) {
+                // eslint-disable-next-line no-await-in-loop
+                await purchasePublicEvent({
+                    buyerId: "buyer",
+                    eventId: entry.id,
+                    serverId: "1",
+                    expectedPrice: entry.cost,
+                    requestId: crypto.randomUUID(),
+                });
+            }
+            await db`UPDATE public_event_catalog SET cost = 2600 WHERE id = ${eventId}`;
+            const beforeRepeat = await db`SELECT * FROM public_event_catalog ORDER BY id`;
+            await seedPublicEventCatalog();
+            assert.deepEqual(
+                await db`SELECT * FROM public_event_catalog ORDER BY id`,
+                beforeRepeat,
+            );
+        },
+    );
 
     await runCase(
         "production descriptions replace blanks and old placeholders without overwriting staff copy",
@@ -296,7 +498,7 @@ try {
             const before = (await getAdminOrders(query)).items[0];
             await db`DELETE FROM public_event_bootstrap`;
             await Promise.all(Array.from({ length: 8 }, () => seedPublicEventCatalog()));
-            assert.equal((await getAdminCatalog()).length, 34);
+            assert.equal((await getAdminCatalog()).length, 36);
             assert.deepEqual((await getAdminOrders(query)).items[0], before);
             const placeholder = (await getAdminCatalog()).find(
                 (row) => row.command === "walkingdead",
@@ -420,7 +622,8 @@ try {
             await assert.rejects(createCatalogItem({ ...legacy, enabled: true }));
             await assert.rejects(updateCatalogItem(eventId, { ...legacy, enabled: false }));
             const before = await db`SELECT * FROM public_event_orders`;
-            const catalogBefore = await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`;
+            const catalogBefore =
+                await db`SELECT * FROM public_event_catalog WHERE id = ${eventId}`;
             await db`DELETE FROM public_event_bootstrap`;
             await seedPublicEventCatalog();
             assert.deepEqual(await db`SELECT * FROM public_event_orders`, before);
@@ -446,7 +649,8 @@ try {
                 // eslint-disable-next-line no-await-in-loop
                 await assert.rejects(purchasePublicEvent(input), {
                     name: "NotFoundError",
-                    message: "This event is no longer available, you might need to refresh your page.",
+                    message:
+                        "This event is no longer available, you might need to refresh your page.",
                 });
             }
             assert.equal(

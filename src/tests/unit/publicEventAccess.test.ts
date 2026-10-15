@@ -134,6 +134,8 @@ test.serial(
                 "lifesteal",
                 "gravity",
                 "tiny",
+                "fog",
+                "faultyfacility",
             ]) {
                 expect(eventRequiresDonor(` /${command.toUpperCase()} `)).toBe(false);
             }

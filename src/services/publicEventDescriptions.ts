@@ -22,6 +22,8 @@ export const PUBLIC_EVENT_DESCRIPTIONS: Record<string, string> = {
     lifesteal: "Restore health when you kill another player.",
     gravity: "Jump higher and fall more slowly with reduced gravity.",
     tiny: "Shrink players for a round with a much smaller perspective.",
+    fog: "Thick fog limits visibility for all players, including new spawns.",
+    faultyfacility: "Doors, lights, Tesla gates and other facility systems randomly malfunction.",
     cockfights: "Not currently available for purchase.",
     gungame: "Not currently available for purchase.",
     spleef: "Not currently available for purchase.",

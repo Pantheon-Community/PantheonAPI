@@ -139,23 +139,30 @@ export async function createPublicEventsTables(): Promise<void> {
             balance_after INTEGER NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
             status TEXT NOT NULL DEFAULT 'queued'
-                CHECK(status IN ('queued','reserved','starting','uncertain','fulfilled')),
+                CHECK(status IN ('queued','reserved','starting','uncertain','fulfilled','cancelled')),
             delivery_id UUID,
             message TEXT NOT NULL DEFAULT '',
             UNIQUE(buyer_id, request_id)
         );
 
-        CREATE INDEX IF NOT EXISTS public_event_fifo_idx
-            ON public_event_orders (server_id, id) WHERE status <> 'fulfilled';
+        ALTER TABLE public_event_orders DROP CONSTRAINT IF EXISTS public_event_orders_status_check;
+        ALTER TABLE public_event_orders ADD CONSTRAINT public_event_orders_status_check
+            CHECK(status IN ('queued','reserved','starting','uncertain','fulfilled','cancelled'));
+
+        DROP INDEX IF EXISTS public_event_fifo_idx;
+        CREATE INDEX public_event_fifo_idx
+            ON public_event_orders (server_id, id) WHERE status IN ('queued','reserved','starting','uncertain');
 
         ALTER TABLE public_event_orders ADD COLUMN IF NOT EXISTS queue_order BIGINT;
         ALTER TABLE public_event_orders ADD COLUMN IF NOT EXISTS repeat_deferral TEXT NOT NULL DEFAULT 'none'
             CHECK(repeat_deferral IN ('none', 'moved', 'waiting'));
-        CREATE INDEX IF NOT EXISTS public_event_queue_order_idx
-            ON public_event_orders (server_id, (COALESCE(queue_order, id)), id) WHERE status <> 'fulfilled';
+        DROP INDEX IF EXISTS public_event_queue_order_idx;
+        CREATE INDEX public_event_queue_order_idx
+            ON public_event_orders (server_id, (COALESCE(queue_order, id)), id) WHERE status IN ('queued','reserved','starting','uncertain');
 
-        CREATE INDEX IF NOT EXISTS public_event_pending_idx
-            ON public_event_orders (server_id) WHERE status <> 'fulfilled';
+        DROP INDEX IF EXISTS public_event_pending_idx;
+        CREATE INDEX public_event_pending_idx
+            ON public_event_orders (server_id) WHERE status IN ('queued','reserved','starting','uncertain');
 
         CREATE TABLE IF NOT EXISTS public_event_deliveries (
             id UUID PRIMARY KEY,

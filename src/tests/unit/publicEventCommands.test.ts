@@ -15,6 +15,7 @@ import {
     EVENT_CATALOG,
     EVENT_ADMIN_CATALOG,
     EVENT_CATALOG_PAYLOAD,
+    EVENT_CANCEL,
 } from "@/shared/types/PublicEvents";
 
 test("catalog schemas require category and expose support only to staff", () => {
@@ -57,9 +58,21 @@ test("catalog schemas require category and expose support only to staff", () => 
     expect(() => EVENT_ADMIN_CATALOG.validate({ ...staff, id: 1 })).toThrow();
 });
 
+test("queue cancellation accepts only a bounded audit reason", () => {
+    expect(() => EVENT_CANCEL.validate({ reason: "Requested removal" })).not.toThrow();
+    for (const payload of [
+        {},
+        { reason: "" },
+        { reason: "x".repeat(2001) },
+        { reason: "Requested", refund: true },
+    ]) {
+        expect(() => EVENT_CANCEL.validate(payload)).toThrow();
+    }
+});
+
 describe("public event command allowlist", () => {
     test("contains no aliases, only canonical catalog keys", () => {
-        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(29);
+        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(31);
         expect(new Set(PUBLIC_EVENT_COMMANDS).size).toBe(PUBLIC_EVENT_COMMANDS.length);
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("stop");
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("list");
@@ -73,6 +86,16 @@ describe("public event command allowlist", () => {
         }
     });
 
+    test("modifier prices match the current shop prices", () => {
+        for (const [command, cost] of [
+            ["fog", 1500],
+            ["faultyfacility", 2500],
+            ["tiny", 2500],
+        ] as const) {
+            expect(PUBLIC_EVENT_PRICE_SHEET.find(([key]) => key === command)?.[2]).toBe(cost);
+        }
+    });
+
     test("modifiers accept no arguments and placeholders cannot execute or enable", () => {
         for (const command of [
             "excorpses",
@@ -81,6 +104,8 @@ describe("public event command allowlist", () => {
             "lifesteal",
             "gravity",
             "tiny",
+            "fog",
+            "faultyfacility",
         ]) {
             expect(validateEventCommand(command)).toBe(command);
             expect(() => validateEventCommand(`${command} 1`)).toThrow();
@@ -106,9 +131,9 @@ describe("public event command allowlist", () => {
     test("removed Everything Explodes cannot execute or be configured", () => {
         expect(listPublicEventCommands()).not.toContain("everythingexplodes");
         expect(PUBLIC_EVENT_DESCRIPTIONS).not.toHaveProperty("everythingexplodes");
-        expect(
-            PUBLIC_EVENT_PRICE_SHEET.some(([command]) => command === "everythingexplodes"),
-        ).toBe(false);
+        expect(PUBLIC_EVENT_PRICE_SHEET.some(([command]) => command === "everythingexplodes")).toBe(
+            false,
+        );
         for (const command of [
             "everythingexplodes",
             " /EVERYTHINGEXPLODES ",
@@ -142,6 +167,7 @@ describe("public event command allowlist", () => {
             "079escape",
             "mc",
             "traitorevent",
+            "faulty",
         ]) {
             expect(() => validateEventCommand(alias)).toThrow();
         }

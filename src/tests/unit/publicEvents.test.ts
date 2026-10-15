@@ -8,6 +8,7 @@ import {
     recordResult,
     reportRound,
     purchasePublicEvent,
+    cancelOrder,
 } from "@/services/publicEvents";
 
 // A query double exercises service guards without connecting to any database.
@@ -212,4 +213,97 @@ test("paid event service regression guards", async () => {
         }),
     );
     expect(queries[0]?.text).toContain("pg_advisory_xact_lock");
+
+    install((text) => {
+        if (text.startsWith("SELECT server_id FROM public_event_orders"))
+            return [{ server_id: "1" }];
+        if (text.startsWith("SELECT * FROM public_event_orders WHERE id"))
+            return [{ ...order, status: "queued" }];
+        return undefined;
+    });
+    expect(await cancelOrder(9, "manager", "  Removed by request  ")).toEqual({ ok: true });
+    const serverLock = queries.findIndex((q) =>
+        q.text.startsWith("SELECT id FROM public_event_servers"),
+    );
+    const orderLock = queries.findIndex((q) =>
+        q.text.startsWith("SELECT * FROM public_event_orders WHERE id"),
+    );
+    expect(serverLock).toBeLessThan(orderLock);
+    expect(queries.some((q) => q.text.includes("authorized_at IS NOT NULL"))).toBe(true);
+    expect(
+        queries.find((q) => q.text.startsWith("INSERT INTO public_event_audit"))?.values,
+    ).toEqual([9, deliveryId, "manager", "Removed by request"]);
+    expect(queries.some((q) => q.text.includes("SET status = 'cancelled'"))).toBe(true);
+    expect(queries.some((q) => q.text.includes("steam_users"))).toBe(false);
+    expect(queries.find((q) => q.text.includes("ORDER BY COALESCE"))?.text).toContain(
+        "status IN ('queued','reserved','starting','uncertain')",
+    );
+
+    for (const status of ["reserved", "starting", "uncertain", "fulfilled", "cancelled"]) {
+        install((text) =>
+            text.startsWith("SELECT * FROM public_event_orders WHERE id")
+                ? [{ ...order, status }]
+                : undefined,
+        );
+        // eslint-disable-next-line no-await-in-loop
+        await assert.rejects(cancelOrder(9, "manager", "Reason"));
+        expect(queries.some((q) => q.text.startsWith("UPDATE"))).toBe(false);
+    }
+    install((text) => {
+        if (text.startsWith("SELECT * FROM public_event_orders WHERE id"))
+            return [{ ...order, status: "queued", delivery_id: null }];
+        if (text.startsWith("SELECT id FROM public_event_deliveries"))
+            return [{ id: "historical-authorized" }];
+        return undefined;
+    });
+    await assert.rejects(cancelOrder(9, "manager", "Reason"));
+    expect(queries.some((q) => q.text.startsWith("UPDATE"))).toBe(false);
+    await assert.rejects(cancelOrder(9, "manager", "   "));
+    await assert.rejects(cancelOrder(9, "manager", "x".repeat(2001)));
+    install((text) =>
+        text.startsWith("SELECT * FROM public_event_orders WHERE id") ? [] : undefined,
+    );
+    await assert.rejects(cancelOrder(9, "manager", "Reason"));
+
+    for (const outcome of ["started", "deferred", "uncertain"] as const) {
+        install((text) => {
+            if (text.startsWith("SELECT * FROM public_event_orders WHERE id"))
+                return [{ ...order, status: "cancelled" }];
+            if (text.startsWith("SELECT * FROM public_event_deliveries WHERE id"))
+                return [{ ...delivery, authorized_at: new Date() }];
+            return undefined;
+        });
+        // eslint-disable-next-line no-await-in-loop
+        await recordResult("1", 7, instance, 9, roundId, deliveryId, outcome, "late");
+        expect(queries.some((q) => q.text.startsWith("UPDATE"))).toBe(false);
+    }
+
+    const digest = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(JSON.stringify({ eventId: 1, serverId: "1", expectedPrice: 10 })),
+    );
+    const payloadHash = [...new Uint8Array(digest)]
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    install((text) => {
+        if (text.startsWith("SELECT * FROM public_event_orders WHERE buyer_id"))
+            return [
+                { ...order, status: "cancelled", payload_hash: payloadHash, steam_id: "steam" },
+            ];
+        if (text.startsWith("SELECT balance")) return [{ balance: "90" }];
+        return undefined;
+    });
+    expect(
+        await purchasePublicEvent({
+            buyerId: "buyer",
+            eventId: 1,
+            serverId: "1",
+            expectedPrice: 10,
+            requestId: instance,
+        }),
+    ).toEqual({ orderId: 9, balance: 90, pendingCount: 0 });
+    expect(queries.some((q) => /^(INSERT|UPDATE|DELETE)/.test(q.text))).toBe(false);
+    expect(queries.find((q) => q.text.startsWith("SELECT COUNT"))?.text).toContain(
+        "status IN ('queued','reserved','starting','uncertain')",
+    );
 });

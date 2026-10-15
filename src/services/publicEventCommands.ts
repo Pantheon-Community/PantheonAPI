@@ -35,6 +35,8 @@ export const PUBLIC_EVENT_COMMANDS = [
     "lifesteal",
     "gravity",
     "tiny",
+    "fog",
+    "faultyfacility",
 ] as const;
 export const UNSUPPORTED_EVENT_COMMANDS = [
     "cockfights",
@@ -61,6 +63,8 @@ const MODIFIER_COMMANDS: ReadonlySet<string> = new Set([
     "lifesteal",
     "gravity",
     "tiny",
+    "fog",
+    "faultyfacility",
 ]);
 
 /** Category is editable presentation metadata, never purchase authorization. */
