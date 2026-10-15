@@ -33,7 +33,7 @@ export const START_WINDOW_MS = 14_000;
 export const RESULT_LEASE_MS = 60_000;
 
 /** Completed rounds required between two paid events on the same server. */
-export const REQUIRED_GAP = 3;
+export const REQUIRED_GAP = 4;
 
 export interface BoundServer {
     id: PublicEventServerId;
