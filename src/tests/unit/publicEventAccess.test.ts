@@ -306,3 +306,75 @@ test.serial(
         }
     },
 );
+
+test.serial(
+    "authenticated website eligibility works without API Bots configuration and rejects forged access",
+    async () => {
+        const bots = mockBotsRoles();
+        try {
+            delete process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"];
+            delete process.env["BOTS_SUPABASE_SERVICE_ROLE_KEY"];
+            delete process.env["BOTS_NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"];
+            bots.fetchMock.mockImplementation(async () =>
+                Response.json({ discordId: "verified-id", canPurchaseEvents: true }),
+            );
+            await requireEventAccess("verified-id", "verified-session", "Original browser");
+            const [url, options] = bots.fetchMock.mock.calls.at(-1)!;
+            expect(url).toBe("https://pantheoncommunity.org/api/events/eligibility");
+            expect(options?.cache).toBe("no-store");
+            expect(options?.redirect).toBe("error");
+            const headers = new Headers(options?.headers);
+            expect(headers.get("authorization")).toBe("Bearer verified-session");
+            expect(headers.get("user-agent")).toBe("Original browser");
+            expect(headers.has("apikey")).toBe(false);
+            bots.fetchMock.mockImplementation(async () =>
+                Response.json({ discordId: "verified-id", canPurchaseEvents: false }),
+            );
+            await assert.rejects(
+                requireEventAccess("verified-id", "verified-session"),
+                ForbiddenError,
+            );
+            for (const body of [
+                null,
+                [],
+                { discordId: "another-user", canPurchaseEvents: true },
+                { discordId: "verified-id", canPurchaseEvents: "true" },
+                { canPurchaseEvents: true },
+            ]) {
+                bots.fetchMock.mockImplementation(async () => Response.json(body));
+                // eslint-disable-next-line no-await-in-loop
+                await assert.rejects(
+                    requireEventAccess("verified-id", "verified-session"),
+                    ServiceUnavailableError,
+                );
+            }
+            for (const status of [401, 403, 423]) {
+                bots.fetchMock.mockImplementation(async () => new Response("Denied", { status }));
+                // eslint-disable-next-line no-await-in-loop
+                await assert.rejects(
+                    requireEventAccess("verified-id", "verified-session"),
+                    ForbiddenError,
+                );
+            }
+            bots.fetchMock.mockImplementation(
+                async () => new Response("Unavailable", { status: 500 }),
+            );
+            await assert.rejects(
+                requireEventAccess("verified-id", "verified-session"),
+                ServiceUnavailableError,
+            );
+            bots.fetchMock.mockImplementation(async () => {
+                throw new Error("Unavailable");
+            });
+            await assert.rejects(
+                requireEventAccess("verified-id", "verified-session"),
+                ServiceUnavailableError,
+            );
+            const beforeMissing = bots.fetchMock.mock.calls.length;
+            await assert.rejects(requireEventAccess("verified-id"), ServiceUnavailableError);
+            expect(bots.fetchMock.mock.calls.length).toBe(beforeMissing);
+        } finally {
+            bots.restore();
+        }
+    },
+);

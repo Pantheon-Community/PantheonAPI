@@ -27,8 +27,13 @@ const ROLE_ALIASES: Record<string, string> = {
 export const EVENT_ACCESS_LOOKUP_TIMEOUT_MS = 3000;
 
 /** Only call for new restricted purchases, with the verified session's Discord ID. */
-export async function requireEventAccess(discordId: string): Promise<void> {
-    let roles: string[];
+export async function requireEventAccess(
+    discordId: string,
+    accessToken?: string,
+    userAgent?: string,
+): Promise<void> {
+    let roles: string[] = [];
+    let websiteAllowed = false;
     let failure:
         | "Configuration Missing"
         | "Configuration Invalid"
@@ -41,16 +46,23 @@ export async function requireEventAccess(discordId: string): Promise<void> {
         const key =
             process.env["BOTS_SUPABASE_SERVICE_ROLE_KEY"]?.trim() ||
             process.env["BOTS_NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY"]?.trim();
-        if (!base || !key) {
+        const useWebsite = (!base || !key) && !!accessToken;
+        if ((!base || !key) && !useWebsite) {
             failure = "Configuration Missing";
             throw new Error("Missing datasource configuration");
         }
-        const query = new URL(`${base.replace(/\/+$/, "")}/rest/v1/roles`);
+        const query = new URL(
+            useWebsite
+                ? "https://pantheoncommunity.org/api/events/eligibility"
+                : `${base!.replace(/\/+$/, "")}/rest/v1/roles`,
+        );
         if (!["https:", "http:"].includes(query.protocol) || query.username || query.password)
             throw new Error("Invalid datasource URL");
-        query.searchParams.set("select", "role,other_roles");
-        query.searchParams.set("discord_id", `eq.${discordId}`);
-        query.searchParams.set("limit", "1");
+        if (!useWebsite) {
+            query.searchParams.set("select", "role,other_roles");
+            query.searchParams.set("discord_id", `eq.${discordId}`);
+            query.searchParams.set("limit", "1");
+        }
         failure = "Datasource Unavailable";
 
         // Bound both fetch and body parsing, including a stalled response body.
@@ -59,16 +71,25 @@ export async function requireEventAccess(discordId: string): Promise<void> {
         const rows: unknown = await Promise.race([
             (async (): Promise<unknown> => {
                 const response = await fetch(query.toString(), {
-                    headers: {
-                        apikey: key,
-                        Authorization: `Bearer ${key}`,
-                        Accept: "application/json",
-                        "Accept-Profile": "public",
-                    },
+                    headers: useWebsite
+                        ? {
+                              Authorization: `Bearer ${accessToken}`,
+                              Accept: "application/json",
+                              ...(userAgent ? { "User-Agent": userAgent } : {}),
+                          }
+                        : {
+                              apikey: key!,
+                              Authorization: `Bearer ${key}`,
+                              Accept: "application/json",
+                              "Accept-Profile": "public",
+                          },
                     cache: "no-store",
                     signal: controller.signal,
                     redirect: "error",
                 });
+                if (useWebsite && [401, 403, 423].includes(response.status)) {
+                    return { discordId, canPurchaseEvents: false };
+                }
                 if (!response.ok) {
                     failure =
                         response.status === 401 || response.status === 403
@@ -80,33 +101,49 @@ export async function requireEventAccess(discordId: string): Promise<void> {
                 return await response.json();
             })(),
             new Promise<never>((_, reject) => {
-                timeout = setTimeout(() => {
-                    controller.abort();
-                    failure = "Verification Timed Out";
-                    reject(new Error("Datasource timeout"));
-                }, EVENT_ACCESS_LOOKUP_TIMEOUT_MS);
+                timeout = setTimeout(
+                    () => {
+                        controller.abort();
+                        failure = "Verification Timed Out";
+                        reject(new Error("Datasource timeout"));
+                    },
+                    useWebsite ? 10000 : EVENT_ACCESS_LOOKUP_TIMEOUT_MS,
+                );
             }),
         ]).finally(() => clearTimeout(timeout));
 
-        if (!Array.isArray(rows) || rows.length > 1) throw new Error("Invalid roles response");
-        roles = [];
-        if (rows.length) {
-            const row: unknown = rows[0];
-            if (!row || typeof row !== "object" || Array.isArray(row))
-                throw new Error("Invalid role row");
-            const { role, other_roles: secondary } = row as Record<string, unknown>;
-            if (role !== null && typeof role !== "string") throw new Error("Invalid primary role");
-            let others: unknown = secondary;
-            if (typeof others === "string") others = others.trim() ? JSON.parse(others) : [];
-            if (others === null) others = [];
-            if (!Array.isArray(others) || !others.every((value) => typeof value === "string"))
-                throw new Error("Invalid secondary roles");
-            roles = [role ?? "", ...others].map((value: string) => {
-                const normalized = value.trim().toLowerCase();
-                return Object.hasOwn(ROLE_ALIASES, normalized)
-                    ? ROLE_ALIASES[normalized]!
-                    : normalized;
-            });
+        if (useWebsite) {
+            // Bind the trusted HTTPS response to the API-verified session, never to client claims.
+            if (!rows || typeof rows !== "object" || Array.isArray(rows))
+                throw new Error("Invalid eligibility response");
+            const result = rows as Record<string, unknown>;
+            if (
+                result["discordId"] !== discordId ||
+                typeof result["canPurchaseEvents"] !== "boolean"
+            )
+                throw new Error("Invalid eligibility response");
+            websiteAllowed = result["canPurchaseEvents"];
+        } else {
+            if (!Array.isArray(rows) || rows.length > 1) throw new Error("Invalid roles response");
+            if (rows.length) {
+                const row: unknown = rows[0];
+                if (!row || typeof row !== "object" || Array.isArray(row))
+                    throw new Error("Invalid role row");
+                const { role, other_roles: secondary } = row as Record<string, unknown>;
+                if (role !== null && typeof role !== "string")
+                    throw new Error("Invalid primary role");
+                let others: unknown = secondary;
+                if (typeof others === "string") others = others.trim() ? JSON.parse(others) : [];
+                if (others === null) others = [];
+                if (!Array.isArray(others) || !others.every((value) => typeof value === "string"))
+                    throw new Error("Invalid secondary roles");
+                roles = [role ?? "", ...others].map((value: string) => {
+                    const normalized = value.trim().toLowerCase();
+                    return Object.hasOwn(ROLE_ALIASES, normalized)
+                        ? ROLE_ALIASES[normalized]!
+                        : normalized;
+                });
+            }
         }
     } catch {
         // Never propagate upstream bodies, URLs, keys, or raw fetch errors to logs/clients.
@@ -116,7 +153,7 @@ export async function requireEventAccess(discordId: string): Promise<void> {
                 "Cannot verify event purchase eligibility right now. No credits were charged.",
         });
     }
-    if (!roles.some((role) => STAFF_ROLES.has(role) || DONOR_ROLES.has(role))) {
+    if (!websiteAllowed && !roles.some((role) => STAFF_ROLES.has(role) || DONOR_ROLES.has(role))) {
         throw new ForbiddenError({
             title: "Event Access Required",
             description:

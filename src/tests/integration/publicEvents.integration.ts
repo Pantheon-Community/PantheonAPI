@@ -680,6 +680,81 @@ try {
     );
 
     await runCase(
+        "website-verified events work without API role credentials, reject members, and preserve retries",
+        async () => {
+            delete process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"];
+            const payload = {
+                buyerId: "buyer",
+                eventId,
+                serverId: "1",
+                expectedPrice: 10,
+                requestId: crypto.randomUUID(),
+                accessToken: "verified-session",
+                userAgent: "Original browser",
+            } as const;
+            try {
+                bots.fetchMock.mockImplementation(async (lookupUrl, options) => {
+                    assert.equal(lookupUrl, "https://pantheoncommunity.org/api/events/eligibility");
+                    assert.equal(
+                        new Headers(options?.headers).get("authorization"),
+                        "Bearer verified-session",
+                    );
+                    assert.equal(new Headers(options?.headers).has("apikey"), false);
+                    return Response.json({ discordId: "buyer", canPurchaseEvents: true });
+                });
+                const paid = await purchasePublicEvent(payload);
+                assert.equal(paid.balance, 90);
+                bots.fetchMock.mockImplementation(async () =>
+                    Response.json({ discordId: "buyer", canPurchaseEvents: false }),
+                );
+                const beforeRetry = bots.fetchMock.mock.calls.length;
+                assert.deepEqual(await purchasePublicEvent(payload), paid);
+                assert.equal(bots.fetchMock.mock.calls.length, beforeRetry);
+                await assert.rejects(
+                    purchasePublicEvent({
+                        ...payload,
+                        requestId: crypto.randomUUID(),
+                        isDonor: true,
+                    } as typeof payload),
+                    ForbiddenError,
+                );
+                assert.equal(
+                    (await db`SELECT balance FROM steam_users WHERE id = 'steam'`)[0].balance,
+                    90,
+                );
+                bots.fetchMock.mockImplementation(async () =>
+                    Response.json({ discordId: "another-user", canPurchaseEvents: true }),
+                );
+                await assert.rejects(
+                    purchasePublicEvent({ ...payload, requestId: crypto.randomUUID() }),
+                    ServiceUnavailableError,
+                );
+                bots.fetchMock.mockImplementation(async () => {
+                    throw new Error("Website unavailable");
+                });
+                await assert.rejects(
+                    purchasePublicEvent({ ...payload, requestId: crypto.randomUUID() }),
+                    ServiceUnavailableError,
+                );
+                await db`UPDATE public_event_catalog SET command = 'tiny' WHERE id = ${eventId}`;
+                const beforeModifier = bots.fetchMock.mock.calls.length;
+                assert.equal(
+                    (await purchasePublicEvent({ ...payload, requestId: crypto.randomUUID() }))
+                        .balance,
+                    80,
+                );
+                assert.equal(bots.fetchMock.mock.calls.length, beforeModifier);
+                assert.equal(
+                    (await db`SELECT COUNT(*)::int AS count FROM public_event_orders`)[0].count,
+                    2,
+                );
+            } finally {
+                process.env["BOTS_NEXT_PUBLIC_SUPABASE_URL"] = "https://synthetic-bots.invalid";
+            }
+        },
+    );
+
+    await runCase(
         "persisted Everything Explodes is unavailable even to staff and preserves history",
         async () => {
             const requestId = crypto.randomUUID();

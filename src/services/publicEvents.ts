@@ -668,6 +668,9 @@ export interface PurchaseInput {
     serverId: PublicEventServerId;
     expectedPrice: number;
     requestId: string;
+    /** Supplied from the API-verified session, never from the purchase body. */
+    accessToken?: string;
+    userAgent?: string;
 }
 
 export interface PurchaseResult {
@@ -745,7 +748,8 @@ export async function purchasePublicEvent(input: PurchaseInput): Promise<Purchas
             });
         }
 
-        if (eventRequiresDonor(command)) await requireEventAccess(input.buyerId);
+        if (eventRequiresDonor(command))
+            await requireEventAccess(input.buyerId, input.accessToken, input.userAgent);
 
         const server = await sql<Pick<PublicEventServerModel, "id" | "enabled">[]>`
             SELECT id, enabled FROM public_event_servers WHERE id = ${input.serverId} FOR UPDATE

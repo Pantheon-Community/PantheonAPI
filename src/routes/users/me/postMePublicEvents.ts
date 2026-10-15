@@ -10,7 +10,7 @@ export const postMePublicEvents: Endpoint<PublicEventPurchase, PublicEventPurcha
     path: "/users/@me/public-events",
     auth: AuthScope.Session,
     description:
-        "Buys an event (donators or Bots staff) or modifier (everyone) with credits. Event access verification failures return 503; existing paid request retries do not recheck roles.",
+        "Buys an event (donators or staff) or modifier (everyone) with credits. Without local Bots settings, the verified session is checked through the website. Verification failures return 503; existing paid request retries do not recheck roles.",
     returns: "Order ID, the resulting balance, and the server's pending count.",
     source: import.meta.path,
     flags: EndpointFlags.May403 | EndpointFlags.May404 | EndpointFlags.May503,
@@ -23,6 +23,7 @@ export const postMePublicEvents: Endpoint<PublicEventPurchase, PublicEventPurcha
         using _ = timer.create("postMePublicEvents");
 
         const { eventId, serverId, expectedPrice, requestId } = req.body;
+        const userAgent = req.get("user-agent");
 
         return await purchasePublicEvent({
             buyerId: session.userId,
@@ -30,6 +31,8 @@ export const postMePublicEvents: Endpoint<PublicEventPurchase, PublicEventPurcha
             serverId,
             expectedPrice,
             requestId,
+            accessToken: session.accessToken,
+            ...(userAgent ? { userAgent } : {}),
         });
     },
 };
