@@ -86,11 +86,12 @@ describe("public event command allowlist", () => {
         }
     });
 
-    test("modifier prices match the current shop prices", () => {
+    test("catalog prices match the current shop prices", () => {
         for (const [command, cost] of [
             ["fog", 1500],
             ["faultyfacility", 2500],
             ["tiny", 2500],
+            ["peanutdodgeball", 2000],
         ] as const) {
             expect(PUBLIC_EVENT_PRICE_SHEET.find(([key]) => key === command)?.[2]).toBe(cost);
         }

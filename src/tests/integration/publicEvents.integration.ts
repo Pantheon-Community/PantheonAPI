@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { realpathSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { relative } from "node:path";
 import { SQL } from "bun";
 import { mockBotsRoles } from "../fixtures/botsRoles";
@@ -98,7 +99,7 @@ try {
     // Verify the server's actual storage before any DDL, not just its URL.
     const [settings] = await db<{ data_directory: string }[]>`SHOW data_directory`;
     assert(settings);
-    const approved = realpathSync("/var/folders/rk/sm2_j57s1m5c4lfkk36rqq7h0000gn/T/opencode");
+    const approved = realpathSync(process.env["PAID_EVENTS_DISPOSABLE_ROOT"] ?? tmpdir());
     const directory = realpathSync(settings.data_directory);
     assert(
         /^paid-events-pg-[a-zA-Z0-9]+\/data$/.test(relative(approved, directory)),
@@ -147,7 +148,7 @@ try {
     assert.equal(seeded[1]?.cost, 27);
     assert.equal(seeded[1]?.enabled, true);
     assert.equal(seeded.filter((row) => !row.supported).length, 5);
-    assert.equal((await getPublicCatalog()).length, 25);
+    assert.equal((await getPublicCatalog()).length, 26);
     const bird = seeded[0];
     const staffBird = await updateCatalogItem(bird.id, {
         ...bird,
@@ -428,6 +429,44 @@ try {
             );
         },
     );
+
+    await runCase(
+        "Peanut Dodgeball upgrade enables the existing event and preserves paid history",
+        async () => {
+            await purchase();
+            const ordersBefore = await db`SELECT * FROM public_event_orders ORDER BY id`;
+            await db`UPDATE public_event_catalog SET command = ' /PEANUTDODGEBALL ', cost = 0, enabled = FALSE WHERE id = ${eventId}`;
+            await db`DELETE FROM public_event_bootstrap WHERE key = 'catalog-peanut-dodgeball-v1'`;
+            await Promise.all(Array.from({ length: 8 }, () => seedPublicEventCatalog()));
+            const catalog = await getPublicCatalog();
+            assert.equal(catalog.length, 1);
+            const event = catalog[0]!;
+            assert.equal(event.id, eventId);
+            assert.equal(event.cost, 2000);
+            assert.equal(event.category, "minigame");
+            assert.equal(event.image, "https://pantheoncommunity.org/media/peanutdodgeball.webp");
+            assert.equal(event.requiresDonor, true);
+            assert.equal(event.comingSoon, false);
+            assert.deepEqual(await db`SELECT * FROM public_event_orders ORDER BY id`, ordersBefore);
+            await db`UPDATE public_event_catalog SET cost = 2300, enabled = FALSE, image = 'https://synthetic.invalid/custom.webp' WHERE id = ${eventId}`;
+            const beforeRepeat = await db`SELECT * FROM public_event_catalog ORDER BY id`;
+            await seedPublicEventCatalog();
+            assert.deepEqual(
+                await db`SELECT * FROM public_event_catalog ORDER BY id`,
+                beforeRepeat,
+            );
+        },
+    );
+
+    await runCase("Peanut Dodgeball upgrade inserts a missing catalog entry", async () => {
+        await db`DELETE FROM public_event_bootstrap WHERE key = 'catalog-peanut-dodgeball-v1'`;
+        await seedPublicEventCatalog();
+        const entry = (await getAdminCatalog()).find((row) => row.command === "peanutdodgeball")!;
+        assert.equal(entry.name, "Peanut Dodgeball");
+        assert.equal(entry.cost, 2000);
+        assert.equal(entry.enabled, true);
+        assert(entry.description.length > 10);
+    });
 
     await runCase(
         "production descriptions replace blanks and old placeholders without overwriting staff copy",

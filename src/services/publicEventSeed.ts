@@ -38,12 +38,12 @@ export const PUBLIC_EVENT_PRICE_SHEET: readonly (readonly [
     ["walkingdead", "Walking Dead", 3000, "modifier"],
     ["fog", "Fog", 1500, "modifier"],
     ["faultyfacility", "Faulty Facility", 2500, "modifier"],
+    ["peanutdodgeball", "Peanut Dodgeball", 2000, "minigame"],
 ];
 
 const OTHER_EVENTS: readonly (readonly [string, string, PublicEventCategory])[] = [
     ["labyrinth", "Labyrinth", "minigame"],
     ["modhunt", "Mod Hunt", "pvp"],
-    ["peanutdodgeball", "Peanut Dodgeball", "minigame"],
     ["scp079escape", "SCP-079 Escape", "survival"],
     ["scpreplication", "SCP Replication", "survival"],
     ["traitor", "Traitor", "pvp"],
@@ -140,6 +140,27 @@ export async function seedPublicEventCatalog(): Promise<void> {
             }
             await sql`UPDATE public_event_catalog SET cost = 2500
                 WHERE regexp_replace(lower(btrim(command)), '^/+', '') = 'tiny'`;
+        }
+
+        const peanutMarker = await sql`
+            INSERT INTO public_event_bootstrap (key) VALUES ('catalog-peanut-dodgeball-v1')
+            ON CONFLICT (key) DO NOTHING RETURNING key
+        `;
+        if (peanutMarker.length > 0) {
+            const image = "https://pantheoncommunity.org/media/peanutdodgeball.webp";
+            const updated = await sql`
+                UPDATE public_event_catalog SET cost = 2000, enabled = TRUE, category = 'minigame',
+                    image = COALESCE(image, ${image})
+                WHERE regexp_replace(lower(btrim(command)), '^/+', '') = 'peanutdodgeball'
+                RETURNING id
+            `;
+            if (updated.length === 0) {
+                await sql`
+                    INSERT INTO public_event_catalog (name, description, image, cost, command, enabled, category)
+                    VALUES ('Peanut Dodgeball', ${PUBLIC_EVENT_DESCRIPTIONS["peanutdodgeball"]!}, ${image},
+                        2000, 'peanutdodgeball', TRUE, 'minigame')
+                `;
+            }
         }
 
         const descriptionMarker = await sql`
