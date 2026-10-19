@@ -1023,7 +1023,7 @@ try {
     );
 
     await runCase(
-        "FIFO reservations, duplicate authorization/results, and four completed intervening rounds",
+        "FIFO reservations, duplicate authorization/results, and three completed normal intervening rounds",
         async () => {
             const first = await purchase();
             await db`UPDATE public_event_catalog SET command = 'tiny' WHERE id = ${eventId}`;
@@ -1115,7 +1115,7 @@ try {
                 "Late downgrade",
             );
             assert.equal((await getAdminOrders(query)).items[0]?.status, "fulfilled");
-            assert.equal((await reportRound("1", 1, instance, paidRound, "ended")).gapRemaining, 4);
+            assert.equal((await reportRound("1", 1, instance, paidRound, "ended")).gapRemaining, 3);
 
             const prepareOnly = crypto.randomUUID();
             assert.equal(
@@ -1124,7 +1124,7 @@ try {
             );
             assert.equal(
                 (await reportRound("1", 1, instance, prepareOnly, "ended")).gapRemaining,
-                4,
+                3,
             );
             const abandoned = crypto.randomUUID();
             await reportRound("1", 1, instance, abandoned, "started");
@@ -1137,28 +1137,22 @@ try {
                 (await reportRound("1", 1, instance, abandoned, "prepare")).reservation,
                 null,
             );
-            assert.equal((await reportRound("1", 1, instance, gapRound1, "ended")).gapRemaining, 3);
+            assert.equal((await reportRound("1", 1, instance, gapRound1, "ended")).gapRemaining, 2);
+            assert.equal((await reportRound("1", 1, instance, abandoned, "ended")).gapRemaining, 2);
             const gapRound2 = crypto.randomUUID();
             assert.equal(
                 (await reportRound("1", 1, instance, gapRound2, "started")).reservation,
                 null,
             );
-            assert.equal((await reportRound("1", 1, instance, gapRound2, "ended")).gapRemaining, 2);
+            assert.equal((await reportRound("1", 1, instance, gapRound2, "ended")).gapRemaining, 1);
             const gapRound3 = crypto.randomUUID();
-            assert.equal(
-                (await reportRound("1", 1, instance, gapRound3, "started")).reservation,
-                null,
-            );
-            assert.equal((await reportRound("1", 1, instance, gapRound3, "ended")).gapRemaining, 1);
+            const thirdNormal = await reportRound("1", 1, instance, gapRound3, "started");
+            assert.equal(thirdNormal.gapRemaining, 1);
+            assert.equal(thirdNormal.reservation, null);
+            assert.equal((await reportRound("1", 1, instance, gapRound3, "ended")).gapRemaining, 0);
             const gapRound4 = crypto.randomUUID();
             assert.equal(
-                (await reportRound("1", 1, instance, gapRound4, "started")).reservation,
-                null,
-            );
-            assert.equal((await reportRound("1", 1, instance, gapRound4, "ended")).gapRemaining, 0);
-            assert.equal(
-                (await reportRound("1", 1, instance, crypto.randomUUID(), "started")).reservation
-                    ?.orderId,
+                (await reportRound("1", 1, instance, gapRound4, "started")).reservation?.orderId,
                 second,
             );
         },
@@ -1187,7 +1181,7 @@ try {
                 await reportRound("1", 1, instance, roundId, "ended");
             };
             const finishGap = async (): Promise<void> => {
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < 3; i++) {
                     const roundId = crypto.randomUUID();
                     // eslint-disable-next-line no-await-in-loop
                     const decision = await reportRound("1", 1, instance, roundId, "started");
@@ -1463,7 +1457,7 @@ try {
                 [different1, repeat1, different2, repeat2, different3, repeat3],
             );
             assert.equal((await getPublicQueue(query)).items.at(-1)?.repeatDeferral, "moved");
-            assert.equal((await getPublicServers())[0]?.gapRemaining, 4);
+            assert.equal((await getPublicServers())[0]?.gapRemaining, 3);
         },
     );
 
@@ -1494,7 +1488,7 @@ try {
             const replacement = crypto.randomUUID();
             await db`UPDATE public_event_servers SET instance_until = NOW() - INTERVAL '1 second' WHERE id = '1'`;
             await heartbeatServer("1", 1, replacement);
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 3; i++) {
                 const gapRound = crypto.randomUUID();
                 // eslint-disable-next-line no-await-in-loop
                 const decision = await reportRound("1", 1, replacement, gapRound, "started");
