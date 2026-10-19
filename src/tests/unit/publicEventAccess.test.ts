@@ -155,6 +155,7 @@ test.serial(
                 expect(eventRequiresDonor(` /${command.toUpperCase()} `)).toBe(false);
             }
             expect(eventRequiresDonor(" /TRAITOR ")).toBe(true);
+            expect(eventRequiresDonor(" /MARSH ")).toBe(true);
             expect(eventRequiresDonor("musicalchairs 2")).toBe(true);
             expect(eventRequiresDonor("tiny;traitor")).toBe(true);
             const catalog = {

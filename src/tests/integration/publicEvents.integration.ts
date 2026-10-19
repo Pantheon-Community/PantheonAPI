@@ -132,7 +132,7 @@ try {
     `);
     await createPublicEventsTables();
     const seeded = await getAdminCatalog();
-    assert.equal(seeded.length, 36);
+    assert.equal(seeded.length, 37);
     for (const [command, name, cost, category] of PUBLIC_EVENT_PRICE_SHEET) {
         const matches = seeded.filter(
             (row) => row.command.replace(/^\/+/, "").toLowerCase() === command,
@@ -148,7 +148,7 @@ try {
     assert.equal(seeded[1]?.cost, 27);
     assert.equal(seeded[1]?.enabled, true);
     assert.equal(seeded.filter((row) => !row.supported).length, 5);
-    assert.equal((await getPublicCatalog()).length, 27);
+    assert.equal((await getPublicCatalog()).length, 28);
     const bird = seeded[0];
     const staffBird = await updateCatalogItem(bird.id, {
         ...bird,
@@ -469,6 +469,74 @@ try {
     });
 
     await runCase(
+        "Marshmallow Brawl upgrade preserves IDs and history and only donors or staff can buy it",
+        async () => {
+            await purchase();
+            const ordersBefore = await db`SELECT * FROM public_event_orders ORDER BY id`;
+            await db`UPDATE public_event_catalog SET command = ' /MARSH ', name = 'Staff Marshmallow', cost = 100, enabled = FALSE WHERE id = ${eventId}`;
+            await db`DELETE FROM public_event_bootstrap WHERE key = 'catalog-marshmallow-brawl-v1'`;
+            await Promise.all(Array.from({ length: 8 }, () => seedPublicEventCatalog()));
+            const catalog = await getPublicCatalog();
+            assert.equal(catalog.length, 1);
+            const entry = catalog[0]!;
+            assert.equal(entry.id, eventId);
+            assert.equal(entry.name, "Staff Marshmallow");
+            assert.equal(entry.cost, 2800);
+            assert.equal(entry.category, "minigame");
+            assert.equal(entry.image, "https://pantheoncommunity.org/media/marsh.webp");
+            assert.equal(entry.requiresDonor, true);
+            assert.equal(entry.comingSoon, false);
+            assert.deepEqual(await db`SELECT * FROM public_event_orders ORDER BY id`, ordersBefore);
+            await db`UPDATE steam_users SET balance = 10000`;
+            const input = {
+                buyerId: "buyer",
+                eventId,
+                serverId: "1",
+                expectedPrice: 2800,
+                requestId: crypto.randomUUID(),
+            } as const;
+            assert.equal((await purchasePublicEvent(input)).balance, 7200);
+            bots.fetchMock.mockImplementation(async () =>
+                Response.json([{ role: "member", other_roles: ["moderator"] }]),
+            );
+            assert.equal(
+                (await purchasePublicEvent({ ...input, requestId: crypto.randomUUID() })).balance,
+                4400,
+            );
+            bots.fetchMock.mockImplementation(async () =>
+                Response.json([{ role: "member", other_roles: [] }]),
+            );
+            await assert.rejects(
+                purchasePublicEvent({ ...input, requestId: crypto.randomUUID() }),
+                ForbiddenError,
+            );
+            assert.equal(
+                (await db`SELECT balance FROM steam_users WHERE id = 'steam'`)[0].balance,
+                4400,
+            );
+            await db`UPDATE public_event_catalog SET cost = 3100, enabled = FALSE, image = 'https://synthetic.invalid/custom.webp' WHERE id = ${eventId}`;
+            const beforeRepeat = await db`SELECT * FROM public_event_catalog ORDER BY id`;
+            await seedPublicEventCatalog();
+            assert.deepEqual(
+                await db`SELECT * FROM public_event_catalog ORDER BY id`,
+                beforeRepeat,
+            );
+        },
+    );
+
+    await runCase("Marshmallow Brawl upgrade inserts a missing catalog entry", async () => {
+        await db`DELETE FROM public_event_bootstrap WHERE key = 'catalog-marshmallow-brawl-v1'`;
+        await seedPublicEventCatalog();
+        const entry = (await getAdminCatalog()).find((row) => row.command === "marsh")!;
+        assert.equal(entry.name, "Marshmallow Brawl");
+        assert.equal(entry.cost, 2800);
+        assert.equal(entry.enabled, true);
+        assert.equal(entry.category, "minigame");
+        assert.equal(entry.image, "https://pantheoncommunity.org/media/marsh.webp");
+        assert(entry.description.length > 10);
+    });
+
+    await runCase(
         "production descriptions replace blanks and old placeholders without overwriting staff copy",
         async () => {
             await db`DELETE FROM public_event_bootstrap WHERE key = 'catalog-descriptions-v1'`;
@@ -561,7 +629,7 @@ try {
             const before = (await getAdminOrders(query)).items[0];
             await db`DELETE FROM public_event_bootstrap`;
             await Promise.all(Array.from({ length: 8 }, () => seedPublicEventCatalog()));
-            assert.equal((await getAdminCatalog()).length, 36);
+            assert.equal((await getAdminCatalog()).length, 37);
             assert.deepEqual((await getAdminOrders(query)).items[0], before);
             const placeholder = (await getAdminCatalog()).find(
                 (row) => row.command === "walkingdead",

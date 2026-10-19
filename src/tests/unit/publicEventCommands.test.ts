@@ -83,7 +83,7 @@ describe("public event command allowlist", () => {
     });
 
     test("contains no aliases, only canonical catalog keys", () => {
-        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(31);
+        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(32);
         expect(new Set(PUBLIC_EVENT_COMMANDS).size).toBe(PUBLIC_EVENT_COMMANDS.length);
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("stop");
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("list");
@@ -104,6 +104,7 @@ describe("public event command allowlist", () => {
             ["tiny", 2500],
             ["peanutdodgeball", 2000],
             ["walkingdead", 3400],
+            ["marsh", 2800],
         ] as const) {
             expect(PUBLIC_EVENT_PRICE_SHEET.find(([key]) => key === command)?.[2]).toBe(cost);
         }
@@ -139,6 +140,7 @@ describe("public event command allowlist", () => {
         expect(() => validateEventCommand("hangthedj 12")).toThrow();
         expect(() => validateEventCommand("musicalchairs 0")).toThrow();
         expect(() => validateEventCommand("traitor 1")).toThrow();
+        expect(() => validateEventCommand("marsh 1")).toThrow();
     });
 
     test("removed Everything Explodes cannot execute or be configured", () => {
@@ -180,6 +182,7 @@ describe("public event command allowlist", () => {
             "079escape",
             "mc",
             "traitorevent",
+            "marshmallowbrawl",
             "faulty",
         ]) {
             expect(() => validateEventCommand(alias)).toThrow();

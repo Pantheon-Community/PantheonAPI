@@ -39,6 +39,7 @@ export const PUBLIC_EVENT_PRICE_SHEET: readonly (readonly [
     ["fog", "Fog", 1500, "modifier"],
     ["faultyfacility", "Faulty Facility", 2500, "modifier"],
     ["peanutdodgeball", "Peanut Dodgeball", 2000, "minigame"],
+    ["marsh", "Marshmallow Brawl", 2800, "minigame"],
 ];
 
 const OTHER_EVENTS: readonly (readonly [string, string, PublicEventCategory])[] = [
@@ -170,6 +171,27 @@ export async function seedPublicEventCatalog(): Promise<void> {
         if (walkingDeadMarker.length > 0) {
             await sql`UPDATE public_event_catalog SET cost = 3400
                 WHERE regexp_replace(lower(btrim(command)), '^/+', '') = 'walkingdead'`;
+        }
+
+        const marshMarker = await sql`
+            INSERT INTO public_event_bootstrap (key) VALUES ('catalog-marshmallow-brawl-v1')
+            ON CONFLICT (key) DO NOTHING RETURNING key
+        `;
+        if (marshMarker.length > 0) {
+            const image = "https://pantheoncommunity.org/media/marsh.webp";
+            const updated = await sql`
+                UPDATE public_event_catalog SET cost = 2800, enabled = TRUE, category = 'minigame',
+                    image = COALESCE(image, ${image})
+                WHERE regexp_replace(lower(btrim(command)), '^/+', '') = 'marsh'
+                RETURNING id
+            `;
+            if (updated.length === 0) {
+                await sql`
+                    INSERT INTO public_event_catalog (name, description, image, cost, command, enabled, category)
+                    VALUES ('Marshmallow Brawl', ${PUBLIC_EVENT_DESCRIPTIONS["marsh"]!}, ${image},
+                        2800, 'marsh', TRUE, 'minigame')
+                `;
+            }
         }
 
         const descriptionMarker = await sql`
