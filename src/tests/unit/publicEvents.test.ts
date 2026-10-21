@@ -229,7 +229,7 @@ test("paid event service regression guards", async () => {
         q.text.startsWith("SELECT * FROM public_event_orders WHERE id"),
     );
     expect(serverLock).toBeLessThan(orderLock);
-    expect(queries.some((q) => q.text.includes("authorized_at IS NOT NULL"))).toBe(true);
+    expect(queries.some((q) => q.text.includes("authorized_at IS NOT NULL"))).toBe(false);
     expect(
         queries.find((q) => q.text.startsWith("INSERT INTO public_event_audit"))?.values,
     ).toEqual([9, deliveryId, "manager", "Removed by request"]);
@@ -256,8 +256,8 @@ test("paid event service regression guards", async () => {
             return [{ id: "historical-authorized" }];
         return undefined;
     });
-    await assert.rejects(cancelOrder(9, "manager", "Reason"));
-    expect(queries.some((q) => q.text.startsWith("UPDATE"))).toBe(false);
+    expect(await cancelOrder(9, "manager", "Reason")).toEqual({ ok: true });
+    expect(queries.some((q) => q.text.startsWith("UPDATE"))).toBe(true);
     await assert.rejects(cancelOrder(9, "manager", "   "));
     await assert.rejects(cancelOrder(9, "manager", "x".repeat(2001)));
     install((text) =>

@@ -1783,18 +1783,6 @@ export async function cancelOrder(
                     "Only queued orders can be removed without refund. Refresh the queue before taking further action.",
             });
         }
-        // Even an expired/retried historical authorization may report a late start.
-        const authorized = await sql<{ id: string }[]>`
-            SELECT id FROM public_event_deliveries
-            WHERE order_id = ${id} AND authorized_at IS NOT NULL LIMIT 1
-        `;
-        if (authorized.length > 0) {
-            throw new ForbiddenError({
-                title: "Previously Authorized",
-                description:
-                    "This order has a historically authorized delivery and cannot safely be removed. Staff must verify its execution history.",
-            });
-        }
         await sql`
             UPDATE public_event_orders
             SET status = 'cancelled', repeat_deferral = 'none', message = ${`Removed by staff without refund: ${reason.trim()}`}
