@@ -40,6 +40,7 @@ export const PUBLIC_EVENT_PRICE_SHEET: readonly (readonly [
     ["faultyfacility", "Faulty Facility", 2500, "modifier"],
     ["peanutdodgeball", "Peanut Dodgeball", 2000, "minigame"],
     ["marsh", "Marshmallow Brawl", 2800, "minigame"],
+    ["ffa", "Free For All", 3000, "minigame"],
 ];
 
 const OTHER_EVENTS: readonly (readonly [string, string, PublicEventCategory])[] = [
@@ -190,6 +191,26 @@ export async function seedPublicEventCatalog(): Promise<void> {
                     INSERT INTO public_event_catalog (name, description, image, cost, command, enabled, category)
                     VALUES ('Marshmallow Brawl', ${PUBLIC_EVENT_DESCRIPTIONS["marsh"]!}, ${image},
                         2800, 'marsh', TRUE, 'minigame')
+                `;
+            }
+        }
+
+        const freeForAllMarker = await sql`
+            INSERT INTO public_event_bootstrap (key) VALUES ('catalog-free-for-all-v1')
+            ON CONFLICT (key) DO NOTHING RETURNING key
+        `;
+        if (freeForAllMarker.length > 0) {
+            const image = "https://pantheoncommunity.org/media/ffa.webp";
+            const updated = await sql`
+                UPDATE public_event_catalog SET cost = 3000, enabled = TRUE, category = 'minigame',
+                    image = COALESCE(image, ${image})
+                WHERE regexp_replace(lower(btrim(command)), '^/+', '') = 'ffa'
+                RETURNING id
+            `;
+            if (updated.length === 0) {
+                await sql`
+                    INSERT INTO public_event_catalog (name, description, image, cost, command, enabled, category)
+                    VALUES ('Free For All', ${PUBLIC_EVENT_DESCRIPTIONS["ffa"]!}, ${image}, 3000, 'ffa', TRUE, 'minigame')
                 `;
             }
         }

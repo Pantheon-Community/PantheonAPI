@@ -15,6 +15,7 @@ export const PUBLIC_EVENT_COMMANDS = [
     "knifefight",
     "labyrinth",
     "marsh",
+    "ffa",
     "lasertag",
     "leapfrog",
     "micromanagement",

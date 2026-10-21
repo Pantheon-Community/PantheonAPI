@@ -83,7 +83,7 @@ describe("public event command allowlist", () => {
     });
 
     test("contains no aliases, only canonical catalog keys", () => {
-        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(32);
+        expect(PUBLIC_EVENT_COMMANDS).toHaveLength(33);
         expect(new Set(PUBLIC_EVENT_COMMANDS).size).toBe(PUBLIC_EVENT_COMMANDS.length);
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("stop");
         expect(PUBLIC_EVENT_COMMANDS).not.toContain("list");
@@ -105,6 +105,7 @@ describe("public event command allowlist", () => {
             ["peanutdodgeball", 2000],
             ["walkingdead", 3400],
             ["marsh", 2800],
+            ["ffa", 3000],
         ] as const) {
             expect(PUBLIC_EVENT_PRICE_SHEET.find(([key]) => key === command)?.[2]).toBe(cost);
         }
