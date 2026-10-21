@@ -105,7 +105,7 @@ describe("public event command allowlist", () => {
             ["peanutdodgeball", 2000],
             ["walkingdead", 3400],
             ["marsh", 2800],
-            ["ffa", 3000],
+            ["ffa", 2500],
         ] as const) {
             expect(PUBLIC_EVENT_PRICE_SHEET.find(([key]) => key === command)?.[2]).toBe(cost);
         }
