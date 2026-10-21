@@ -15,7 +15,11 @@ test.serial(
     async () => {
         const bots = mockBotsRoles();
         try {
-            for (const role of ["donator", "d1bronze", "d2silver", "d3gold", "d4mega", "d5mega"]) {
+            bots.fetchMock.mockImplementation(async () =>
+                Response.json([{ role: "donator", other_roles: [] }]),
+            );
+            await assert.rejects(requireEventAccess("verified-id"), ForbiddenError);
+            for (const role of ["d1bronze", "d2silver", "d3gold", "d4mega", "d5mega"]) {
                 bots.fetchMock.mockImplementation(async () =>
                     Response.json([{ role: ` ${role.toUpperCase()} `, other_roles: [] }]),
                 );

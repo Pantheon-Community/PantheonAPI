@@ -1,7 +1,7 @@
 import { ForbiddenError } from "@/errors/ForbiddenError";
 import { ServiceUnavailableError } from "@/errors/ServiceUnavailableError";
 
-const DONOR_ROLES = new Set(["donator", "d1bronze", "d2silver", "d3gold", "d4mega", "d5mega"]);
+const DONOR_ROLES = new Set(["d1bronze", "d2silver", "d3gold", "d4mega", "d5mega"]);
 // HELPER and above in the web permissionLevels mappings, including generic helper.
 const STAFF_ROLES = new Set([
     "helper",
